@@ -1,7 +1,5 @@
 const fs = require('node:fs');
 const path = require('node:path');
-const { getDb } = require('./database');
-
 const FIXTURES_PATH = process.env.FIXTURES_PATH || path.join(__dirname, '../../fixtures.json');
 
 // Session tokens required by .dogfood.toml
@@ -13,7 +11,7 @@ const DEMO_SESSIONS = {
 };
 
 function seed(dbInstance = null, fixtureData = null) {
-  const db = dbInstance || getDb();
+  const db = dbInstance || require('./database').getDb();
 
   // Load fixtures JSON
   let fixtures = fixtureData;
