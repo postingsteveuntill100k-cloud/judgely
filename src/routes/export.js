@@ -1,15 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const { requireRole } = require('../middleware/rbac');
+const { eventMiddleware } = require('../middleware/event');
 const { generateResultsCsv } = require('../services/export');
 
-// GET /api/export.csv - (DOGFOOD Check 7: Organizer CSV export)
-router.get('/api/export.csv', requireRole('organizer'), (req, res) => {
-  const csvContent = generateResultsCsv('evt_01', req.user);
+// GET /api/export.csv and /api/export/csv - (DOGFOOD Check 7: Organizer CSV export)
+function handleCsvExport(req, res) {
+  const csvContent = generateResultsCsv(req.eventId, req.user);
 
   res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-  res.setHeader('Content-Disposition', 'attachment; filename="judgely-sample-hack-2026-results.csv"');
+  res.setHeader('Content-Disposition', `attachment; filename="judgely-${req.eventId}-results.csv"`);
   res.status(200).send(csvContent);
-});
+}
+
+router.get('/api/export.csv', eventMiddleware, requireRole('organizer'), handleCsvExport);
+router.get('/api/export/csv', eventMiddleware, requireRole('organizer'), handleCsvExport);
 
 module.exports = router;

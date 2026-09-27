@@ -5,29 +5,46 @@
 - **GitHub Repository**: [https://github.com/postingsteveuntill100k-cloud/judgely](https://github.com/postingsteveuntill100k-cloud/judgely)
 - **Live Demo (NexusLabs Firebase Hosting)**: [https://nexuslabs-b7b5e.web.app](https://nexuslabs-b7b5e.web.app)
 
-Judgely is a self-hostable submission and judging platform built for **DOGFOOD 2026**. It provides an integrated event lifecycle with backend-enforced role isolation, cross-judge Z-score normalization, judging health anomaly detection, automated acceptance verification, and a modern dual Light/Dark technical design system.
+Judgely is a self-hostable submission and judging platform built for **DOGFOOD 2026**. It provides an integrated event lifecycle with backend-enforced role isolation, cross-judge Z-score normalization, judging health anomaly detection, automated acceptance verification, and a modern clean White/Off-White/Slate technical design system.
 
 ---
 
-## Features
+## Architecture & Workspaces
 
-- **T1 Core**:
-  - Public project gallery with track filtering and live keyword search.
-  - Server-side pre-rendered project cards for immediate crawler and checker compatibility.
-  - Submission deadline enforcement that strictly rejects late submissions (HTTP 403).
-  - Deterministic session authentication for organizers, judges, participants, and visitors.
-- **T2 Judging Infrastructure**:
-  - **Backend-Enforced Role Isolation**: Judges cannot view peer scores; participants are denied access to scoring endpoints; public project APIs strip private reviewer identities.
-  - **Weighted Rubric Scoring**: Configurable scoring criteria with bound checking [0.0, 5.0] and atomic upsert transactions.
-  - **Cross-Judge Normalization Engine**: Z-score standardization with variance regularization (handling judges with zero score variance like `jdg_07`) and Bayesian sample-size shrinkage.
-  - **Judging Health & Anomaly Detector**: Neutral, explainable heuristic flags identifying zero-variance grading, duplicate submissions (`tm_07`), and polarized scores.
-  - **Organizer Command Center**: Real-time review coverage distribution, assignment manager with track compatibility hints, and live settings.
-  - **Audit Trail**: Append-only log recording who, what, when, and which resource was modified.
-  - **Official CSV Export**: Comma-separated results export with rank deltas, raw scores, and normalized scores.
-- **Professional Design System**:
-  - Technical typography pairing **Inter** (for high-contrast readability) and **JetBrains Mono** (for metrics, scores, code, and hashes).
-  - Coherent **Light Mode** (clean off-white surfaces, restrained dark slate typography) and **Dark Mode** (charcoal surfaces, controlled cyan accents) with instant theme switcher.
-  - Full keyboard accessibility (Escape to dismiss modals, focus states).
+Judgely separates the hackathon lifecycle into four first-class, dedicated workspaces:
+
+1. **Public Event Showcase**:
+   - Event hero overview with real-time participation statistics (projects, tracks, judges).
+   - Filterable project gallery with live keyword search and track pill selectors.
+   - Server-side pre-rendered project cards for immediate crawler and checker compatibility.
+   - Slide-over project drawer with team rosters, repo links, and embargoed/released standings.
+2. **Participant Workspace (Hack2Skill Inspired)**:
+   - Milestone roadmap tracking: Registration → Team Formation → Submission → Review → Results.
+   - First-class team management with member roles (`Lead`, `Member`) and ownership semantics.
+   - Project submission manager with input validation, URL protocol sanitization, and live status tracking.
+3. **Judge Workspace**:
+   - Calm, focused evaluation queue displaying workload telemetry (assigned, completed, remaining).
+   - Authoritative rubric evaluation form derived directly from event database rubric criteria.
+   - Strict role isolation: judges evaluate independently; peer scores and comments are never leaked.
+4. **Organizer Operations Command Center**:
+   - Operational review coverage telemetry with interactive coverage distribution visualization.
+   - Explainable integrity anomaly detector flagging zero-variance grading (`jdg_07`), duplicate submissions (`tm_07`), and high inter-judge variance.
+   - Assignment dispatch manager enforcing track alignment, conflict-of-interest checks, and workload balance.
+   - Results visibility control: one-click switch to toggle between embargoed scoring and official public release.
+   - Append-only chronological system audit trail and official comma-separated results CSV export.
+
+---
+
+## Security Hardening (Forensic Code Audit Passes)
+
+- **Bug 1 (Judge Assignment Bypass)**: `POST /api/judge/scores` verifies active judge assignment before scoring; unassigned attempts receive `403 Forbidden`. Auto-assignment creation is strictly prohibited.
+- **Bug 2 (Public Normalization API Leak)**: `GET /api/results` strictly enforces results embargo. Normalization internals, judge bias, and private scores are hidden until organizer release.
+- **Bug 3 & 4 (Session Security)**: Disallowed query-string authentication (`?session=...`) and eliminated client-side token storage in `localStorage`. Authentication uses secure, server-managed `HttpOnly; SameSite=Lax` cookies with database expiration timestamps.
+- **Bug 5 (No DOM Hardcoded Tokens)**: Removed session credentials from `index.html`. Local demo switching uses server-managed `POST /api/auth/demo-login`.
+- **Bug 6 (HTML & URL Injection Defense)**: Bulletproof HTML entity escaping on SSR project cards and strict URL protocol validation (only `http://` and `https://` permitted; dangerous protocols like `javascript:` rejected).
+- **Bug 7 (Authoritative Rubric)**: Scoring engine rejects unknown criteria with `400 Bad Request` and enforces score bounds against authoritative event rubric weights (no arbitrary fallback weights).
+- **Bug 8 & 9 (Team & Submission Ownership)**: Submissions enforce team membership verification; participants cannot submit into or modify projects belonging to other teams.
+- **Dynamic Event Context**: Replaced hardcoded `evt_01` defaults across all routes and services with dynamic event resolution middleware.
 
 ---
 
@@ -68,7 +85,7 @@ Judgely seeds deterministic session credentials corresponding to fixture identit
 | **Participant** | `Cookie: session=prt_2e88` | First fixture team member (`tm_01`, Priya Nair) |
 | **Visitor** | *(No header)* | Unauthenticated guest |
 
-The web interface also includes an interactive **Demo Role Switcher** bar at the top to seamlessly toggle between these sessions.
+The web interface also includes an interactive **Demo Persona Switcher** modal to seamlessly toggle between these sessions using server-managed cookies.
 
 ---
 
@@ -107,11 +124,21 @@ python3 run.py .dogfood.toml > acceptance-report.txt
 
 ## Running Automated Tests
 
-Judgely includes a comprehensive test suite covering DOGFOOD acceptance checks, weighted scoring math, normalization proofs, role isolation barriers, and awkward fixture edge cases:
+Judgely includes a comprehensive regression test suite (38 automated unit, integration, and security attack tests):
 
 ```bash
 npm test
 ```
+
+Covers:
+- Session forgery rejection & query-token rejection
+- Role isolation barriers (Judge A vs Judge B, Participant vs Scores, Visitor vs Audit)
+- Unassigned project score refusal (HTTP 403)
+- Rubric criteria validation & unknown criterion rejection (HTTP 400)
+- Team ownership & IDOR defenses
+- Results embargo before and after release
+- SSR XSS escaping and URL sanitization
+- Zero-variance normalization handling (`jdg_07`) and Bayesian shrinkage
 
 ---
 
@@ -130,15 +157,13 @@ docker run --network none -p 8080:8080 judgely_portal
 ```
 The portal boots and runs completely without network access, cloud accounts, or remote services.
 
-*(Note: If Docker is unavailable in the host execution environment, local tests verify equivalent standalone execution with zero external network calls).*
-
 ---
 
-## Optional NexusLabs / Firebase Integration
+## NexusLabs / Firebase Integration
 
-Firebase is an **optional convenience deployment** for hosted demonstrations and remote testing.
 - The canonical open-source Judgely product is self-hosted and has zero runtime dependency on Firebase.
-- All Firebase hosting and authentication experiments are strictly scoped to the existing **NexusLabs** workspace and its associated Firebase project. No external cloud credentials are committed to Git.
+- Firebase Hosting is deployed to the existing **NexusLabs** project (`nexuslabs-b7b5e` at `https://nexuslabs-b7b5e.web.app`) for client asset demonstration.
+- All Firebase hosting configuration is strictly scoped to `nexuslabs-b7b5e`.
 
 ---
 
@@ -148,11 +173,3 @@ Firebase is an **optional convenience deployment** for hosted demonstrations and
 - [`DATA-MODEL.md`](DATA-MODEL.md): Relational schema, join tables, and fixture transformation pipeline.
 - [`JUDGING.md`](JUDGING.md): Rubric weighting formulas, Z-score normalization proof, and tie-breaking rules.
 - [`LICENSE`](LICENSE): MIT License.
-
----
-
-## Honest Limitations
-
-1. **In-Memory Session Map**: The prototype matches session tokens against the `users` table directly. Production deployments would add token expiration and refresh token rotation.
-2. **Single Event Scope**: The current database model supports multiple events, but the default UI is configured to display and manage `evt_01` from the DOGFOOD fixtures.
-3. **Static File Serving**: Express directly serves the pre-rendered HTML and client assets. Production high-traffic deployments can place an Nginx reverse proxy in front for static asset caching.

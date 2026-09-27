@@ -2,17 +2,22 @@ const express = require('express');
 const router = express.Router();
 const { getDb } = require('../db/database');
 const { requireRole } = require('../middleware/rbac');
+const { eventMiddleware } = require('../middleware/event');
 const { getJudgingHealth } = require('../services/health');
 const { getAuditLogs, recordAuditLog } = require('../services/audit');
 
-// All organizer endpoints strictly require 'organizer' role
-router.use('/api/organizer', requireRole('organizer'));
+// All organizer endpoints strictly require 'organizer' role and event resolution
+router.use('/api/organizer', requireRole('organizer'), eventMiddleware);
 
 // GET /api/organizer/overview
 router.get('/api/organizer/overview', (req, res) => {
-  const health = getJudgingHealth();
-  const audits = getAuditLogs(20);
+  const db = getDb();
+  const health = getJudgingHealth(req.eventId);
+  const audits = getAuditLogs(25, req.eventId);
+  const event = db.prepare('SELECT id, name, description, submissions_close, results_released FROM events WHERE id = ?').get(req.eventId);
+
   res.json({
+    event,
     health,
     recent_audits: audits
   });
@@ -28,19 +33,25 @@ router.get('/api/organizer/assignments', (req, res) => {
       a.project_id,
       p.title AS project_title,
       p.track_id AS project_track,
+      p.status AS project_status,
+      p.team_id,
+      t.name AS team_name,
       a.judge_id,
       j.name AS judge_name,
+      j.email AS judge_email,
       a.status,
       a.assigned_at,
       r.total_weighted_score
     FROM judge_assignments a
     JOIN projects p ON a.project_id = p.id
+    LEFT JOIN teams t ON p.team_id = t.id
     JOIN judges j ON a.judge_id = j.id
     LEFT JOIN reviews r ON a.project_id = r.project_id AND a.judge_id = r.judge_id
+    WHERE a.event_id = ?
     ORDER BY a.assigned_at DESC
   `);
 
-  const assignments = assignmentsStmt.all().map(a => {
+  const assignments = assignmentsStmt.all(req.eventId).map(a => {
     const judgeTracks = db.prepare('SELECT track_id FROM judge_tracks WHERE judge_id = ?').all(a.judge_id).map(t => t.track_id);
     const trackMatch = judgeTracks.includes(a.project_track);
     return {
@@ -53,7 +64,7 @@ router.get('/api/organizer/assignments', (req, res) => {
   res.json({ assignments });
 });
 
-// POST /api/organizer/assignments
+// POST /api/organizer/assignments - Phase 6 Hardened Assignment Creation
 router.post('/api/organizer/assignments', (req, res) => {
   const db = getDb();
   const { project_id, judge_id } = req.body || {};
@@ -65,43 +76,75 @@ router.post('/api/organizer/assignments', (req, res) => {
     return res.status(400).json({ error: 'Valid judge_id string is required' });
   }
 
-  // Validate project and judge exist
-  const project = db.prepare('SELECT id, track_id FROM projects WHERE id = ?').get(project_id);
-  const judge = db.prepare('SELECT id FROM judges WHERE id = ?').get(judge_id);
-
+  // 1. Verify project exists and belongs to current event
+  const project = db.prepare('SELECT id, event_id, track_id, team_id, status FROM projects WHERE id = ?').get(project_id);
   if (!project) {
     return res.status(404).json({ error: `Project '${project_id}' not found` });
   }
+  if (project.event_id !== req.eventId) {
+    return res.status(400).json({ error: `Project '${project_id}' belongs to event '${project.event_id}', not '${req.eventId}'` });
+  }
+  if (project.status === 'withdrawn' || project.status === 'disqualified') {
+    return res.status(400).json({ error: `Cannot assign judge to project with status '${project.status}'` });
+  }
+
+  // 2. Verify judge exists and belongs to current event
+  const judge = db.prepare('SELECT id, event_id, name, user_id FROM judges WHERE id = ?').get(judge_id);
   if (!judge) {
     return res.status(404).json({ error: `Judge '${judge_id}' not found` });
   }
+  if (judge.event_id && judge.event_id !== req.eventId) {
+    return res.status(400).json({ error: `Judge '${judge_id}' is registered for a different event` });
+  }
+
+  // 3. Conflict of interest check: Judge must NOT be a member of the project's team
+  if (project.team_id && judge.user_id) {
+    const conflict = db.prepare('SELECT team_id FROM team_members WHERE team_id = ? AND user_id = ?').get(project.team_id, judge.user_id);
+    if (conflict) {
+      return res.status(400).json({
+        error: 'Conflict of interest detected: Judge is a registered member of this project team'
+      });
+    }
+  }
+
+  // 4. Duplicate assignment check
+  const existing = db.prepare('SELECT id, status FROM judge_assignments WHERE event_id = ? AND project_id = ? AND judge_id = ?').get(req.eventId, project_id, judge_id);
+  if (existing) {
+    return res.status(409).json({
+      error: `Assignment already exists for judge '${judge_id}' on project '${project_id}'`,
+      assignment_id: existing.id,
+      status: existing.status
+    });
+  }
+
+  // 5. Track compatibility analysis
+  const judgeTracks = db.prepare('SELECT track_id FROM judge_tracks WHERE judge_id = ?').all(judge_id).map(t => t.track_id);
+  const trackMatch = judgeTracks.includes(project.track_id);
 
   const assignmentId = `asg_${project_id}_${judge_id}`;
   const now = new Date().toISOString();
 
   db.prepare(`
     INSERT INTO judge_assignments (id, event_id, project_id, judge_id, status, assigned_at)
-    VALUES (?, 'evt_01', ?, ?, 'assigned', ?)
-    ON CONFLICT(project_id, judge_id) DO UPDATE SET status = 'assigned'
-  `).run(assignmentId, project_id, judge_id, now);
-
-  const judgeTracks = db.prepare('SELECT track_id FROM judge_tracks WHERE judge_id = ?').all(judge_id).map(t => t.track_id);
-  const trackMatch = judgeTracks.includes(project.track_id);
+    VALUES (?, ?, ?, ?, 'assigned', ?)
+  `).run(assignmentId, req.eventId, project_id, judge_id, now);
 
   recordAuditLog({
-    eventId: 'evt_01',
+    eventId: req.eventId,
     userId: req.user.id,
     role: req.user.role,
     action: 'assignment.created',
     resourceType: 'assignment',
     resourceId: assignmentId,
-    details: { project_id, judge_id, track_match: trackMatch }
+    details: { project_id, judge_id, track_match: trackMatch, cross_track: !trackMatch }
   });
 
   res.status(201).json({
     message: 'Assignment created successfully',
     assignment_id: assignmentId,
-    track_match: trackMatch
+    track_match: trackMatch,
+    cross_track: !trackMatch,
+    warning: !trackMatch ? 'Note: Judge does not specialize in this project track (cross-track assignment)' : null
   });
 });
 
@@ -114,10 +157,10 @@ router.delete('/api/organizer/assignments', (req, res) => {
     return res.status(400).json({ error: 'project_id and judge_id are required' });
   }
 
-  const result = db.prepare('DELETE FROM judge_assignments WHERE project_id = ? AND judge_id = ?').run(project_id, judge_id);
+  const result = db.prepare('DELETE FROM judge_assignments WHERE event_id = ? AND project_id = ? AND judge_id = ?').run(req.eventId, project_id, judge_id);
 
   recordAuditLog({
-    eventId: 'evt_01',
+    eventId: req.eventId,
     userId: req.user.id,
     role: req.user.role,
     action: 'assignment.deleted',
@@ -129,14 +172,31 @@ router.delete('/api/organizer/assignments', (req, res) => {
   res.json({ message: 'Assignment removed', changes: result.changes });
 });
 
-// GET /api/organizer/audit
-router.get('/api/organizer/audit', (req, res) => {
-  const limit = Math.min(200, parseInt(req.query.limit, 10) || 50);
-  const logs = getAuditLogs(limit);
-  res.json({ logs });
+// POST /api/organizer/settings/results-visibility - Toggle embargo/release of public results
+router.post('/api/organizer/settings/results-visibility', (req, res) => {
+  const db = getDb();
+  const { results_released } = req.body || {};
+
+  const flagVal = results_released ? 1 : 0;
+  db.prepare('UPDATE events SET results_released = ? WHERE id = ?').run(flagVal, req.eventId);
+
+  recordAuditLog({
+    eventId: req.eventId,
+    userId: req.user.id,
+    role: req.user.role,
+    action: 'event.results_visibility_changed',
+    resourceType: 'event',
+    resourceId: req.eventId,
+    details: { results_released: Boolean(flagVal) }
+  });
+
+  res.json({
+    message: flagVal ? 'Results officially released to participants and public' : 'Results embargoed (private to organizers)',
+    results_released: Boolean(flagVal)
+  });
 });
 
-// POST /api/organizer/settings/deadline (Allows demo toggle of deadline)
+// POST /api/organizer/settings/deadline
 router.post('/api/organizer/settings/deadline', (req, res) => {
   const db = getDb();
   const { submissions_close } = req.body || {};
@@ -150,15 +210,15 @@ router.post('/api/organizer/settings/deadline', (req, res) => {
     return res.status(400).json({ error: 'Invalid ISO 8601 timestamp format for submissions_close' });
   }
 
-  db.prepare('UPDATE events SET submissions_close = ? WHERE id = ?').run(submissions_close, 'evt_01');
+  db.prepare('UPDATE events SET submissions_close = ? WHERE id = ?').run(submissions_close, req.eventId);
 
   recordAuditLog({
-    eventId: 'evt_01',
+    eventId: req.eventId,
     userId: req.user.id,
     role: req.user.role,
     action: 'event.deadline_updated',
     resourceType: 'event',
-    resourceId: 'evt_01',
+    resourceId: req.eventId,
     details: { submissions_close }
   });
 
@@ -166,6 +226,13 @@ router.post('/api/organizer/settings/deadline', (req, res) => {
     message: 'Deadline updated successfully',
     submissions_close
   });
+});
+
+// GET /api/organizer/audit
+router.get('/api/organizer/audit', (req, res) => {
+  const limit = Math.min(200, parseInt(req.query.limit, 10) || 50);
+  const logs = getAuditLogs(limit, req.eventId);
+  res.json({ logs });
 });
 
 module.exports = router;

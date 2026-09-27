@@ -33,23 +33,48 @@ function authMiddleware(req, res, next) {
     }
   }
 
-  // 3. Check custom header or query string (useful for testing/demo)
+  // 3. Check custom header for automated test suites
   if (!token && req.headers['x-session-token']) {
     token = req.headers['x-session-token'];
   }
-  if (!token && req.query && req.query.session) {
-    token = req.query.session;
-  }
+
+  // SECURITY (Bug 3): Query-string session credentials (?session=...) are STRICTLY DISALLOWED.
+  // URL parameters are logged in server logs, proxy logs, and browser history.
 
   if (!token) {
     req.user = { role: 'visitor' };
     return next();
   }
 
-  // Resolve user from database
   try {
-    const userStmt = db.prepare('SELECT id, email, name, role, session_token FROM users WHERE session_token = ?');
-    const user = userStmt.get(token);
+    let userId = null;
+
+    // A. Check database-managed sessions table
+    const sessionStmt = db.prepare(`
+      SELECT user_id, expires_at
+      FROM sessions
+      WHERE token = ? AND expires_at > datetime('now')
+    `);
+    const activeSession = sessionStmt.get(token);
+    if (activeSession) {
+      userId = activeSession.user_id;
+    }
+
+    // B. Fallback to users table session_token for fixture/checker credentials
+    if (!userId) {
+      const userDirect = db.prepare('SELECT id FROM users WHERE session_token = ?').get(token);
+      if (userDirect) {
+        userId = userDirect.id;
+      }
+    }
+
+    if (!userId) {
+      req.user = { role: 'visitor' };
+      return next();
+    }
+
+    const userStmt = db.prepare('SELECT id, email, name, role, session_token FROM users WHERE id = ?');
+    const user = userStmt.get(userId);
 
     if (!user) {
       req.user = { role: 'visitor' };
@@ -61,7 +86,7 @@ function authMiddleware(req, res, next) {
       email: user.email,
       name: user.name,
       role: user.role,
-      session_token: user.session_token
+      session_token: token
     };
 
     // If role is judge, resolve judge ID and tracks from relational tables
@@ -72,6 +97,30 @@ function authMiddleware(req, res, next) {
         req.user.judge_id = judge.id;
         const tracks = db.prepare('SELECT track_id FROM judge_tracks WHERE judge_id = ?').all(judge.id);
         req.user.tracks = tracks.map(t => t.track_id);
+      }
+    }
+
+    // If role is participant, resolve team and project memberships
+    if (user.role === 'participant') {
+      const teamStmt = db.prepare(`
+        SELECT t.id, t.name, t.event_id, tm.role AS member_role
+        FROM team_members tm
+        JOIN teams t ON tm.team_id = t.id
+        WHERE tm.user_id = ? OR tm.email = ?
+        LIMIT 1
+      `);
+      const team = teamStmt.get(user.id, user.email);
+      if (team) {
+        req.user.team_id = team.id;
+        req.user.team_name = team.name;
+        req.user.team_role = team.member_role;
+
+        const project = db.prepare('SELECT id, title, status FROM projects WHERE team_id = ?').get(team.id);
+        if (project) {
+          req.user.project_id = project.id;
+          req.user.project_title = project.title;
+          req.user.project_status = project.status;
+        }
       }
     }
 

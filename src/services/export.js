@@ -1,8 +1,15 @@
 const { calculateNormalizedRankings } = require('./normalization');
 const { recordAuditLog } = require('./audit');
+const { getDb } = require('../db/database');
 
-function generateResultsCsv(eventId = 'evt_01', user = {}) {
-  const normData = calculateNormalizedRankings(eventId);
+function generateResultsCsv(eventId, user = {}) {
+  const db = getDb();
+  const targetEventId = eventId || db.prepare('SELECT id FROM events ORDER BY created_at ASC LIMIT 1').get()?.id;
+  if (!targetEventId) {
+    throw new Error('No active event found for CSV export');
+  }
+
+  const normData = calculateNormalizedRankings(targetEventId);
 
   const headers = [
     'Rank',
@@ -43,12 +50,12 @@ function generateResultsCsv(eventId = 'evt_01', user = {}) {
   }
 
   recordAuditLog({
-    eventId,
+    eventId: targetEventId,
     userId: user.id || 'organizer',
     role: user.role || 'organizer',
     action: 'export.csv_generated',
     resourceType: 'results_export',
-    resourceId: eventId,
+    resourceId: targetEventId,
     details: { totalRankedProjects: normData.rankings.length }
   });
 

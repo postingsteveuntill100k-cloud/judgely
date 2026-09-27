@@ -1,7 +1,7 @@
 const { getDb } = require('../db/database');
 
 function recordAuditLog({
-  eventId = 'evt_01',
+  eventId,
   userId = 'system',
   role = 'system',
   action,
@@ -10,6 +10,7 @@ function recordAuditLog({
   details = null
 }) {
   const db = getDb();
+  const targetEventId = eventId || db.prepare('SELECT id FROM events ORDER BY created_at ASC LIMIT 1').get()?.id || 'evt_default';
   const id = `aud_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
   const timestamp = new Date().toISOString();
 
@@ -20,7 +21,7 @@ function recordAuditLog({
     `);
     stmt.run(
       id,
-      eventId,
+      targetEventId,
       userId,
       role,
       action,
@@ -36,15 +37,18 @@ function recordAuditLog({
   }
 }
 
-function getAuditLogs(limit = 100, eventId = 'evt_01') {
+function getAuditLogs(limit = 100, eventId) {
   const db = getDb();
+  const targetEventId = eventId || db.prepare('SELECT id FROM events ORDER BY created_at ASC LIMIT 1').get()?.id;
+  if (!targetEventId) return [];
+
   const stmt = db.prepare(`
     SELECT * FROM audit_logs
     WHERE event_id = ?
     ORDER BY timestamp DESC
     LIMIT ?
   `);
-  return stmt.all(eventId, limit);
+  return stmt.all(targetEventId, limit);
 }
 
 module.exports = {

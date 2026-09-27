@@ -6,14 +6,17 @@ PRAGMA foreign_keys = ON;
 CREATE TABLE IF NOT EXISTS events (
     id TEXT PRIMARY KEY,
     name TEXT NOT NULL,
+    description TEXT DEFAULT '',
     submissions_close TEXT NOT NULL,
+    results_released INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS tracks (
     id TEXT PRIMARY KEY,
     event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    description TEXT DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS rubric_criteria (
@@ -27,15 +30,24 @@ CREATE TABLE IF NOT EXISTS rubric_criteria (
 
 CREATE TABLE IF NOT EXISTS users (
     id TEXT PRIMARY KEY,
-    email TEXT UNIQUE,
+    email TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     role TEXT NOT NULL CHECK(role IN ('organizer', 'judge', 'participant', 'visitor')),
     session_token TEXT UNIQUE,
     created_at TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS sessions (
+    id TEXT PRIMARY KEY,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token TEXT UNIQUE NOT NULL,
+    created_at TEXT NOT NULL,
+    expires_at TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS judges (
     id TEXT PRIMARY KEY,
+    event_id TEXT REFERENCES events(id) ON DELETE CASCADE,
     user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
     name TEXT NOT NULL,
     email TEXT NOT NULL
@@ -50,13 +62,16 @@ CREATE TABLE IF NOT EXISTS judge_tracks (
 CREATE TABLE IF NOT EXISTS teams (
     id TEXT PRIMARY KEY,
     event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-    name TEXT NOT NULL
+    name TEXT NOT NULL,
+    created_by TEXT REFERENCES users(id) ON DELETE SET NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS team_members (
     team_id TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
     email TEXT NOT NULL,
     user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+    role TEXT NOT NULL DEFAULT 'member' CHECK(role IN ('lead', 'member')),
     PRIMARY KEY (team_id, email)
 );
 
@@ -67,9 +82,11 @@ CREATE TABLE IF NOT EXISTS projects (
     track_id TEXT NOT NULL REFERENCES tracks(id) ON DELETE RESTRICT,
     title TEXT NOT NULL,
     summary TEXT,
+    tech_stack TEXT DEFAULT '',
     repo_url TEXT,
     demo_url TEXT,
     submitted_at TEXT NOT NULL,
+    updated_at TEXT,
     status TEXT NOT NULL DEFAULT 'submitted' CHECK(status IN ('draft', 'submitted', 'withdrawn', 'disqualified'))
 );
 
@@ -116,6 +133,7 @@ CREATE TABLE IF NOT EXISTS audit_logs (
 );
 
 -- Indices for performance and query optimization
+CREATE INDEX IF NOT EXISTS idx_projects_event ON projects(event_id);
 CREATE INDEX IF NOT EXISTS idx_projects_track ON projects(track_id);
 CREATE INDEX IF NOT EXISTS idx_projects_team ON projects(team_id);
 CREATE INDEX IF NOT EXISTS idx_assignments_judge ON judge_assignments(judge_id);
@@ -123,5 +141,7 @@ CREATE INDEX IF NOT EXISTS idx_assignments_project ON judge_assignments(project_
 CREATE INDEX IF NOT EXISTS idx_reviews_judge ON reviews(judge_id);
 CREATE INDEX IF NOT EXISTS idx_reviews_project ON reviews(project_id);
 CREATE INDEX IF NOT EXISTS idx_users_session ON users(session_token);
+CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
 CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp);
 CREATE INDEX IF NOT EXISTS idx_team_members_email ON team_members(email);
+CREATE INDEX IF NOT EXISTS idx_team_members_user ON team_members(user_id);

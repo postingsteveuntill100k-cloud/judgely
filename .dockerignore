@@ -1,7 +1,13 @@
 node_modules
+npm-debug.log*
+data/*.db
 data/*.db-journal
 data/*.db-wal
+data/*.db-shm
 .git
+.gitignore
 .gemini
-tests
+.agents
 *.log
+.env*
+scratch

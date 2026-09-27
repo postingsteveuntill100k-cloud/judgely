@@ -5,8 +5,12 @@ const { getDb } = require('../db/database');
  * Implements Z-Score Standardized Rescaling with Variance Regularization
  * and Bayesian Sample-Size Smoothing.
  */
-function calculateNormalizedRankings(eventId = 'evt_01') {
+function calculateNormalizedRankings(eventId) {
   const db = getDb();
+  const targetEventId = eventId || db.prepare('SELECT id FROM events ORDER BY created_at ASC LIMIT 1').get()?.id;
+  if (!targetEventId) {
+    throw new Error('No active event found for normalization');
+  }
 
   // 1. Fetch all projects
   const projectsStmt = db.prepare(`
@@ -25,7 +29,7 @@ function calculateNormalizedRankings(eventId = 'evt_01') {
     LEFT JOIN tracks tr ON p.track_id = tr.id
     WHERE p.event_id = ?
   `);
-  const projects = projectsStmt.all(eventId);
+  const projects = projectsStmt.all(targetEventId);
 
   // 2. Fetch all reviews
   const reviewsStmt = db.prepare(`
@@ -40,7 +44,7 @@ function calculateNormalizedRankings(eventId = 'evt_01') {
     JOIN judges j ON r.judge_id = j.id
     WHERE r.event_id = ? AND r.total_weighted_score IS NOT NULL
   `);
-  const allReviews = reviewsStmt.all(eventId);
+  const allReviews = reviewsStmt.all(targetEventId);
 
   if (allReviews.length === 0) {
     return {

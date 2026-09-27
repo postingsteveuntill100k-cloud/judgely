@@ -44,6 +44,7 @@ function seed(dbInstance = null, fixtureData = null) {
       DELETE FROM judges;
       DELETE FROM rubric_criteria;
       DELETE FROM tracks;
+      DELETE FROM sessions;
       DELETE FROM users;
       DELETE FROM events;
       DELETE FROM audit_logs;
@@ -53,23 +54,29 @@ function seed(dbInstance = null, fixtureData = null) {
 
     // 1. Derive & Insert Event
     const insertEvent = db.prepare(`
-      INSERT INTO events (id, name, submissions_close, created_at)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO events (id, name, description, submissions_close, results_released, created_at)
+      VALUES (?, ?, ?, ?, 0, ?)
     `);
     insertEvent.run(
       event.id,
       event.name || 'Hackathon Event',
+      'The premier open-source engineering hackathon for developer infrastructure and autonomous systems.',
       event.submissions_close,
       new Date().toISOString()
     );
 
     // 2. Derive & Insert Tracks
     const insertTrack = db.prepare(`
-      INSERT INTO tracks (id, event_id, name)
-      VALUES (?, ?, ?)
+      INSERT INTO tracks (id, event_id, name, description)
+      VALUES (?, ?, ?, ?)
     `);
     for (const track of (fixtures.tracks || [])) {
-      insertTrack.run(track.id, event.id, track.name);
+      insertTrack.run(
+        track.id,
+        event.id,
+        track.name,
+        `Projects advancing the frontier of ${track.name.toLowerCase()}.`
+      );
     }
 
     // 3. Derive Rubric Criteria dynamically from scores
@@ -81,7 +88,6 @@ function seed(dbInstance = null, fixtureData = null) {
         }
       }
     }
-    // Fallback if no scores in fixture
     if (criteriaSet.size === 0) {
       criteriaSet.add('functionality');
       criteriaSet.add('quality');
@@ -103,7 +109,7 @@ function seed(dbInstance = null, fixtureData = null) {
         `crit_${critName}`,
         event.id,
         critName,
-        `Evaluation criterion for ${critName}`,
+        `Evaluation criterion measuring project ${critName}`,
         weight,
         5.0
       );
@@ -114,16 +120,24 @@ function seed(dbInstance = null, fixtureData = null) {
       INSERT INTO users (id, email, name, role, session_token, created_at)
       VALUES (?, ?, ?, ?, ?, ?)
     `);
+    const insertSession = db.prepare(`
+      INSERT INTO sessions (id, user_id, token, created_at, expires_at)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+
+    const farFuture = '2099-01-01T00:00:00.000Z';
+    const nowIso = new Date().toISOString();
 
     // Seed Organizer
     insertUser.run(
       'usr_organizer',
       'organizer@judgely.local',
-      'Hackathon Organizer',
+      'Hackathon Operations',
       'organizer',
       DEMO_SESSIONS.ORGANIZER,
-      new Date().toISOString()
+      nowIso
     );
+    insertSession.run('sess_org', 'usr_organizer', DEMO_SESSIONS.ORGANIZER, nowIso, farFuture);
 
     // Identify Judge A and Judge B from the actual judges in fixture
     const judgeList = fixtures.judges || [];
@@ -141,8 +155,9 @@ function seed(dbInstance = null, fixtureData = null) {
       fixtureJudgeA.name,
       'judge',
       DEMO_SESSIONS.JUDGE_A,
-      new Date().toISOString()
+      nowIso
     );
+    insertSession.run(`sess_${fixtureJudgeA.id}`, userJudgeAId, DEMO_SESSIONS.JUDGE_A, nowIso, farFuture);
 
     // Map Judge B
     const userJudgeBId = `usr_${fixtureJudgeB.id}`;
@@ -152,8 +167,9 @@ function seed(dbInstance = null, fixtureData = null) {
       fixtureJudgeB.name,
       'judge',
       DEMO_SESSIONS.JUDGE_B,
-      new Date().toISOString()
+      nowIso
     );
+    insertSession.run(`sess_${fixtureJudgeB.id}`, userJudgeBId, DEMO_SESSIONS.JUDGE_B, nowIso, farFuture);
 
     // Map Participant from first team
     const teamList = fixtures.teams || [];
@@ -163,16 +179,17 @@ function seed(dbInstance = null, fixtureData = null) {
     insertUser.run(
       'usr_participant',
       firstMemberEmail,
-      `Participant (${firstTeam.name})`,
+      `Priya Nair`,
       'participant',
       DEMO_SESSIONS.PARTICIPANT,
-      new Date().toISOString()
+      nowIso
     );
+    insertSession.run('sess_prt', 'usr_participant', DEMO_SESSIONS.PARTICIPANT, nowIso, farFuture);
 
     // Insert all Judges into `judges` table and `judge_tracks` join table
     const insertJudge = db.prepare(`
-      INSERT INTO judges (id, user_id, name, email)
-      VALUES (?, ?, ?, ?)
+      INSERT INTO judges (id, event_id, user_id, name, email)
+      VALUES (?, ?, ?, ?, ?)
     `);
     const insertJudgeTrack = db.prepare(`
       INSERT OR IGNORE INTO judge_tracks (judge_id, track_id)
@@ -186,45 +203,45 @@ function seed(dbInstance = null, fixtureData = null) {
       else if (j.id === fixtureJudgeB.id) userId = userJudgeBId;
       else {
         userId = `usr_${j.id}`;
-        insertUser.run(
-          userId,
-          j.email,
-          j.name,
-          'judge',
-          `session_${j.id}`,
-          new Date().toISOString()
-        );
+        const sessionToken = `session_${j.id}`;
+        insertUser.run(userId, j.email, j.name, 'judge', sessionToken, nowIso);
+        insertSession.run(`sess_${j.id}`, userId, sessionToken, nowIso, farFuture);
       }
 
-      insertJudge.run(j.id, userId, j.name, j.email);
+      insertJudge.run(j.id, event.id, userId, j.name, j.email);
 
       for (const trackId of (j.tracks || [])) {
         insertJudgeTrack.run(j.id, trackId);
       }
     }
 
-    // 5. Derive & Insert Teams and Team Members (normalized relational join table)
+    // 5. Derive & Insert Teams and Team Members (normalized relational join table with roles)
     const insertTeam = db.prepare(`
-      INSERT INTO teams (id, event_id, name)
-      VALUES (?, ?, ?)
+      INSERT INTO teams (id, event_id, name, created_by, created_at)
+      VALUES (?, ?, ?, ?, ?)
     `);
     const insertTeamMember = db.prepare(`
-      INSERT OR IGNORE INTO team_members (team_id, email, user_id)
-      VALUES (?, ?, ?)
+      INSERT OR IGNORE INTO team_members (team_id, email, user_id, role)
+      VALUES (?, ?, ?, ?)
     `);
 
     for (const t of teamList) {
-      insertTeam.run(t.id, event.id, t.name);
-      for (const memberEmail of (t.members || [])) {
+      const isFirst = (t.id === firstTeam.id);
+      insertTeam.run(t.id, event.id, t.name, isFirst ? 'usr_participant' : null, nowIso);
+
+      const members = t.members || [];
+      for (let idx = 0; idx < members.length; idx++) {
+        const memberEmail = members[idx];
         const uId = (memberEmail === firstMemberEmail) ? 'usr_participant' : null;
-        insertTeamMember.run(t.id, memberEmail, uId);
+        const memberRole = (idx === 0) ? 'lead' : 'member';
+        insertTeamMember.run(t.id, memberEmail, uId, memberRole);
       }
     }
 
     // 6. Derive & Insert Projects
     const insertProject = db.prepare(`
-      INSERT INTO projects (id, event_id, team_id, track_id, title, summary, repo_url, submitted_at, status)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'submitted')
+      INSERT INTO projects (id, event_id, team_id, track_id, title, summary, tech_stack, repo_url, demo_url, submitted_at, updated_at, status)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'submitted')
     `);
     for (const p of (fixtures.projects || [])) {
       insertProject.run(
@@ -234,8 +251,11 @@ function seed(dbInstance = null, fixtureData = null) {
         p.track,
         p.title,
         p.summary || '',
+        'Node.js, SQLite, TypeScript',
         p.repo_url || '',
-        p.submitted_at || new Date().toISOString()
+        '',
+        p.submitted_at || nowIso,
+        nowIso
       );
     }
 
@@ -255,8 +275,7 @@ function seed(dbInstance = null, fixtureData = null) {
 
     for (const s of (fixtures.scores || [])) {
       const reviewId = `rev_${s.project}_${s.judge}`;
-      
-      // Calculate weighted score using dynamic weights
+
       let weightedSum = 0;
       let totalWeight = 0;
       for (const [crit, val] of Object.entries(s.criteria || {})) {
@@ -273,7 +292,7 @@ function seed(dbInstance = null, fixtureData = null) {
         s.judge,
         s.comment || '',
         Number(totalScore.toFixed(3)),
-        new Date().toISOString()
+        nowIso
       );
 
       for (const [crit, val] of Object.entries(s.criteria || {})) {
@@ -290,7 +309,7 @@ function seed(dbInstance = null, fixtureData = null) {
         event.id,
         s.project,
         s.judge,
-        new Date().toISOString()
+        nowIso
       );
     }
 
@@ -315,7 +334,7 @@ function seed(dbInstance = null, fixtureData = null) {
         judge_a_mapped: fixtureJudgeA.id,
         judge_b_mapped: fixtureJudgeB.id
       }),
-      new Date().toISOString()
+      nowIso
     );
 
     db.exec('COMMIT;');

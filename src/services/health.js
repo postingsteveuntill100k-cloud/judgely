@@ -1,15 +1,20 @@
 const { getDb } = require('../db/database');
 const { calculateNormalizedRankings } = require('./normalization');
 
-function getJudgingHealth(eventId = 'evt_01') {
+function getJudgingHealth(eventId) {
   const db = getDb();
-  const normData = calculateNormalizedRankings(eventId);
+  const targetEventId = eventId || db.prepare('SELECT id FROM events ORDER BY created_at ASC LIMIT 1').get()?.id;
+  if (!targetEventId) {
+    throw new Error('No active event found for judging health calculation');
+  }
+
+  const normData = calculateNormalizedRankings(targetEventId);
 
   // 1. Fetch counts
-  const totalProjects = db.prepare('SELECT COUNT(*) as count FROM projects WHERE event_id = ?').get(eventId).count;
-  const totalJudges = db.prepare('SELECT COUNT(*) as count FROM judges').get().count;
-  const totalReviews = db.prepare('SELECT COUNT(*) as count FROM reviews WHERE event_id = ?').get(eventId).count;
-  const totalAssignments = db.prepare('SELECT COUNT(*) as count FROM judge_assignments WHERE event_id = ?').get(eventId).count;
+  const totalProjects = db.prepare('SELECT COUNT(*) as count FROM projects WHERE event_id = ?').get(targetEventId).count;
+  const totalJudges = db.prepare('SELECT COUNT(*) as count FROM judges WHERE event_id = ?').get(targetEventId)?.count || db.prepare('SELECT COUNT(*) as count FROM judges').get().count;
+  const totalReviews = db.prepare('SELECT COUNT(*) as count FROM reviews WHERE event_id = ?').get(targetEventId).count;
+  const totalAssignments = db.prepare('SELECT COUNT(*) as count FROM judge_assignments WHERE event_id = ?').get(targetEventId).count;
 
   // 2. Coverage breakdown
   const coverage = {
@@ -73,7 +78,7 @@ function getJudgingHealth(eventId = 'evt_01') {
     GROUP BY team_id
     HAVING count > 1
   `);
-  const duplicates = dupCheckStmt.all(eventId);
+  const duplicates = dupCheckStmt.all(targetEventId);
   for (const dup of duplicates) {
     const team = db.prepare('SELECT name FROM teams WHERE id = ?').get(dup.team_id);
     flags.push({
@@ -113,7 +118,7 @@ function getJudgingHealth(eventId = 'evt_01') {
     GROUP BY j.id
     ORDER BY assigned_count DESC
   `);
-  const judgeWorkloads = judgeWorkloadStmt.all(eventId).map(j => {
+  const judgeWorkloads = judgeWorkloadStmt.all(targetEventId).map(j => {
     const tracks = db.prepare('SELECT track_id FROM judge_tracks WHERE judge_id = ?').all(j.id).map(t => t.track_id);
     return {
       ...j,
@@ -124,6 +129,7 @@ function getJudgingHealth(eventId = 'evt_01') {
   });
 
   return {
+    event_id: targetEventId,
     overview: {
       totalProjects,
       totalJudges,

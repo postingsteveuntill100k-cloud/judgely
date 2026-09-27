@@ -23,13 +23,6 @@ function getDb(inMemory = false) {
     instance.exec('PRAGMA busy_timeout = 5000;');
     instance.exec('PRAGMA foreign_keys = ON;');
     initSchema(instance);
-
-    // Auto-seed fixtures if database is unseeded
-    const event = instance.prepare('SELECT id FROM events WHERE id = ?').get('evt_01');
-    if (!event) {
-      const { seed } = require('./seeder');
-      seed(instance);
-    }
   }
 
   return instance;
@@ -43,5 +36,6 @@ function initSchema(db) {
 
 module.exports = {
   getDb,
+  initSchema,
   DB_PATH
 };

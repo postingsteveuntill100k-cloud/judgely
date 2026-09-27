@@ -5,6 +5,7 @@ const { seed } = require('./db/seeder');
 const { authMiddleware } = require('./middleware/auth');
 
 // Import routes
+const authRoutes = require('./routes/auth');
 const publicRoutes = require('./routes/public');
 const submissionRoutes = require('./routes/submissions');
 const judgeRoutes = require('./routes/judge');
@@ -26,6 +27,7 @@ app.use(express.static(path.join(__dirname, '../public')));
 app.use(authMiddleware);
 
 // Mount API & page routes
+app.use(authRoutes);
 app.use(publicRoutes);
 app.use(submissionRoutes);
 app.use(judgeRoutes);
@@ -38,23 +40,19 @@ app.get('/', (req, res) => {
   res.redirect('/projects');
 });
 
-// Current user state endpoint for frontend role switcher
-app.get('/api/auth/me', (req, res) => {
-  res.json({ user: req.user || { role: 'visitor' } });
-});
-
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled server error:', err);
-  res.status(500).json({
-    error: 'Internal Server Error',
+  const status = err.statusCode || 500;
+  res.status(status).json({
+    error: status === 403 ? 'Forbidden' : (status === 400 ? 'Bad Request' : 'Internal Server Error'),
     message: process.env.NODE_ENV === 'production' ? 'An unexpected error occurred.' : err.message
   });
 });
 
 function ensureSeeded() {
   const db = getDb();
-  const event = db.prepare('SELECT id FROM events WHERE id = ?').get('evt_01');
+  const event = db.prepare('SELECT id FROM events LIMIT 1').get();
   if (!event) {
     console.log('Database empty. Seeding fixtures.json...');
     seed(db);
