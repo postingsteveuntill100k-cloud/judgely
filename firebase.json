@@ -36,6 +36,14 @@
         "destination": "/api/auth/me.json"
       },
       {
+        "source": "/api/events",
+        "destination": "/api/events.json"
+      },
+      {
+        "source": "/api/events/:id",
+        "destination": "/api/event.json"
+      },
+      {
         "source": "/api/event",
         "destination": "/api/event.json"
       },

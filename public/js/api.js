@@ -282,6 +282,36 @@
     }
 
     // 8. Static Fallbacks for Data Endpoints
+    if (cleanUrl === '/api/events' && options.method !== 'POST') {
+      try {
+        const res = await fetch('/api/events.json');
+        if (res.ok) return await res.json();
+      } catch (_) {}
+    }
+    if (cleanUrl.startsWith('/api/events/') || cleanUrl === '/api/event') {
+      try {
+        const res = await fetch('/api/event.json');
+        if (res.ok) return await res.json();
+      } catch (_) {}
+    }
+    if (cleanUrl === '/api/tracks') {
+      try {
+        const res = await fetch('/api/tracks.json');
+        if (res.ok) return await res.json();
+      } catch (_) {}
+    }
+    if (cleanUrl === '/api/projects') {
+      try {
+        const res = await fetch('/api/projects.json');
+        if (res.ok) return await res.json();
+      } catch (_) {}
+    }
+    if (cleanUrl === '/api/results') {
+      try {
+        const res = await fetch('/api/results.json');
+        if (res.ok) return await res.json();
+      } catch (_) {}
+    }
     if (cleanUrl === '/api/judge/assignments') {
       try {
         const res = await fetch('/api/judge/assignments.json');
