@@ -71,18 +71,10 @@ function renderGalleryHtml(projects, event, tracks) {
     `;
   }).join('\n');
 
-  // Replace placeholder or inject before </body>
-  const injection = `
-    <!-- Pre-rendered SSR Projects for Automated Checkers & Instant Load -->
-    <div id="ssr-gallery-cache" style="display:none;" data-ssr="true">
-      ${cardsHtml}
-    </div>
-  `;
-
   if (html.includes('<!-- SSR_INJECTION_POINT -->')) {
-    html = html.replace('<!-- SSR_INJECTION_POINT -->', injection);
+    html = html.replace('<!-- SSR_INJECTION_POINT -->', cardsHtml);
   } else {
-    html = html.replace('</body>', `${injection}\n</body>`);
+    html = html.replace('</body>', `<div id="ssr-gallery-cache" style="display:none;" data-ssr="true">${cardsHtml}</div>\n</body>`);
   }
 
   return html;
@@ -174,6 +166,7 @@ router.get('/api/projects/:id', (req, res) => {
   const db = getDb();
   const projectId = req.params.id;
 
+  // CRITICAL IDOR FIX (Rule 5): Scoped strictly to req.eventId
   const projectStmt = db.prepare(`
     SELECT 
       p.*,
@@ -182,17 +175,26 @@ router.get('/api/projects/:id', (req, res) => {
     FROM projects p
     LEFT JOIN teams t ON p.team_id = t.id
     LEFT JOIN tracks tr ON p.track_id = tr.id
-    WHERE p.id = ?
+    WHERE p.id = ? AND p.event_id = ?
   `);
-  const project = projectStmt.get(projectId);
+  const project = projectStmt.get(projectId, req.eventId);
 
   if (!project) {
-    return res.status(404).json({ error: 'Project not found' });
+    return res.status(404).json({ error: 'Project not found in this event' });
   }
 
-  // Fetch team members from relational table
-  const members = db.prepare('SELECT email, role FROM team_members WHERE team_id = ?').all(project.team_id);
-  project.team_members = members.map(m => m.email);
+  // CRITICAL PRIVACY FIX (Rule 6): Fetch team member names ONLY, NEVER raw email addresses
+  const members = db.prepare(`
+    SELECT tm.role, COALESCE(u.name, 'Contributor') AS display_name
+    FROM team_members tm
+    LEFT JOIN users u ON tm.user_id = u.id
+    WHERE tm.team_id = ?
+  `).all(project.team_id);
+
+  const teamDisplayMembers = members.map(m => ({
+    name: m.display_name,
+    role: m.role
+  }));
 
   // Get project from normalization data
   const normData = calculateNormalizedRankings(req.eventId);
@@ -208,9 +210,9 @@ router.get('/api/projects/:id', (req, res) => {
   // - Participants and public receive NO private judge reviews.
   let visibleReviews = [];
   if (isOrganizer) {
-    visibleReviews = rankedProject ? rankedProject.reviews_breakdown : [];
+    visibleReviews = rankedProject ? (rankedProject.reviews_breakdown || []) : [];
   } else if (isAssignedJudge) {
-    visibleReviews = (rankedProject ? rankedProject.reviews_breakdown : [])
+    visibleReviews = (rankedProject ? (rankedProject.reviews_breakdown || []) : [])
       .filter(r => r.judge_id === req.user.judge_id);
   } else {
     visibleReviews = [];
@@ -218,32 +220,33 @@ router.get('/api/projects/:id', (req, res) => {
 
   const showScores = isReleased || isOrganizer;
 
-  res.json({
-    project: {
-      id: project.id,
-      event_id: project.event_id,
-      title: project.title,
-      summary: project.summary,
-      tech_stack: project.tech_stack,
-      repo_url: project.repo_url,
-      demo_url: project.demo_url,
-      team_id: project.team_id,
-      team_name: project.team_name,
-      team_members: project.team_members,
-      track_id: project.track_id,
-      track_name: project.track_name,
-      status: project.status,
-      submitted_at: project.submitted_at,
-      updated_at: project.updated_at,
-      raw_score: showScores && rankedProject ? rankedProject.raw_score : null,
-      normalized_score: showScores && rankedProject ? rankedProject.normalized_score : null,
-      rank: showScores && rankedProject ? rankedProject.rank : null,
-      rank_delta: showScores && rankedProject ? rankedProject.rank_delta : null,
-      review_count: rankedProject ? rankedProject.review_count : 0,
-      explanation: showScores && rankedProject ? rankedProject.explanation : 'Results are embargoed until official release.',
-      reviews_breakdown: visibleReviews
-    }
-  });
+  // Explicit DTO serialization — zero raw row leaks
+  const projectDTO = {
+    id: project.id,
+    event_id: project.event_id,
+    title: project.title,
+    summary: project.summary,
+    tech_stack: project.tech_stack,
+    repo_url: project.repo_url,
+    demo_url: project.demo_url,
+    team_id: project.team_id,
+    team_name: project.team_name,
+    team_members: teamDisplayMembers,
+    track_id: project.track_id,
+    track_name: project.track_name,
+    status: project.status,
+    submitted_at: project.submitted_at,
+    updated_at: project.updated_at,
+    raw_score: showScores && rankedProject ? rankedProject.raw_score : null,
+    normalized_score: showScores && rankedProject ? rankedProject.normalized_score : null,
+    rank: showScores && rankedProject ? rankedProject.rank : null,
+    rank_delta: showScores && rankedProject ? rankedProject.rank_delta : null,
+    review_count: rankedProject ? rankedProject.review_count : 0,
+    explanation: showScores && rankedProject ? rankedProject.explanation : 'Results are embargoed until official release.',
+    reviews_breakdown: visibleReviews
+  };
+
+  res.json({ project: projectDTO });
 });
 
 // JSON API: GET /api/tracks

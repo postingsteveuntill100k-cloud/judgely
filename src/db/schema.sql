@@ -33,8 +33,20 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT UNIQUE NOT NULL,
     name TEXT NOT NULL,
     role TEXT NOT NULL CHECK(role IN ('organizer', 'judge', 'participant', 'visitor')),
+    password_hash TEXT DEFAULT '',
+    salt TEXT DEFAULT '',
     session_token TEXT UNIQUE,
     created_at TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS event_memberships (
+    id TEXT PRIMARY KEY,
+    event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    role TEXT NOT NULL CHECK(role IN ('organizer', 'judge', 'participant')),
+    status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active', 'suspended')),
+    created_at TEXT NOT NULL,
+    UNIQUE(event_id, user_id)
 );
 
 CREATE TABLE IF NOT EXISTS sessions (
@@ -145,3 +157,4 @@ CREATE INDEX IF NOT EXISTS idx_sessions_token ON sessions(token);
 CREATE INDEX IF NOT EXISTS idx_audit_timestamp ON audit_logs(timestamp);
 CREATE INDEX IF NOT EXISTS idx_team_members_email ON team_members(email);
 CREATE INDEX IF NOT EXISTS idx_team_members_user ON team_members(user_id);
+CREATE INDEX IF NOT EXISTS idx_event_memberships_lookup ON event_memberships(event_id, user_id);

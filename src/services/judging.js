@@ -122,6 +122,12 @@ function submitReview({
     throw err;
   }
 
+  if (assignment.status === 'cancelled' || assignment.status === 'conflicted') {
+    const err = new Error(`Cannot score project: Assignment status is '${assignment.status}'.`);
+    err.statusCode = 403;
+    throw err;
+  }
+
   // 3. Authoritative rubric validation
   const rubric = getRubric(targetEventId);
   const totalWeightedScore = validateAndScoreCriteria(criteria, rubric);

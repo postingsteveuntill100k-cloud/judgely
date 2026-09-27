@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { enforceJudgeScoreIsolation, requireRole } = require('../middleware/rbac');
+const { enforceJudgeScoreIsolation, requireRole, requireEventMembership } = require('../middleware/rbac');
 const { eventMiddleware } = require('../middleware/event');
 const { getScoresForJudge, getJudgeAssignments, submitReview, getRubric } = require('../services/judging');
 
@@ -25,7 +25,7 @@ router.get('/api/judge/scores', enforceJudgeScoreIsolation, (req, res) => {
 });
 
 // GET /api/judge/assignments
-router.get('/api/judge/assignments', requireRole('judge'), (req, res) => {
+router.get('/api/judge/assignments', requireRole('judge'), requireEventMembership, (req, res) => {
   const assignments = getJudgeAssignments(req.user.judge_id, req.eventId);
   const rubric = getRubric(req.eventId);
   res.json({
@@ -37,7 +37,7 @@ router.get('/api/judge/assignments', requireRole('judge'), (req, res) => {
 });
 
 // POST /api/judge/scores - submit review with rigorous validation & assignment check
-router.post('/api/judge/scores', requireRole('judge'), (req, res) => {
+router.post('/api/judge/scores', requireRole('judge'), requireEventMembership, (req, res) => {
   const { project_id, criteria, comment } = req.body || {};
 
   if (!project_id || typeof project_id !== 'string') {

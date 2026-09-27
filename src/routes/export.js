@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { requireRole } = require('../middleware/rbac');
+const { requireRole, requireEventMembership } = require('../middleware/rbac');
 const { eventMiddleware } = require('../middleware/event');
 const { generateResultsCsv } = require('../services/export');
 
@@ -13,7 +13,7 @@ function handleCsvExport(req, res) {
   res.status(200).send(csvContent);
 }
 
-router.get('/api/export.csv', eventMiddleware, requireRole('organizer'), handleCsvExport);
-router.get('/api/export/csv', eventMiddleware, requireRole('organizer'), handleCsvExport);
+router.get('/api/export.csv', eventMiddleware, requireRole('organizer'), requireEventMembership, handleCsvExport);
+router.get('/api/export/csv', eventMiddleware, requireRole('organizer'), requireEventMembership, handleCsvExport);
 
 module.exports = router;

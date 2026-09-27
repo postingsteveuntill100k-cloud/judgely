@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('node:crypto');
 const { getDb } = require('../db/database');
+const { verifyPassword } = require('../services/passwords');
 
 const DEMO_USERS = {
   organizer: 'usr_organizer',
@@ -37,30 +38,59 @@ function createSession(userId, res) {
   return token;
 }
 
-// POST /api/auth/login
+// GET /api/auth/config - Expose runtime capabilities (e.g. demo mode status)
+router.get('/api/auth/config', (req, res) => {
+  res.json({
+    demo_mode: process.env.DEMO_MODE === 'true'
+  });
+});
+
+// POST /api/auth/login - Real local authentication requiring email and password
 router.post('/api/auth/login', (req, res) => {
   const db = getDb();
-  const { email } = req.body || {};
+  const { email, password } = req.body || {};
 
-  if (!email || typeof email !== 'string') {
+  if (!email || typeof email !== 'string' || !email.trim()) {
     return res.status(400).json({ error: 'Valid email address is required' });
   }
 
-  const user = db.prepare('SELECT id, email, name, role FROM users WHERE email = ? COLLATE NOCASE').get(email.trim());
-  if (!user) {
-    return res.status(401).json({ error: 'User not found with this email' });
+  if (!password || typeof password !== 'string') {
+    return res.status(400).json({ error: 'Password is required' });
+  }
+
+  const user = db.prepare('SELECT id, email, name, role, password_hash, salt FROM users WHERE email = ? COLLATE NOCASE').get(email.trim());
+  if (!user || !user.password_hash || !user.salt) {
+    return res.status(401).json({ error: 'Invalid email or password' });
+  }
+
+  const isValid = verifyPassword(password, user.password_hash, user.salt);
+  if (!isValid) {
+    return res.status(401).json({ error: 'Invalid email or password' });
   }
 
   createSession(user.id, res);
 
   res.json({
     message: 'Authenticated successfully',
-    user
+    user: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      role: user.role
+    }
   });
 });
 
-// POST /api/auth/demo-login - Clean server-managed session creation for local demo personas
+// POST /api/auth/demo-login - Strictly gated to development / demo environments
 router.post('/api/auth/demo-login', (req, res) => {
+  // CRITICAL SECURITY ENFORCEMENT: Demo login is strictly forbidden in production
+  if (process.env.DEMO_MODE !== 'true') {
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: 'Demo login is disabled in production environments. Please use credentials to sign in.'
+    });
+  }
+
   const db = getDb();
   const { role } = req.body || {};
 
@@ -79,14 +109,12 @@ router.post('/api/auth/demo-login', (req, res) => {
     if (role === 'organizer') targetUserId = 'usr_organizer';
     else if (role === 'participant') targetUserId = 'usr_participant';
     else {
-      // Check if judge exists
       const judgeUser = db.prepare('SELECT id FROM users WHERE role = ? LIMIT 1').get(role);
       if (judgeUser) targetUserId = judgeUser.id;
     }
   }
 
   if (!targetUserId) {
-    // Fallback: look up by role
     const userByRole = db.prepare('SELECT id FROM users WHERE role = ? LIMIT 1').get(role);
     if (userByRole) targetUserId = userByRole.id;
   }
@@ -143,10 +171,26 @@ router.post('/api/auth/logout', (req, res) => {
   });
 });
 
-// GET /api/auth/me - Clean profile query
+// GET /api/auth/me - Clean profile query (zero sensitive tokens exposed)
 router.get('/api/auth/me', (req, res) => {
+  if (!req.user || req.user.role === 'visitor') {
+    return res.json({ user: { role: 'visitor' } });
+  }
   res.json({
-    user: req.user || { role: 'visitor' }
+    user: {
+      id: req.user.id,
+      email: req.user.email,
+      name: req.user.name,
+      role: req.user.role,
+      judge_id: req.user.judge_id,
+      tracks: req.user.tracks,
+      team_id: req.user.team_id,
+      team_name: req.user.team_name,
+      team_role: req.user.team_role,
+      project_id: req.user.project_id,
+      project_title: req.user.project_title,
+      project_status: req.user.project_status
+    }
   });
 });
 

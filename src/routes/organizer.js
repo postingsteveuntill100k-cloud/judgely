@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const { getDb } = require('../db/database');
-const { requireRole } = require('../middleware/rbac');
+const { requireRole, requireEventMembership } = require('../middleware/rbac');
 const { eventMiddleware } = require('../middleware/event');
 const { getJudgingHealth } = require('../services/health');
 const { getAuditLogs, recordAuditLog } = require('../services/audit');
 
-// All organizer endpoints strictly require 'organizer' role and event resolution
-router.use('/api/organizer', requireRole('organizer'), eventMiddleware);
+// All organizer endpoints strictly require 'organizer' role, event resolution, and event membership
+router.use('/api/organizer', requireRole('organizer'), eventMiddleware, requireEventMembership);
 
 // GET /api/organizer/overview
 router.get('/api/organizer/overview', (req, res) => {

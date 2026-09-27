@@ -20,6 +20,19 @@ router.get('/api/results', eventMiddleware, (req, res) => {
     });
   }
 
+  // If organizer, verify event membership
+  if (isOrganizer) {
+    const { getDb } = require('../db/database');
+    const db = getDb();
+    const isMember = db.prepare("SELECT id FROM event_memberships WHERE event_id = ? AND user_id = ? AND status = 'active'").get(req.eventId, req.user.id);
+    if (!isMember) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: `Organizer is not authorized for event '${req.eventId}'.`
+      });
+    }
+  }
+
   const normData = calculateNormalizedRankings(req.eventId);
 
   // If organizer, provide full unredacted judging analytics and normalization proof

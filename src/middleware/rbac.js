@@ -86,7 +86,34 @@ function enforceJudgeScoreIsolation(req, res, next) {
   });
 }
 
+function requireEventMembership(req, res, next) {
+  if (!req.user || req.user.role === 'visitor') {
+    return res.status(401).json({
+      error: 'Unauthorized',
+      message: 'Authentication required.'
+    });
+  }
+
+  const { getDb } = require('../db/database');
+  const db = getDb();
+  const membership = db.prepare(`
+    SELECT role, status FROM event_memberships
+    WHERE event_id = ? AND user_id = ? AND status = 'active'
+  `).get(req.eventId, req.user.id);
+
+  if (!membership) {
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: `Access denied. You do not hold an active membership for event '${req.eventId}'.`
+    });
+  }
+
+  req.eventMembership = membership;
+  next();
+}
+
 module.exports = {
   requireRole,
+  requireEventMembership,
   enforceJudgeScoreIsolation
 };

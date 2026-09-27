@@ -1,5 +1,6 @@
 const fs = require('node:fs');
 const path = require('node:path');
+const { hashPassword } = require('../services/passwords');
 const FIXTURES_PATH = process.env.FIXTURES_PATH || path.join(__dirname, '../../fixtures.json');
 
 // Session tokens required by .dogfood.toml
@@ -43,6 +44,7 @@ function seed(dbInstance = null, fixtureData = null) {
       DELETE FROM rubric_criteria;
       DELETE FROM tracks;
       DELETE FROM sessions;
+      DELETE FROM event_memberships;
       DELETE FROM users;
       DELETE FROM events;
       DELETE FROM audit_logs;
@@ -115,16 +117,25 @@ function seed(dbInstance = null, fixtureData = null) {
 
     // 4. Derive Demo Users & Judges
     const insertUser = db.prepare(`
-      INSERT INTO users (id, email, name, role, session_token, created_at)
-      VALUES (?, ?, ?, ?, ?, ?)
+      INSERT INTO users (id, email, name, role, password_hash, salt, session_token, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `);
     const insertSession = db.prepare(`
       INSERT INTO sessions (id, user_id, token, created_at, expires_at)
       VALUES (?, ?, ?, ?, ?)
     `);
+    const insertEventMembership = db.prepare(`
+      INSERT INTO event_memberships (id, event_id, user_id, role, status, created_at)
+      VALUES (?, ?, ?, ?, 'active', ?)
+    `);
 
     const farFuture = '2099-01-01T00:00:00.000Z';
     const nowIso = new Date().toISOString();
+
+    // Default passwords for deterministically seeded personas
+    const orgPass = hashPassword('organizer123');
+    const judgePass = hashPassword('judge123');
+    const prtPass = hashPassword('participant123');
 
     // Seed Organizer
     insertUser.run(
@@ -132,10 +143,13 @@ function seed(dbInstance = null, fixtureData = null) {
       'organizer@judgely.local',
       'Hackathon Operations',
       'organizer',
+      orgPass.hash,
+      orgPass.salt,
       DEMO_SESSIONS.ORGANIZER,
       nowIso
     );
     insertSession.run('sess_org', 'usr_organizer', DEMO_SESSIONS.ORGANIZER, nowIso, farFuture);
+    insertEventMembership.run('mem_usr_organizer', event.id, 'usr_organizer', 'organizer', nowIso);
 
     // Identify Judge A and Judge B from the actual judges in fixture
     const judgeList = fixtures.judges || [];
@@ -152,10 +166,13 @@ function seed(dbInstance = null, fixtureData = null) {
       fixtureJudgeA.email,
       fixtureJudgeA.name,
       'judge',
+      judgePass.hash,
+      judgePass.salt,
       DEMO_SESSIONS.JUDGE_A,
       nowIso
     );
     insertSession.run(`sess_${fixtureJudgeA.id}`, userJudgeAId, DEMO_SESSIONS.JUDGE_A, nowIso, farFuture);
+    insertEventMembership.run(`mem_${userJudgeAId}`, event.id, userJudgeAId, 'judge', nowIso);
 
     // Map Judge B
     const userJudgeBId = `usr_${fixtureJudgeB.id}`;
@@ -164,10 +181,13 @@ function seed(dbInstance = null, fixtureData = null) {
       fixtureJudgeB.email,
       fixtureJudgeB.name,
       'judge',
+      judgePass.hash,
+      judgePass.salt,
       DEMO_SESSIONS.JUDGE_B,
       nowIso
     );
     insertSession.run(`sess_${fixtureJudgeB.id}`, userJudgeBId, DEMO_SESSIONS.JUDGE_B, nowIso, farFuture);
+    insertEventMembership.run(`mem_${userJudgeBId}`, event.id, userJudgeBId, 'judge', nowIso);
 
     // Map Participant from first team
     const teamList = fixtures.teams || [];
@@ -179,10 +199,13 @@ function seed(dbInstance = null, fixtureData = null) {
       firstMemberEmail,
       `Priya Nair`,
       'participant',
+      prtPass.hash,
+      prtPass.salt,
       DEMO_SESSIONS.PARTICIPANT,
       nowIso
     );
     insertSession.run('sess_prt', 'usr_participant', DEMO_SESSIONS.PARTICIPANT, nowIso, farFuture);
+    insertEventMembership.run('mem_usr_participant', event.id, 'usr_participant', 'participant', nowIso);
 
     // Insert all Judges into `judges` table and `judge_tracks` join table
     const insertJudge = db.prepare(`
@@ -197,13 +220,16 @@ function seed(dbInstance = null, fixtureData = null) {
     for (let i = 0; i < judgeList.length; i++) {
       const j = judgeList[i];
       let userId = null;
-      if (j.id === fixtureJudgeA.id) userId = userJudgeAId;
-      else if (j.id === fixtureJudgeB.id) userId = userJudgeBId;
-      else {
+      if (j.id === fixtureJudgeA.id) {
+        userId = userJudgeAId;
+      } else if (j.id === fixtureJudgeB.id) {
+        userId = userJudgeBId;
+      } else {
         userId = `usr_${j.id}`;
         const sessionToken = `session_${j.id}`;
-        insertUser.run(userId, j.email, j.name, 'judge', sessionToken, nowIso);
+        insertUser.run(userId, j.email, j.name, 'judge', judgePass.hash, judgePass.salt, sessionToken, nowIso);
         insertSession.run(`sess_${j.id}`, userId, sessionToken, nowIso, farFuture);
+        insertEventMembership.run(`mem_${userId}`, event.id, userId, 'judge', nowIso);
       }
 
       insertJudge.run(j.id, event.id, userId, j.name, j.email);

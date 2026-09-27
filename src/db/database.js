@@ -25,13 +25,6 @@ function getDb(inMemory = false) {
     instance.exec('PRAGMA busy_timeout = 5000;');
     instance.exec('PRAGMA foreign_keys = ON;');
     initSchema(instance);
-
-    // Auto-seed if empty
-    const event = instance.prepare('SELECT id FROM events LIMIT 1').get();
-    if (!event) {
-      const { seed } = require('./seeder');
-      seed(instance);
-    }
   }
 
   return instance;

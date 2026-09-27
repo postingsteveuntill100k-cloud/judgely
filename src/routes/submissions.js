@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { getDb } = require('../db/database');
-const { requireRole } = require('../middleware/rbac');
+const { requireRole, requireEventMembership } = require('../middleware/rbac');
 const { eventMiddleware } = require('../middleware/event');
 const { recordAuditLog } = require('../services/audit');
 
@@ -39,6 +39,19 @@ function handleSubmission(req, res) {
     return res.status(401).json({
       error: 'Unauthorized',
       message: 'Only registered participants can submit projects.'
+    });
+  }
+
+  // Verify participant membership in this event
+  const eventMem = db.prepare(`
+    SELECT role, status FROM event_memberships
+    WHERE event_id = ? AND user_id = ? AND status = 'active'
+  `).get(req.eventId, req.user.id);
+
+  if (!eventMem) {
+    return res.status(403).json({
+      error: 'Forbidden',
+      message: `Access denied: You do not have an active participant registration for event '${req.eventId}'.`
     });
   }
 
@@ -207,7 +220,7 @@ router.get('/projects/new', (req, res) => {
 });
 
 // GET /api/participant/workspace - Full participant workspace state
-router.get('/api/participant/workspace', requireRole('participant'), (req, res) => {
+router.get('/api/participant/workspace', requireRole('participant'), requireEventMembership, (req, res) => {
   const db = getDb();
 
   // Find team
@@ -256,14 +269,16 @@ router.get('/api/participant/workspace', requireRole('participant'), (req, res) 
   });
 });
 
-// PUT /api/projects/:id - Edit project with ownership verification (Bug 9)
-router.put('/api/projects/:id', requireRole('participant', 'organizer'), (req, res) => {
+// PUT /api/projects/:id - Edit project with ownership and event scoping (Bug 5 & 18)
+router.put('/api/projects/:id', requireRole('participant', 'organizer'), requireEventMembership, (req, res) => {
   const db = getDb();
   const projectId = req.params.id;
-  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
+
+  // Scope project lookup strictly to current event
+  const project = db.prepare('SELECT * FROM projects WHERE id = ? AND event_id = ?').get(projectId, req.eventId);
 
   if (!project) {
-    return res.status(404).json({ error: 'Project not found' });
+    return res.status(404).json({ error: 'Project not found in this event' });
   }
 
   // If participant, check ownership and deadline
@@ -295,6 +310,14 @@ router.put('/api/projects/:id', requireRole('participant', 'organizer'), (req, r
     return res.status(400).json({ error: 'Invalid demo URL' });
   }
 
+  // Rule 18: Track must belong to current event
+  if (track_id) {
+    const trackExists = db.prepare('SELECT id FROM tracks WHERE id = ? AND event_id = ?').get(track_id, req.eventId);
+    if (!trackExists) {
+      return res.status(400).json({ error: `Track '${track_id}' does not belong to event '${req.eventId}'` });
+    }
+  }
+
   const now = new Date().toISOString();
   db.prepare(`
     UPDATE projects SET
@@ -305,7 +328,7 @@ router.put('/api/projects/:id', requireRole('participant', 'organizer'), (req, r
       tech_stack = COALESCE(?, tech_stack),
       track_id = COALESCE(?, track_id),
       updated_at = ?
-    WHERE id = ?
+    WHERE id = ? AND event_id = ?
   `).run(
     title ? title.trim() : null,
     summary !== undefined ? summary.trim() : null,
@@ -314,7 +337,8 @@ router.put('/api/projects/:id', requireRole('participant', 'organizer'), (req, r
     tech_stack !== undefined ? tech_stack.trim() : null,
     track_id || null,
     now,
-    projectId
+    projectId,
+    req.eventId
   );
 
   recordAuditLog({
@@ -330,14 +354,14 @@ router.put('/api/projects/:id', requireRole('participant', 'organizer'), (req, r
   res.json({ message: 'Project updated successfully', project_id: projectId });
 });
 
-// POST /api/projects/:id/withdraw - Withdraw project with ownership check (Bug 9)
-router.post('/api/projects/:id/withdraw', requireRole('participant', 'organizer'), (req, res) => {
+// POST /api/projects/:id/withdraw - Withdraw project with ownership check (Bug 5 & 9)
+router.post('/api/projects/:id/withdraw', requireRole('participant', 'organizer'), requireEventMembership, (req, res) => {
   const db = getDb();
   const projectId = req.params.id;
-  const project = db.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
+  const project = db.prepare('SELECT * FROM projects WHERE id = ? AND event_id = ?').get(projectId, req.eventId);
 
   if (!project) {
-    return res.status(404).json({ error: 'Project not found' });
+    return res.status(404).json({ error: 'Project not found in this event' });
   }
 
   if (req.user.role === 'participant') {
@@ -351,7 +375,7 @@ router.post('/api/projects/:id/withdraw', requireRole('participant', 'organizer'
     }
   }
 
-  db.prepare("UPDATE projects SET status = 'withdrawn', updated_at = ? WHERE id = ?").run(new Date().toISOString(), projectId);
+  db.prepare("UPDATE projects SET status = 'withdrawn', updated_at = ? WHERE id = ? AND event_id = ?").run(new Date().toISOString(), projectId, req.eventId);
 
   recordAuditLog({
     eventId: req.eventId,
@@ -366,7 +390,7 @@ router.post('/api/projects/:id/withdraw', requireRole('participant', 'organizer'
 });
 
 // POST /api/teams - Create a team explicitly
-router.post('/api/teams', requireRole('participant'), (req, res) => {
+router.post('/api/teams', requireRole('participant'), requireEventMembership, (req, res) => {
   const db = getDb();
   const { name } = req.body || {};
 

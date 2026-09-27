@@ -3,654 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Judgely — Open-Source Judging Infrastructure</title>
-  <meta name="description" content="Judgely is an open-source, self-hostable hackathon submission and judging platform with transparent assignments, defensible scoring, explainable normalization, and offline-first reliability.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <title>Judgely — Hackathon Submission & Judging Platform</title>
+  <meta name="description" content="Judgely is an open-source, self-hostable hackathon submission and judging platform with transparent assignments, defensible scoring, and explainable normalization.">
   <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-  <!-- App Shell Header -->
-  <header class="app-header">
-    <div class="header-inner">
-      <div class="header-brand" id="brand-home" role="button" tabindex="0">
-        <div class="brand-logo">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-          </svg>
+  <!-- Application Shell -->
+  <div id="app" class="app-layout">
+    <!-- Header -->
+    <header class="app-header" id="app-header">
+      <div class="header-container">
+        <div class="brand-group" id="nav-brand" role="button" tabindex="0">
+          <div class="brand-symbol">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </div>
+          <div class="brand-meta">
+            <span class="brand-name">JUDGELY</span>
+            <span class="brand-context" id="header-event-name">Hackathon Platform</span>
+          </div>
         </div>
-        <div class="brand-text">
-          <span class="brand-title">JUDGELY</span>
-          <span class="brand-subtitle">Hackathon Platform</span>
+
+        <!-- Role / Workflow Navigation Links -->
+        <nav class="header-nav" id="header-nav" aria-label="Main Navigation">
+          <!-- Dynamically populated based on active experience -->
+        </nav>
+
+        <!-- Right Side: User Profile & Auth Action -->
+        <div class="header-user-actions" id="header-user-actions">
+          <!-- Injected dynamically: either Sign In button or User Profile Pill + Sign Out -->
         </div>
       </div>
+    </header>
 
-      <!-- Context-Aware Dynamic Navigation -->
-      <nav class="header-nav" id="main-nav-links" aria-label="Main Navigation">
-        <!-- Rendered dynamically by current active role -->
-      </nav>
-
-      <!-- User & Role Profile Header Action -->
-      <div class="header-actions">
-        <div class="user-badge" id="user-badge-pill" title="Current authenticated identity">
-          <span class="status-dot online"></span>
-          <span class="user-name" id="header-user-name">Public Visitor</span>
-          <span class="role-chip" id="header-user-role">Visitor</span>
-        </div>
-
-        <button class="btn btn-sm btn-outline" id="btn-open-demo-switcher" aria-haspopup="dialog" aria-expanded="false">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
-          Demo Persona
-        </button>
-
-        <button class="btn btn-sm btn-ghost" id="btn-logout" style="display:none;" title="Sign out of current session">
-          Sign Out
-        </button>
-      </div>
+    <!-- Global Notice Banner (e.g. Offline or Demo Mode indicator) -->
+    <div class="announcement-bar" id="announcement-bar" style="display:none;">
+      <div class="announcement-content" id="announcement-content"></div>
     </div>
-  </header>
 
-  <!-- Live Notice / Deadline Alert Banner -->
-  <div class="event-banner" id="global-event-banner">
-    <div class="banner-inner">
-      <div class="banner-info">
-        <span class="badge badge-pulse" id="banner-status-badge">Judging in Progress</span>
-        <span class="banner-text" id="banner-event-text">Sample Hack 2026 — Submissions closed on March 1, 2026. Evaluation ongoing.</span>
+    <!-- Single Active Workspace Mount Point -->
+    <main class="app-main" id="app-root">
+      <div class="container page-loading-skeleton">
+        <div class="skeleton-line skeleton-title"></div>
+        <div class="skeleton-line skeleton-text"></div>
+        <div class="skeleton-grid">
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+          <div class="skeleton-card"></div>
+        </div>
       </div>
-      <div class="banner-stats" id="banner-quick-stats">
-        <span><strong>41</strong> Projects</span>
-        <span class="stat-sep">•</span>
-        <span><strong>8</strong> Tracks</span>
-        <span class="stat-sep">•</span>
-        <span><strong>30</strong> Judges</span>
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <div class="footer-container">
+        <div class="footer-brand">
+          <strong>JUDGELY</strong>
+          <span>Open-Source Hackathon Infrastructure</span>
+        </div>
+        <div class="footer-links">
+          <span>Self-Hosted & Offline Ready</span>
+          <span class="sep">•</span>
+          <span>Transparent Scoring & Normalization</span>
+        </div>
       </div>
-    </div>
+    </footer>
   </div>
 
-  <!-- Main Content Container -->
-  <main class="app-main" id="app-main-content">
-
-    <!-- ====================================================================
-         1. PUBLIC WORKSPACE (Event Website & Project Gallery)
-         ==================================================================== -->
-    <section id="workspace-public" class="workspace-section active">
-      <!-- Hero Showcase -->
-      <section class="public-hero">
-        <div class="hero-content">
-          <div class="hero-badge">DOGFOOD 2026 CHAMPIONSHIP</div>
-          <h1 class="hero-title" id="public-hero-title">Sample Hack 2026</h1>
-          <p class="hero-desc" id="public-hero-desc">
-            Empowering the next generation of builders across Systems, Distributed Intelligence, Web Platforms, and Edge Computing.
-          </p>
-          <div class="hero-cta-group">
-            <button class="btn btn-primary" id="btn-hero-explore-projects">Explore Projects</button>
-            <button class="btn btn-outline" id="btn-hero-view-tracks">View Tracks & Rubric</button>
-          </div>
-        </div>
-      </section>
-
-      <!-- Project Showcase & Explorer -->
-      <section class="gallery-container" id="section-gallery">
-        <div class="gallery-controls">
-          <div class="search-box">
-            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            <input type="text" id="gallery-search-input" placeholder="Search projects by title, team, or keywords..." aria-label="Search projects">
-          </div>
-
-          <div class="track-pills-scroll" id="track-filter-pills" role="radiogroup" aria-label="Filter by Track">
-            <!-- Dynamically populated track pills -->
-          </div>
-        </div>
-
-        <!-- Gallery Grid -->
-        <div class="projects-grid" id="public-projects-grid">
-          <div class="loading-state">
-            <div class="spinner"></div>
-            <p>Loading projects...</p>
-          </div>
-        </div>
-      </section>
-
-      <!-- Tracks & Rubric Information -->
-      <section class="tracks-section" id="section-tracks" style="display:none;">
-        <div class="section-header">
-          <h2>Event Tracks & Evaluation Rubric</h2>
-          <p>Projects are evaluated on objective criteria weighted by domain experts.</p>
-        </div>
-        <div class="tracks-grid" id="public-tracks-grid"></div>
-
-        <div class="rubric-card-public">
-          <h3>Authoritative Judging Rubric</h3>
-          <div class="rubric-table-wrapper" id="public-rubric-table"></div>
-        </div>
-      </section>
-    </section>
-
-    <!-- ====================================================================
-         2. PARTICIPANT WORKSPACE (Hack2Skill Inspired Roadmap & Submissions)
-         ==================================================================== -->
-    <section id="workspace-participant" class="workspace-section">
-      <div class="participant-container">
-        <!-- Participant Header Card -->
-        <div class="participant-header-card">
-          <div class="participant-profile">
-            <div class="avatar-circle" id="participant-avatar">P</div>
-            <div class="profile-details">
-              <h2 id="participant-greeting">Welcome, Participant</h2>
-              <p class="profile-sub" id="participant-team-affiliation">Team: Loading...</p>
-            </div>
-          </div>
-          <div class="submission-status-chip" id="participant-sub-status-chip">
-            <span class="chip-status-text">Status: Submitted</span>
-          </div>
-        </div>
-
-        <!-- Roadmap & Milestones (Hack2Skill Layout) -->
-        <div class="participant-card roadmap-card">
-          <div class="card-header-clean">
-            <div class="card-header-left">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
-              <h3>Hackathon Milestone Roadmap</h3>
-            </div>
-            <span class="badge badge-neutral" id="roadmap-time-badge">Submissions Finalized</span>
-          </div>
-
-          <div class="roadmap-stepper" id="participant-roadmap-stepper">
-            <div class="step-item completed">
-              <div class="step-marker">✓</div>
-              <div class="step-content">
-                <strong>1. Registration</strong>
-                <p>Team verified and registered for event</p>
-              </div>
-            </div>
-            <div class="step-item completed">
-              <div class="step-marker">✓</div>
-              <div class="step-content">
-                <strong>2. Team Formation</strong>
-                <p id="roadmap-team-info">Active team membership</p>
-              </div>
-            </div>
-            <div class="step-item completed" id="step-submission-marker">
-              <div class="step-marker">✓</div>
-              <div class="step-content">
-                <strong>3. Project Submission</strong>
-                <p id="roadmap-sub-info">Submission verified in database</p>
-              </div>
-            </div>
-            <div class="step-item active">
-              <div class="step-marker">●</div>
-              <div class="step-content">
-                <strong>4. Judging & Review Panel</strong>
-                <p>Independent multi-judge evaluation underway</p>
-              </div>
-            </div>
-            <div class="step-item pending" id="step-results-marker">
-              <div class="step-marker">○</div>
-              <div class="step-content">
-                <strong>5. Results Release</strong>
-                <p>Pending organizer publication</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Two Column: My Team & My Project -->
-        <div class="participant-grid">
-          <!-- Team Card -->
-          <div class="participant-card">
-            <div class="card-header-clean">
-              <h3>My Team & Collaborators</h3>
-              <span class="badge" id="team-size-badge">1 Member</span>
-            </div>
-            <div class="team-body" id="participant-team-body">
-              <div class="loading-state"><div class="spinner"></div></div>
-            </div>
-          </div>
-
-          <!-- Project Submission Card -->
-          <div class="participant-card">
-            <div class="card-header-clean">
-              <h3>My Project Submission</h3>
-              <div class="btn-group" id="participant-project-actions">
-                <button class="btn btn-sm btn-outline" id="btn-edit-submission">Edit Project</button>
-              </div>
-            </div>
-            <div class="project-body" id="participant-project-body">
-              <div class="loading-state"><div class="spinner"></div></div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         3. JUDGE WORKSPACE (Calm, Focused, Strict Isolation)
-         ==================================================================== -->
-    <section id="workspace-judge" class="workspace-section">
-      <div class="judge-container">
-        <!-- Judge Header Card -->
-        <div class="judge-header-card">
-          <div class="judge-profile">
-            <div class="avatar-circle judge-avatar" id="judge-avatar">J</div>
-            <div class="profile-details">
-              <h2 id="judge-greeting">Good morning, Judge</h2>
-              <p class="profile-sub" id="judge-credentials">Specialization: Systems & Distributed Computing</p>
-            </div>
-          </div>
-          <div class="judge-workload-stats" id="judge-workload-stats">
-            <div class="workload-metric">
-              <span class="metric-val" id="judge-stat-assigned">0</span>
-              <span class="metric-lbl">Assigned</span>
-            </div>
-            <div class="workload-metric">
-              <span class="metric-val" id="judge-stat-completed">0</span>
-              <span class="metric-lbl">Completed</span>
-            </div>
-            <div class="workload-metric">
-              <span class="metric-val" id="judge-stat-remaining">0</span>
-              <span class="metric-lbl">Remaining</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Confidentiality Notice -->
-        <div class="alert-box alert-info">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
-          <div class="alert-text">
-            <strong>Judge Role Isolation Active:</strong> To guarantee fairness and eliminate peer anchoring bias, judges evaluate submissions independently. Peer judge scores and organizer normalization internals are strictly isolated.
-          </div>
-        </div>
-
-        <!-- Assigned Projects Queue -->
-        <div class="participant-card">
-          <div class="card-header-clean">
-            <h3>Assigned Projects for Review</h3>
-            <span class="badge badge-neutral" id="judge-queue-status">Batch Assigned</span>
-          </div>
-
-          <div class="assigned-list" id="judge-assignments-list">
-            <div class="loading-state"><div class="spinner"></div><p>Loading assigned projects...</p></div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ====================================================================
-         4. ORGANIZER WORKSPACE (Command Center & Judging Operations)
-         ==================================================================== -->
-    <section id="workspace-organizer" class="workspace-section">
-      <div class="organizer-container">
-        <!-- Command Header & Controls -->
-        <div class="organizer-header-card">
-          <div>
-            <h2>Judging Operations Command Center</h2>
-            <p class="profile-sub">Real-time health telemetry, assignment dispatch, integrity detection, and results release.</p>
-          </div>
-          <div class="organizer-top-actions">
-            <!-- Results Release Embargo Switch -->
-            <div class="toggle-control-card" id="release-toggle-container">
-              <span class="toggle-label">Results Visibility:</span>
-              <button class="btn btn-sm" id="btn-toggle-release" data-released="false">
-                <span id="btn-release-text">🔒 Embargoed (Private)</span>
-              </button>
-            </div>
-            <button class="btn btn-sm btn-outline" id="btn-organizer-export-csv">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-              Export Results CSV
-            </button>
-          </div>
-        </div>
-
-        <!-- Operational Metrics Row -->
-        <div class="metrics-row" id="organizer-metrics-row">
-          <div class="metric-card">
-            <div class="metric-title">Review Coverage</div>
-            <div class="metric-number" id="org-metric-coverage">0%</div>
-            <div class="metric-foot" id="org-metric-coverage-sub">0 of 41 projects evaluated</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-title">Total Reviews Submitted</div>
-            <div class="metric-number" id="org-metric-reviews">0</div>
-            <div class="metric-foot">126 target reviews</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-title">Active Judges</div>
-            <div class="metric-number" id="org-metric-judges">30</div>
-            <div class="metric-foot">30 enrolled panelists</div>
-          </div>
-          <div class="metric-card">
-            <div class="metric-title">Integrity Flags</div>
-            <div class="metric-number" id="org-metric-flags">0</div>
-            <div class="metric-foot" id="org-metric-flags-sub">Anomalies detected</div>
-          </div>
-        </div>
-
-        <!-- Coverage Distribution Bar -->
-        <div class="participant-card">
-          <div class="card-header-clean">
-            <h3>Project Review Coverage Breakdown</h3>
-            <span class="badge" id="org-coverage-pct">0% Fully Reviewed</span>
-          </div>
-          <div class="coverage-bar-track">
-            <div class="cov-segment cov-zero" id="cov-bar-zero" style="width: 0%" title="0 reviews"></div>
-            <div class="cov-segment cov-one" id="cov-bar-one" style="width: 0%" title="1 review"></div>
-            <div class="cov-segment cov-two" id="cov-bar-two" style="width: 0%" title="2 reviews"></div>
-            <div class="cov-segment cov-three" id="cov-bar-three" style="width: 0%" title="3+ reviews"></div>
-          </div>
-          <div class="coverage-legend" id="cov-legend">
-            <span><span class="dot cov-zero"></span> 0 Reviews: <strong id="lbl-cov-0">0</strong></span>
-            <span><span class="dot cov-one"></span> 1 Review: <strong id="lbl-cov-1">0</strong></span>
-            <span><span class="dot cov-two"></span> 2 Reviews: <strong id="lbl-cov-2">0</strong></span>
-            <span><span class="dot cov-three"></span> 3+ Reviews: <strong id="lbl-cov-3">0</strong></span>
-          </div>
-        </div>
-
-        <!-- Integrity Anomaly Flags (Phase 9) -->
-        <div class="participant-card">
-          <div class="card-header-clean">
-            <h3>Integrity & Quality Anomaly Detection</h3>
-            <span class="badge badge-neutral">Rule Engine Active</span>
-          </div>
-          <div class="flags-container" id="organizer-flags-list">
-            <!-- Dynamic flags populated with WHAT, WHY, RESOURCE, ACTION -->
-          </div>
-        </div>
-
-        <!-- Organizer Sub-Navigation -->
-        <div class="organizer-tabs">
-          <button class="org-sub-tab active" data-org-view="assignments">Assignments Matrix</button>
-          <button class="org-sub-tab" data-org-view="normalization">Z-Score Normalization Proof</button>
-          <button class="org-sub-tab" data-org-view="audit">Audit Log Trail</button>
-        </div>
-
-        <!-- View A: Assignments Matrix -->
-        <div class="org-sub-panel active" id="org-panel-assignments">
-          <div class="participant-card">
-            <div class="card-header-clean">
-              <h3>Create Verified Judge Assignment</h3>
-            </div>
-            <form id="form-create-assignment" class="inline-form">
-              <div class="form-group">
-                <label for="asg-select-project">Target Project</label>
-                <select id="asg-select-project" required class="form-control">
-                  <option value="">-- Choose Project --</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="asg-select-judge">Assign Judge</label>
-                <select id="asg-select-judge" required class="form-control">
-                  <option value="">-- Choose Judge --</option>
-                </select>
-              </div>
-              <div class="form-actions-inline">
-                <button type="submit" class="btn btn-primary" id="btn-submit-assignment">Confirm Assignment</button>
-              </div>
-            </form>
-            <div id="asg-feedback-box" class="form-feedback" style="display:none;"></div>
-          </div>
-
-          <div class="participant-card">
-            <div class="card-header-clean">
-              <h3>Current Active Assignments</h3>
-              <input type="text" id="asg-filter-input" placeholder="Filter assignments..." class="form-control input-sm" style="max-width: 250px;">
-            </div>
-            <div class="table-wrapper">
-              <table class="data-table" id="table-assignments">
-                <thead>
-                  <tr>
-                    <th>Project</th>
-                    <th>Track</th>
-                    <th>Assigned Judge</th>
-                    <th>Track Match</th>
-                    <th>Status</th>
-                    <th>Score</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="tbody-assignments">
-                  <tr><td colspan="7" class="loading-state"><div class="spinner"></div></td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- View B: Normalization & Results Proof -->
-        <div class="org-sub-panel" id="org-panel-normalization" style="display:none;">
-          <div class="participant-card">
-            <div class="card-header-clean">
-              <h3>Normalized Standings & Mathematical Calibration Proof</h3>
-              <span class="badge" id="org-norm-event-tag">Event evt_01</span>
-            </div>
-            <div class="table-wrapper">
-              <table class="data-table" id="table-normalization">
-                <thead>
-                  <tr>
-                    <th>Rank</th>
-                    <th>Project</th>
-                    <th>Team</th>
-                    <th>Track</th>
-                    <th>Raw Mean</th>
-                    <th>Normalized Score</th>
-                    <th>Rank Delta</th>
-                    <th>Reviews</th>
-                    <th>Calibration Reason</th>
-                  </tr>
-                </thead>
-                <tbody id="tbody-normalization">
-                  <tr><td colspan="9" class="loading-state"><div class="spinner"></div></td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-        <!-- View C: Audit Log -->
-        <div class="org-sub-panel" id="org-panel-audit" style="display:none;">
-          <div class="participant-card">
-            <div class="card-header-clean">
-              <h3>Append-Only System Audit Trail</h3>
-              <span class="badge badge-neutral">Tamper Evident</span>
-            </div>
-            <div class="table-wrapper">
-              <table class="data-table" id="table-audit">
-                <thead>
-                  <tr>
-                    <th>Timestamp</th>
-                    <th>Actor ID</th>
-                    <th>Role</th>
-                    <th>Action</th>
-                    <th>Resource</th>
-                    <th>Event Details</th>
-                  </tr>
-                </thead>
-                <tbody id="tbody-audit">
-                  <tr><td colspan="6" class="loading-state"><div class="spinner"></div></td></tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-
-      </div>
-    </section>
-
-  </main>
-
-  <!-- ====================================================================
-       DRAWERS & MODALS
-       ==================================================================== -->
-
-  <!-- Drawer: Project Detail (Public & All Roles) -->
-  <div class="drawer-overlay" id="drawer-project-overlay" aria-hidden="true">
-    <div class="drawer-panel" id="drawer-project-panel" role="dialog" aria-labelledby="drawer-project-title">
-      <div class="drawer-header">
-        <div class="drawer-header-left">
-          <span class="badge" id="drawer-project-track">Track</span>
-          <span class="mono-id" id="drawer-project-id">prj_01</span>
-        </div>
-        <button class="btn-close-drawer" id="btn-close-project-drawer" aria-label="Close drawer">&times;</button>
-      </div>
-      <div class="drawer-body" id="drawer-project-content">
-        <!-- Rendered safely by app.js -->
-      </div>
-    </div>
-  </div>
-
-  <!-- Drawer: Judge Scoring Modal (Strict Isolation) -->
-  <div class="drawer-overlay" id="drawer-score-overlay" aria-hidden="true">
-    <div class="drawer-panel drawer-panel-wide" id="drawer-score-panel" role="dialog" aria-labelledby="drawer-score-title">
-      <div class="drawer-header">
-        <div>
-          <span class="badge badge-pulse">Evaluation Form</span>
-          <h2 id="drawer-score-project-title">Evaluating Project</h2>
-        </div>
-        <button class="btn-close-drawer" id="btn-close-score-drawer" aria-label="Close scoring drawer">&times;</button>
-      </div>
-      <div class="drawer-body">
-        <form id="form-judge-evaluation">
-          <input type="hidden" id="score-input-project-id">
-
-          <div class="eval-project-summary-box" id="score-project-summary-box"></div>
-
-          <div class="rubric-evaluation-container">
-            <h3>Authoritative Rubric Criteria</h3>
-            <p class="rubric-hint">Score each required criterion between 0.0 and 5.0 according to event guidelines.</p>
-            <div id="judge-rubric-inputs-list"></div>
-          </div>
-
-          <div class="score-calculation-preview">
-            <span class="preview-label">Estimated Weighted Score:</span>
-            <span class="preview-value mono-val" id="preview-weighted-score">0.00 / 5.00</span>
-          </div>
-
-          <div class="form-group">
-            <label for="judge-comment-input">Confidential Feedback & Evaluation Notes (Optional, max 3000 chars)</label>
-            <textarea id="judge-comment-input" rows="4" maxlength="3000" class="form-control" placeholder="Provide constructive technical notes and feedback on implementation, architecture, and demonstration..."></textarea>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn btn-outline" id="btn-cancel-evaluation">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="btn-submit-evaluation">Submit Evaluation</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Drawer: Participant Edit / Submit Project -->
-  <div class="drawer-overlay" id="drawer-submission-overlay" aria-hidden="true">
-    <div class="drawer-panel" id="drawer-submission-panel" role="dialog" aria-labelledby="drawer-sub-title">
-      <div class="drawer-header">
-        <h2 id="drawer-sub-title">Project Submission</h2>
-        <button class="btn-close-drawer" id="btn-close-sub-drawer" aria-label="Close submission drawer">&times;</button>
-      </div>
-      <div class="drawer-body">
-        <form id="form-participant-submission">
-          <input type="hidden" id="sub-input-project-id">
-
-          <div class="form-group">
-            <label for="sub-input-title">Project Title *</label>
-            <input type="text" id="sub-input-title" required minlength="2" maxlength="150" class="form-control" placeholder="e.g. Distributed Consensus Engine">
-          </div>
-
-          <div class="form-group">
-            <label for="sub-input-track">Competition Track *</label>
-            <select id="sub-input-track" required class="form-control"></select>
-          </div>
-
-          <div class="form-group">
-            <label for="sub-input-tech">Tech Stack</label>
-            <input type="text" id="sub-input-tech" class="form-control" placeholder="e.g. Node.js, SQLite, TypeScript, WebAssembly">
-          </div>
-
-          <div class="form-group">
-            <label for="sub-input-repo">Repository URL</label>
-            <input type="url" id="sub-input-repo" class="form-control" placeholder="https://github.com/your-team/project">
-          </div>
-
-          <div class="form-group">
-            <label for="sub-input-demo">Demo URL</label>
-            <input type="url" id="sub-input-demo" class="form-control" placeholder="https://demo.your-project.io">
-          </div>
-
-          <div class="form-group">
-            <label for="sub-input-summary">Project Summary & Architecture Overview</label>
-            <textarea id="sub-input-summary" rows="4" maxlength="2000" class="form-control" placeholder="Explain what problem your project solves, how it works, and architectural highlights..."></textarea>
-          </div>
-
-          <div class="form-actions">
-            <button type="button" class="btn btn-outline" id="btn-cancel-submission">Cancel</button>
-            <button type="submit" class="btn btn-primary" id="btn-save-submission">Save Project</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Modal: Demo Persona Switcher (Visually Separate, Backend-Managed Sessions) -->
-  <div class="modal-overlay" id="modal-demo-switcher" aria-hidden="true">
-    <div class="modal-box" role="dialog" aria-labelledby="modal-switcher-title">
+  <!-- Reusable Modal Container -->
+  <div id="modal-backdrop" class="modal-backdrop" style="display:none;" aria-hidden="true">
+    <div id="modal-window" class="modal-window" role="dialog" aria-modal="true">
       <div class="modal-header">
-        <h3 id="modal-switcher-title">Switch Demo Persona</h3>
-        <button class="btn-close-modal" id="btn-close-demo-modal" aria-label="Close demo modal">&times;</button>
+        <h3 id="modal-title" class="modal-title">Modal</h3>
+        <button class="modal-close-btn" id="modal-close-btn" aria-label="Close dialog">&times;</button>
       </div>
-      <div class="modal-body">
-        <p class="modal-desc">
-          Select a role to authenticate using server-managed sessions. No credentials are stored in the client or URL.
-        </p>
-
-        <div class="persona-list">
-          <button class="persona-card" data-persona="organizer">
-            <div class="persona-icon icon-org">👑</div>
-            <div class="persona-info">
-              <strong>Organizer</strong>
-              <span>Hackathon Operations — Full judging health, assignments, results release & audit</span>
-            </div>
-          </button>
-
-          <button class="persona-card" data-persona="judge_a">
-            <div class="persona-icon icon-judge">⚖️</div>
-            <div class="persona-info">
-              <strong>Judge Tomas (Judge A)</strong>
-              <span>Panelist (jdg_01) — Assigned projects, rubric evaluation, isolated peer scores</span>
-            </div>
-          </button>
-
-          <button class="persona-card" data-persona="judge_b">
-            <div class="persona-icon icon-judge">⚖️</div>
-            <div class="persona-info">
-              <strong>Judge Wei (Judge B)</strong>
-              <span>Panelist (jdg_02) — Assigned reviews, peer score barrier strictly enforced</span>
-            </div>
-          </button>
-
-          <button class="persona-card" data-persona="participant">
-            <div class="persona-icon icon-part">💻</div>
-            <div class="persona-info">
-              <strong>Participant Priya</strong>
-              <span>Team Lead (tm_01) — Milestone roadmap, team members, project submission management</span>
-            </div>
-          </button>
-
-          <button class="persona-card" data-persona="visitor">
-            <div class="persona-icon icon-vis">👁️</div>
-            <div class="persona-info">
-              <strong>Public Visitor</strong>
-              <span>Unauthenticated — Public project gallery, tracks overview, results embargo</span>
-            </div>
-          </button>
-        </div>
-      </div>
+      <div class="modal-body" id="modal-body"></div>
     </div>
   </div>
 
   <!-- Toast Notification Container -->
   <div id="toast-container" class="toast-container" aria-live="polite"></div>
 
-  <!-- Pre-rendered SSR Projects for Dogfood Acceptance Checkers & Fast Loading -->
-  <!-- SSR_INJECTION_POINT -->
+  <!-- Pre-rendered SSR Projects for Automated Checkers (run.py Check 1 & 2) -->
+  <div id="ssr-gallery-cache" style="display:none;" data-ssr="true">
+    <!-- SSR_INJECTION_POINT -->
+  </div>
 
   <script src="/js/app.js"></script>
 </body>

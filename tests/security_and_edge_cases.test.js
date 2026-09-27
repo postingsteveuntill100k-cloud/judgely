@@ -62,19 +62,70 @@ test('Auth - Query parameter session tokens are strictly ignored (Bug 3)', async
   assert.strictEqual(res.status, 401, 'Query-parameter session tokens must be rejected');
 });
 
-test('Auth - POST /api/auth/demo-login issues valid HttpOnly session cookie', async () => {
-  const res = await request('/api/auth/demo-login', {
+test('Auth - POST /api/auth/demo-login is FORBIDDEN when DEMO_MODE is not true', async () => {
+  const original = process.env.DEMO_MODE;
+  try {
+    process.env.DEMO_MODE = 'false';
+    const res = await request('/api/auth/demo-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: { role: 'organizer' }
+    });
+    assert.strictEqual(res.status, 403, 'Must return 403 when demo mode is disabled in production');
+  } finally {
+    process.env.DEMO_MODE = original;
+  }
+});
+
+test('Auth - POST /api/auth/demo-login works when DEMO_MODE is explicitly enabled', async () => {
+  const original = process.env.DEMO_MODE;
+  try {
+    process.env.DEMO_MODE = 'true';
+    const res = await request('/api/auth/demo-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: { role: 'organizer' }
+    });
+    assert.strictEqual(res.status, 200);
+    const data = JSON.parse(res.body);
+    assert.strictEqual(data.user.role, 'organizer');
+    assert.ok(res.headers['set-cookie'], 'Must issue Set-Cookie header');
+    const cookieHeader = res.headers['set-cookie'].join('; ');
+    assert.ok(cookieHeader.includes('HttpOnly'), 'Cookie must be HttpOnly');
+    assert.ok(cookieHeader.includes('SameSite=Lax'), 'Cookie must have SameSite=Lax');
+  } finally {
+    process.env.DEMO_MODE = original;
+  }
+});
+
+test('Auth - Real Login: Email without password returns HTTP 400', async () => {
+  const res = await request('/api/auth/login', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: { role: 'organizer' }
+    body: { email: 'organizer@judgely.local' }
   });
-  assert.strictEqual(res.status, 200);
+  assert.strictEqual(res.status, 400, 'Missing password must return 400');
+});
+
+test('Auth - Real Login: Wrong password returns HTTP 401', async () => {
+  const res = await request('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: { email: 'organizer@judgely.local', password: 'incorrect_password' }
+  });
+  assert.strictEqual(res.status, 401, 'Wrong password must return 401');
+});
+
+test('Auth - Real Login: Valid credentials returns HTTP 200 and session cookie', async () => {
+  const res = await request('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: { email: 'organizer@judgely.local', password: 'organizer123' }
+  });
+  assert.strictEqual(res.status, 200, 'Valid credentials must succeed with 200');
   const data = JSON.parse(res.body);
   assert.strictEqual(data.user.role, 'organizer');
-  assert.ok(res.headers['set-cookie'], 'Must issue Set-Cookie header');
-  const cookieHeader = res.headers['set-cookie'].join('; ');
-  assert.ok(cookieHeader.includes('HttpOnly'), 'Cookie must be HttpOnly');
-  assert.ok(cookieHeader.includes('SameSite=Lax'), 'Cookie must have SameSite=Lax');
+  assert.ok(res.headers['set-cookie'], 'Must set session cookie on login');
 });
 
 test('Auth - GET /api/auth/me returns current session identity', async () => {
