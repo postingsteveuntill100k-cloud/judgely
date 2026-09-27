@@ -19,10 +19,16 @@ function getDb(inMemory = false) {
       fs.mkdirSync(DB_DIR, { recursive: true });
     }
     instance = new DatabaseSync(DB_PATH);
-    // Enable WAL mode and foreign keys for durability and performance
     instance.exec('PRAGMA journal_mode = WAL;');
     instance.exec('PRAGMA foreign_keys = ON;');
     initSchema(instance);
+
+    // Auto-seed fixtures if database is unseeded
+    const event = instance.prepare('SELECT id FROM events WHERE id = ?').get('evt_01');
+    if (!event) {
+      const { seed } = require('./seeder');
+      seed(instance);
+    }
   }
 
   return instance;
