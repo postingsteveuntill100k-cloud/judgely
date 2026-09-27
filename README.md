@@ -2,7 +2,10 @@
 
 > **Open-source judging infrastructure for hackathons: transparent assignments, defensible scoring, explainable normalization, auditable decisions, and self-hosted operation.**
 
-Judgely is a self-hostable submission and judging platform built for **DOGFOOD 2026**. It provides an integrated event lifecycle with backend-enforced role isolation, cross-judge Z-score normalization, judging health anomaly detection, and automated acceptance verification.
+- **GitHub Repository**: [https://github.com/postingsteveuntill100k-cloud/judgely](https://github.com/postingsteveuntill100k-cloud/judgely)
+- **Live Demo (NexusLabs Firebase Hosting)**: [https://nexuslabs-b7b5e.web.app](https://nexuslabs-b7b5e.web.app)
+
+Judgely is a self-hostable submission and judging platform built for **DOGFOOD 2026**. It provides an integrated event lifecycle with backend-enforced role isolation, cross-judge Z-score normalization, judging health anomaly detection, automated acceptance verification, and a modern dual Light/Dark technical design system.
 
 ---
 
@@ -11,16 +14,20 @@ Judgely is a self-hostable submission and judging platform built for **DOGFOOD 2
 - **T1 Core**:
   - Public project gallery with track filtering and live keyword search.
   - Server-side pre-rendered project cards for immediate crawler and checker compatibility.
-  - Submission deadline enforcement that strictly rejects late submissions.
+  - Submission deadline enforcement that strictly rejects late submissions (HTTP 403).
   - Deterministic session authentication for organizers, judges, participants, and visitors.
 - **T2 Judging Infrastructure**:
   - **Backend-Enforced Role Isolation**: Judges cannot view peer scores; participants are denied access to scoring endpoints; public project APIs strip private reviewer identities.
-  - **Weighted Rubric Scoring**: Configurable scoring criteria with bound checking and atomic upsert transactions.
+  - **Weighted Rubric Scoring**: Configurable scoring criteria with bound checking [0.0, 5.0] and atomic upsert transactions.
   - **Cross-Judge Normalization Engine**: Z-score standardization with variance regularization (handling judges with zero score variance like `jdg_07`) and Bayesian sample-size shrinkage.
-  - **Judging Health & Anomaly Detector**: Neutral, explainable heuristic flags identifying zero-variance grading, duplicate submissions, and polarized scores.
+  - **Judging Health & Anomaly Detector**: Neutral, explainable heuristic flags identifying zero-variance grading, duplicate submissions (`tm_07`), and polarized scores.
   - **Organizer Command Center**: Real-time review coverage distribution, assignment manager with track compatibility hints, and live settings.
   - **Audit Trail**: Append-only log recording who, what, when, and which resource was modified.
   - **Official CSV Export**: Comma-separated results export with rank deltas, raw scores, and normalized scores.
+- **Professional Design System**:
+  - Technical typography pairing **Inter** (for high-contrast readability) and **JetBrains Mono** (for metrics, scores, code, and hashes).
+  - Coherent **Light Mode** (clean off-white surfaces, restrained dark slate typography) and **Dark Mode** (charcoal surfaces, controlled cyan accents) with instant theme switcher.
+  - Full keyboard accessibility (Escape to dismiss modals, focus states).
 
 ---
 
