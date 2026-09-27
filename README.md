@@ -73,19 +73,25 @@ The portal starts on `http://localhost:8080`.
 
 ---
 
-## Deterministic Test Accounts
+## Deterministic Test Accounts & Passwords
 
-Judgely seeds deterministic session credentials corresponding to fixture identities:
+Judgely supports standard local password authentication (`POST /api/auth/login`) with `scrypt` password hashing, as well as deterministic session cookies for automated test suites (`.dogfood.toml`):
 
-| Role | Session Header | Identity Mapped from Fixture |
-| :--- | :--- | :--- |
-| **Organizer** | `Cookie: session=org_7f2a` | Lead Organizer (`usr_organizer`) |
-| **Judge A** | `Cookie: session=jdg_a_91bc` | First fixture judge (`jdg_01`, Tomas Varga) |
-| **Judge B** | `Cookie: session=jdg_b_44de` | Second fixture judge (`jdg_02`, Wei Lindqvist) |
-| **Participant** | `Cookie: session=prt_2e88` | First fixture team member (`tm_01`, Priya Nair) |
-| **Visitor** | *(No header)* | Unauthenticated guest |
+| Role | Email | Password | Session Cookie (Automated Tests) | Identity Mapped from Fixture |
+| :--- | :--- | :--- | :--- | :--- |
+| **Organizer** | `organizer@judgely.local` | `organizer123` | `Cookie: session=org_7f2a` | Lead Organizer (`usr_organizer`) |
+| **Judge A** | `tomas.varga@example.org` | `judge123` | `Cookie: session=jdg_a_91bc` | First fixture judge (`jdg_01`, Tomas Varga) |
+| **Judge B** | `wei.lindqvist@example.org` | `judge123` | `Cookie: session=jdg_b_44de` | Second fixture judge (`jdg_02`, Wei Lindqvist) |
+| **Participant** | `priya1@example.org` | `participant123` | `Cookie: session=prt_2e88` | First fixture team member (`tm_01`, Priya Nair) |
+| **Visitor** | *(None)* | *(None)* | *(No header)* | Unauthenticated guest |
 
-The web interface also includes an interactive **Demo Persona Switcher** modal to seamlessly toggle between these sessions using server-managed cookies.
+### Production vs Demo Mode
+- **Production (`DEMO_MODE=false`)**:
+  - `POST /api/auth/demo-login` is disabled (returns `403 Forbidden`).
+  - Demo persona buttons are completely removed from the UI.
+  - All users must authenticate via email + password or valid session cookies.
+- **Development / Demo (`DEMO_MODE=true`)**:
+  - The login screen displays quick demo persona buttons to streamline evaluations.
 
 ---
 
