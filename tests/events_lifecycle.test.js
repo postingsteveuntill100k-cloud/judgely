@@ -198,3 +198,63 @@ test('Event Lifecycle - Registration & Team Collaboration', async () => {
   assert(submittedInGallery, 'Submitted project must now appear in public gallery');
   assert.strictEqual(submittedInGallery.title, 'Hyperdrive Protocol');
 });
+
+test('Event Lifecycle - Hoster can add and remove evaluation judges with track specialties', async () => {
+  const orgCookie = 'session=org_7f2a';
+
+  // Add judge with track specialty
+  const addRes = await request('/api/organizer/judges', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cookie': orgCookie,
+      'x-event-id': 'evt_01'
+    },
+    body: {
+      name: 'Dr. Sarah Chen',
+      email: 'sarah.chen@evaluation.org',
+      track_ids: ['trk_01']
+    }
+  });
+
+  assert.strictEqual(addRes.status, 201);
+  const addData = JSON.parse(addRes.body);
+  assert.strictEqual(addData.judge.name, 'Dr. Sarah Chen');
+  assert.strictEqual(addData.judge.email, 'sarah.chen@evaluation.org');
+  assert.strictEqual(addData.judge.tracks.length, 1);
+  const judgeId = addData.judge.id;
+
+  // Verify judge appears in judges list
+  const listRes = await request('/api/organizer/judges', {
+    headers: {
+      'Cookie': orgCookie,
+      'x-event-id': 'evt_01'
+    }
+  });
+  assert.strictEqual(listRes.status, 200);
+  const listData = JSON.parse(listRes.body);
+  const foundJudge = listData.judges.find(j => j.id === judgeId);
+  assert(foundJudge, 'Newly added judge must appear in organizer judges list');
+
+  // Verify Sarah can log in via Google now that host has added her
+  const googleRes = await request('/api/auth/google', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'x-event-id': 'evt_01' },
+    body: {
+      credential: 'mock_google_sarah.chen@evaluation.org'
+    }
+  });
+  assert.strictEqual(googleRes.status, 200);
+  const googleData = JSON.parse(googleRes.body);
+  assert.strictEqual(googleData.role, 'judge');
+
+  // Remove judge
+  const delRes = await request(`/api/organizer/judges/${judgeId}`, {
+    method: 'DELETE',
+    headers: {
+      'Cookie': orgCookie,
+      'x-event-id': 'evt_01'
+    }
+  });
+  assert.strictEqual(delRes.status, 200);
+});

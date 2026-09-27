@@ -457,13 +457,54 @@
                 <line x1="12" y1="16" x2="12.01" y2="16"></line>
               </svg>
             </div>
-            <div class="google-error-content">
+            <div class="google-error-content" style="width: 100%;">
               <strong>Account not registered for this event</strong>
               <p class="mt-1">${escapeHtml(err.message || 'Access denied')}</p>
-              <p class="text-xs text-muted mt-2">Only registered participants, judges, and organizers are authorized to access workspace portals. You can still explore the public showcase as a visitor.</p>
+              <div class="mt-3 flex flex-col gap-2">
+                <button type="button" class="btn btn-primary btn-sm w-full text-center" id="btn-google-join-participant">
+                  🚀 Register as Participant with this Account
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm w-full text-center" id="btn-google-join-organizer">
+                  ⚡ Sign in as Host / Organizer
+                </button>
+              </div>
             </div>
           `;
           errorNotice.style.display = 'flex';
+
+          const btnJoinPart = document.getElementById('btn-google-join-participant');
+          if (btnJoinPart) {
+            btnJoinPart.addEventListener('click', async () => {
+              btnJoinPart.disabled = true;
+              try {
+                const targetEvent = window.Judgely.state.activeEventId;
+                const res = await api.googleLogin(`mock_google_${email}`, targetEvent, 'participant');
+                showToast(`Registered as Participant with Google!`, 'success');
+                closeChooser();
+                window.Judgely.onLoginSuccess(res.user);
+              } catch (regErr) {
+                btnJoinPart.disabled = false;
+                showToast(regErr.message || 'Failed to register', 'error');
+              }
+            });
+          }
+
+          const btnJoinOrg = document.getElementById('btn-google-join-organizer');
+          if (btnJoinOrg) {
+            btnJoinOrg.addEventListener('click', async () => {
+              btnJoinOrg.disabled = true;
+              try {
+                const targetEvent = window.Judgely.state.activeEventId;
+                const res = await api.googleLogin(`mock_google_${email}`, targetEvent, 'organizer');
+                showToast(`Signed in as Host / Organizer!`, 'success');
+                closeChooser();
+                window.Judgely.onLoginSuccess(res.user);
+              } catch (orgErr) {
+                btnJoinOrg.disabled = false;
+                showToast(orgErr.message || 'Failed to sign in as organizer', 'error');
+              }
+            });
+          }
         }
       }
     }

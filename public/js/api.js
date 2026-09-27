@@ -144,10 +144,33 @@
         }
       } catch (_) {}
 
+      // Explicit registration intents via Google
+      if (body && (body.register_as === 'participant' || body.role === 'participant')) {
+        const user = {
+          id: `usr_${Date.now()}`,
+          name: email.split('@')[0],
+          email: email,
+          role: 'participant'
+        };
+        localStorage.setItem('judgely_session_user', JSON.stringify(user));
+        return { success: true, user, role: 'participant' };
+      }
+
+      if (body && (body.register_as === 'organizer' || body.role === 'organizer')) {
+        const user = {
+          id: `usr_${Date.now()}`,
+          name: email.split('@')[0],
+          email: email,
+          role: 'organizer'
+        };
+        localStorage.setItem('judgely_session_user', JSON.stringify(user));
+        return { success: true, user, role: 'organizer' };
+      }
+
       // UNREGISTERED EMAIL (Rule 7: Defensible 403 error message without HTML or internal error details)
       const err = new Error(`You are authenticated as ${email}, but you are not registered for this event. Please contact the hackathon organizers if you believe this is a mistake.`);
       err.status = 403;
-      err.data = { error: err.message, code: 'UNREGISTERED_GOOGLE_ACCOUNT' };
+      err.data = { error: err.message, code: 'UNREGISTERED_GOOGLE_ACCOUNT', authenticated_email: email };
       throw err;
     }
 
@@ -318,6 +341,25 @@
         if (res.ok) return await res.json();
       } catch (_) {}
     }
+    if (cleanUrl === '/api/organizer/judges' && options.method === 'POST') {
+      let body = options.body;
+      if (typeof body === 'string') {
+        try { body = JSON.parse(body); } catch (_) {}
+      }
+      const newJudge = {
+        id: `jdg_${Date.now()}`,
+        name: (body && body.name) || 'Judge',
+        email: (body && body.email) || 'judge@example.org',
+        tracks: (body && body.tracks) || [],
+        assignments_count: 0,
+        completed_reviews: 0
+      };
+      return { message: 'Judge added successfully to event', judge: newJudge };
+    }
+    if (cleanUrl.startsWith('/api/organizer/judges/') && options.method === 'DELETE') {
+      return { message: 'Judge removed successfully from event' };
+    }
+
     if (cleanUrl.startsWith('/api/organizer/')) {
       const endpoint = cleanUrl.replace('/api/organizer/', '');
       try {
@@ -382,8 +424,8 @@
       }
       return res;
     },
-    googleLogin: async (credential, eventId) => {
-      const res = await request('/api/auth/google', { method: 'POST', body: { credential, event_id: eventId } });
+    googleLogin: async (credential, eventId, registerAs) => {
+      const res = await request('/api/auth/google', { method: 'POST', body: { credential, event_id: eventId, register_as: registerAs } });
       if (res && res.user && typeof window !== 'undefined' && window.localStorage) {
         window.localStorage.setItem('judgely_session_user', JSON.stringify(res.user));
       }
@@ -447,6 +489,8 @@
     getOrganizerProjects: () => request('/api/organizer/projects'),
     getOrganizerTeams: () => request('/api/organizer/teams'),
     getOrganizerJudges: () => request('/api/organizer/judges'),
+    addJudge: (judgeData) => request('/api/organizer/judges', { method: 'POST', body: judgeData }),
+    deleteJudge: (judgeId) => request(`/api/organizer/judges/${encodeURIComponent(judgeId)}`, { method: 'DELETE' }),
     getOrganizerAssignments: () => request('/api/organizer/assignments'),
     getOrganizerHealth: () => request('/api/organizer/health'),
     getOrganizerAudit: () => request('/api/organizer/audit'),

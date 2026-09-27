@@ -51,7 +51,7 @@ def capture_firebase():
     # 2. Click "+ Host a Hackathon" Modal
     print("[2] Opening + Host a Hackathon modal...")
     send_cmd(s, 5, "WebDriver:ExecuteScript", {
-        "script": "const btn = document.getElementById('btn-create-hackathon-nav'); if (btn) btn.click();"
+        "script": "const btn = document.getElementById('btn-header-host-guest') || document.getElementById('btn-hero-host-event'); if (btn) btn.click();"
     })
     time.sleep(1)
     resp = send_cmd(s, 6, "WebDriver:TakeScreenshot", {})

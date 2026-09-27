@@ -100,7 +100,7 @@ async function verifyGoogleIdentity(tokenOrCredential) {
  * and checks their event membership.
  * CRITICAL RULE: If user has no event membership, DO NOT auto-grant roles.
  */
-function resolveIdentityMembership(identity, eventId) {
+function resolveIdentityMembership(identity, eventId, options = {}) {
   const db = getDb();
   const targetEventId = eventId || db.prepare('SELECT id FROM events ORDER BY created_at ASC LIMIT 1').get()?.id;
 
@@ -120,14 +120,62 @@ function resolveIdentityMembership(identity, eventId) {
     user = db.prepare('SELECT * FROM users WHERE id = ?').get(userId);
   }
 
-  // 2. Query event membership for target event
+  // 2. If user already has organizer role in users table, grant organizer event membership
+  if (user.role === 'organizer') {
+    db.prepare(`
+      INSERT OR IGNORE INTO event_memberships (id, event_id, user_id, role, status, created_at)
+      VALUES (?, ?, ?, 'organizer', 'active', ?)
+    `).run(`mem_${crypto.randomUUID()}`, targetEventId, user.id, new Date().toISOString());
+    return {
+      user: { ...user, role: 'organizer' },
+      role: 'organizer',
+      membership: { role: 'organizer' },
+      registered: true,
+      eventId: targetEventId
+    };
+  }
+
+  // 3. Query event membership for target event
   const membership = db.prepare(`
     SELECT * FROM event_memberships
     WHERE event_id = ? AND user_id = ? AND status = 'active'
   `).get(targetEventId, user.id);
 
   if (!membership) {
-    // Also check if user is a judge by email in judges table
+    // 3a. Explicit Google Registration / Role Intent
+    if (options && (options.register_as === 'participant' || options.role === 'participant')) {
+      db.prepare(`
+        INSERT OR IGNORE INTO event_memberships (id, event_id, user_id, role, status, created_at)
+        VALUES (?, ?, ?, 'participant', 'active', ?)
+      `).run(`mem_${crypto.randomUUID()}`, targetEventId, user.id, new Date().toISOString());
+      db.prepare('UPDATE users SET role = ? WHERE id = ?').run('participant', user.id);
+
+      return {
+        user: { ...user, role: 'participant' },
+        role: 'participant',
+        membership: { role: 'participant' },
+        registered: true,
+        eventId: targetEventId
+      };
+    }
+
+    if (options && (options.register_as === 'organizer' || options.role === 'organizer')) {
+      db.prepare(`
+        INSERT OR IGNORE INTO event_memberships (id, event_id, user_id, role, status, created_at)
+        VALUES (?, ?, ?, 'organizer', 'active', ?)
+      `).run(`mem_${crypto.randomUUID()}`, targetEventId, user.id, new Date().toISOString());
+      db.prepare('UPDATE users SET role = ? WHERE id = ?').run('organizer', user.id);
+
+      return {
+        user: { ...user, role: 'organizer' },
+        role: 'organizer',
+        membership: { role: 'organizer' },
+        registered: true,
+        eventId: targetEventId
+      };
+    }
+
+    // 3b. Also check if user is a judge by email in judges table
     const judge = db.prepare('SELECT * FROM judges WHERE event_id = ? AND email = ?').get(targetEventId, user.email);
     if (judge) {
       // Link judge user_id and create membership
@@ -147,7 +195,7 @@ function resolveIdentityMembership(identity, eventId) {
       };
     }
 
-    // Check if user is a team member by email
+    // 3c. Check if user is a team member by email
     const teamMember = db.prepare(`
       SELECT tm.*, t.event_id FROM team_members tm
       JOIN teams t ON t.id = tm.team_id

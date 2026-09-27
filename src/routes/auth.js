@@ -53,7 +53,7 @@ router.get('/api/auth/config', (req, res) => {
 
 // POST /api/auth/google - Provider boundary for Google authentication
 router.post('/api/auth/google', async (req, res) => {
-  const { credential, event_id } = req.body || {};
+  const { credential, event_id, register_as, role } = req.body || {};
   if (!credential || typeof credential !== 'string') {
     return res.status(400).json({ error: 'Missing or invalid Google credential/token' });
   }
@@ -61,7 +61,7 @@ router.post('/api/auth/google', async (req, res) => {
   try {
     const identity = await verifyGoogleIdentity(credential);
     const targetEventId = event_id || req.headers['x-event-id'];
-    const resolution = resolveIdentityMembership(identity, targetEventId);
+    const resolution = resolveIdentityMembership(identity, targetEventId, { register_as, role });
 
     if (resolution.error) {
       return res.status(400).json({ error: resolution.error });

@@ -130,4 +130,37 @@ describe('Google Auth Provider & Guest Mode Architecture', () => {
     });
     assert.ok(subRes.status === 401 || subRes.status === 403);
   });
+
+  test('POST /api/auth/google with register_as: participant registers user and grants participant session', async () => {
+    const newGoogleParticipant = `new_hacker_${Date.now()}@gmail.com`;
+    const res = await fetch(`${baseUrl}/api/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        credential: `mock_google_${newGoogleParticipant}`,
+        register_as: 'participant'
+      })
+    });
+    assert.equal(res.status, 200);
+    const data = await res.json();
+    assert.equal(data.role, 'participant');
+    assert.equal(data.user.email, newGoogleParticipant);
+
+    const setCookie = res.headers.get('set-cookie');
+    assert.ok(setCookie && setCookie.includes('session=sess_'));
+  });
+
+  test('POST /api/auth/google for seeded organizer logs in as organizer', async () => {
+    const res = await fetch(`${baseUrl}/api/auth/google`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        credential: 'mock_google_quality.prashanth@gmail.com'
+      })
+    });
+    assert.equal(res.status, 200);
+    const data = await res.json();
+    assert.equal(data.role, 'organizer');
+    assert.equal(data.user.email, 'quality.prashanth@gmail.com');
+  });
 });

@@ -339,38 +339,57 @@
   function renderJudgesTab(container, judges) {
     container.innerHTML = `
       <div class="card p-6">
-        <div class="flex justify-between items-center mb-4 flex-wrap gap-2">
+        <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
           <div>
-            <h3 class="font-bold">Evaluation Judges (${judges.length})</h3>
-            <p class="text-sm text-muted">Domain experts and track specialties.</p>
+            <h3 class="font-bold text-lg">Evaluation Judges (${judges.length})</h3>
+            <p class="text-sm text-muted">Domain experts, track specialties, and evaluation capacity.</p>
           </div>
-          <input type="text" id="filter-judges-table" class="form-input text-xs" placeholder="Search judges..." style="max-width: 250px;">
+          <div class="flex items-center gap-2 flex-wrap">
+            <input type="text" id="filter-judges-table" class="form-input text-xs" placeholder="Search judges..." style="max-width: 200px;">
+            <button class="btn btn-primary btn-sm" id="btn-open-add-judge">
+              + Add Judge
+            </button>
+          </div>
         </div>
 
         <div class="table-container" style="overflow-x: auto;">
           <table class="table w-full text-sm" id="table-organizer-judges">
             <thead>
               <tr class="border-b text-left text-xs text-muted uppercase">
-                <th class="p-2">Judge ID</th>
-                <th class="p-2">Name</th>
-                <th class="p-2">Email</th>
-                <th class="p-2">Assigned Tracks</th>
-                <th class="p-2">Workload</th>
+                <th class="p-3">Judge ID</th>
+                <th class="p-3">Name</th>
+                <th class="p-3">Email (Google Login)</th>
+                <th class="p-3">Specialized Tracks</th>
+                <th class="p-3">Workload Status</th>
+                <th class="p-3 text-right">Actions</th>
               </tr>
             </thead>
             <tbody>
-              ${judges.map(j => `
-                <tr class="border-b">
-                  <td class="p-2 mono text-xs">${escapeHtml(j.id)}</td>
-                  <td class="p-2 font-semibold">${escapeHtml(j.name)}</td>
-                  <td class="p-2 text-muted text-xs">${escapeHtml(j.email)}</td>
-                  <td class="p-2">
-                    ${(j.tracks || []).map(t => `<span class="badge badge-secondary mr-1 mb-1">${escapeHtml(t.name)}</span>`).join('') || '<span class="text-muted text-xs">All</span>'}
+              ${judges.length === 0 ? `
+                <tr>
+                  <td colspan="6" class="p-8 text-center text-muted">
+                    No judges added yet. Click <strong>+ Add Judge</strong> to invite or register evaluation domain experts.
                   </td>
-                  <td class="p-2 font-medium">
+                </tr>
+              ` : judges.map(j => `
+                <tr class="border-b">
+                  <td class="p-3 mono text-xs">${escapeHtml(j.id)}</td>
+                  <td class="p-3 font-semibold">${escapeHtml(j.name)}</td>
+                  <td class="p-3 text-muted text-xs">
+                    <span class="mono">${escapeHtml(j.email)}</span>
+                  </td>
+                  <td class="p-3">
+                    ${(j.tracks || []).map(t => `<span class="badge badge-secondary mr-1 mb-1">${escapeHtml(t.name)}</span>`).join('') || '<span class="text-muted text-xs">All Competition Tracks</span>'}
+                  </td>
+                  <td class="p-3 font-medium">
                     <span class="${j.completed_reviews === j.assignments_count && j.assignments_count > 0 ? 'text-success' : 'text-main'}">
                       ${j.completed_reviews} / ${j.assignments_count} reviews completed
                     </span>
+                  </td>
+                  <td class="p-3 text-right">
+                    <button type="button" class="btn btn-secondary btn-xs text-danger btn-delete-judge" data-id="${escapeHtml(j.id)}" data-name="${escapeHtml(j.name)}">
+                      Remove
+                    </button>
                   </td>
                 </tr>
               `).join('')}
@@ -380,6 +399,7 @@
       </div>
     `;
 
+    // Search filter
     const searchInput = document.getElementById('filter-judges-table');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
@@ -389,6 +409,111 @@
         });
       });
     }
+
+    // Bind Add Judge Modal
+    const btnAddJudge = document.getElementById('btn-open-add-judge');
+    if (btnAddJudge) {
+      btnAddJudge.addEventListener('click', async () => {
+        try {
+          const tracksRes = await api.getTracks();
+          const allTracks = tracksRes.tracks || tracksRes || [];
+
+          const modalHtml = `
+            <form id="form-add-judge" class="py-2">
+              <p class="text-sm text-muted mb-4">
+                Add an evaluation judge to this hackathon. The judge can log in via Google Auth or workspace credentials using their email address.
+              </p>
+              
+              <div class="form-group mb-3">
+                <label class="form-label" for="add-judge-name">Judge Full Name *</label>
+                <input type="text" id="add-judge-name" class="form-input" required placeholder="e.g. Dr. Alex Morgan">
+              </div>
+
+              <div class="form-group mb-4">
+                <label class="form-label" for="add-judge-email">Email Address (Google Login) *</label>
+                <input type="email" id="add-judge-email" class="form-input" required placeholder="e.g. alex.morgan@gmail.com">
+                <span class="text-xs text-muted mt-1 block">When this judge clicks "Sign in with Google", they will automatically be granted Judge workspace access.</span>
+              </div>
+
+              <div class="form-group mb-4">
+                <label class="form-label mb-2">Track Specialization / Expertise</label>
+                <div class="p-3 rounded border" style="background: var(--bg-surface); max-height: 180px; overflow-y: auto;">
+                  ${allTracks.length === 0 ? '<p class="text-xs text-muted">No specific tracks configured.</p>' : allTracks.map(trk => `
+                    <label class="flex items-center gap-2 mb-2 text-xs cursor-pointer">
+                      <input type="checkbox" name="judge_track" value="${escapeHtml(trk.id)}" checked>
+                      <span>${escapeHtml(trk.name)}</span>
+                    </label>
+                  `).join('')}
+                </div>
+                <span class="text-xs text-muted mt-1 block">Judges will be matched to projects based on their track specialties.</span>
+              </div>
+
+              <div class="flex justify-end gap-3 border-t pt-4">
+                <button type="button" class="btn btn-secondary" onclick="window.Judgely.closeModal()">Cancel</button>
+                <button type="submit" class="btn btn-primary" id="btn-submit-add-judge">
+                  ✓ Add Judge to Hackathon
+                </button>
+              </div>
+            </form>
+          `;
+
+          openModal('Add Evaluation Judge', modalHtml);
+
+          const formAdd = document.getElementById('form-add-judge');
+          if (formAdd) {
+            formAdd.addEventListener('submit', async (e) => {
+              e.preventDefault();
+              const submitBtn = document.getElementById('btn-submit-add-judge');
+              if (submitBtn) submitBtn.disabled = true;
+
+              const name = document.getElementById('add-judge-name').value.trim();
+              const email = document.getElementById('add-judge-email').value.trim();
+              const selectedTracks = Array.from(formAdd.querySelectorAll('input[name="judge_track"]:checked')).map(cb => cb.value);
+
+              try {
+                const res = await api.addJudge({
+                  name,
+                  email,
+                  track_ids: selectedTracks
+                });
+
+                showToast(`Judge ${res.judge.name} added successfully!`, 'success');
+                closeModal();
+
+                // Reload Judges Tab
+                const freshJudges = await api.getOrganizerJudges();
+                renderJudgesTab(container, freshJudges.judges || []);
+              } catch (err) {
+                if (submitBtn) submitBtn.disabled = false;
+                showToast(err.message || 'Failed to add judge', 'error');
+              }
+            });
+          }
+        } catch (err) {
+          showToast('Failed to load competition tracks', 'error');
+        }
+      });
+    }
+
+    // Bind Delete Judge Buttons
+    container.querySelectorAll('.btn-delete-judge').forEach(btn => {
+      btn.addEventListener('click', async () => {
+        const id = btn.getAttribute('data-id');
+        const name = btn.getAttribute('data-name');
+        if (!confirm(`Are you sure you want to remove judge ${name}? Their assignments will be cleared.`)) {
+          return;
+        }
+
+        try {
+          await api.deleteJudge(id);
+          showToast(`Judge ${name} removed`, 'info');
+          const freshJudges = await api.getOrganizerJudges();
+          renderJudgesTab(container, freshJudges.judges || []);
+        } catch (err) {
+          showToast(err.message || 'Failed to remove judge', 'error');
+        }
+      });
+    });
   }
 
   // 5. ASSIGNMENTS TAB

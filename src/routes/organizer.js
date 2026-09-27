@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('node:crypto');
 const { getDb } = require('../db/database');
 const { requireRole, requireEventMembership } = require('../middleware/rbac');
 const { eventMiddleware } = require('../middleware/event');
@@ -101,6 +102,128 @@ router.get('/api/organizer/judges', (req, res) => {
     };
   });
   res.json({ judges });
+});
+
+// POST /api/organizer/judges - Add a new judge to the hackathon
+router.post('/api/organizer/judges', (req, res) => {
+  const db = getDb();
+  const { name, email, track_ids, tracks } = req.body || {};
+
+  if (!name || typeof name !== 'string' || !name.trim()) {
+    return res.status(400).json({ error: 'Valid judge name is required' });
+  }
+
+  if (!email || typeof email !== 'string' || !email.includes('@')) {
+    return res.status(400).json({ error: 'Valid judge email address is required' });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanName = name.trim();
+
+  // Check if judge already registered for this event
+  const existingJudge = db.prepare('SELECT id FROM judges WHERE event_id = ? AND email = ? COLLATE NOCASE').get(req.eventId, cleanEmail);
+  if (existingJudge) {
+    return res.status(409).json({ error: `Judge with email '${cleanEmail}' is already registered for this event` });
+  }
+
+  // 1. Locate or create Judgely user account
+  let user = db.prepare('SELECT id, role FROM users WHERE email = ? COLLATE NOCASE').get(cleanEmail);
+  if (!user) {
+    const userId = `usr_${crypto.randomUUID()}`;
+    const now = new Date().toISOString();
+    db.prepare(`
+      INSERT INTO users (id, email, name, role, created_at)
+      VALUES (?, ?, ?, 'judge', ?)
+    `).run(userId, cleanEmail, cleanName, now);
+    user = { id: userId, role: 'judge' };
+  } else if (user.role === 'visitor') {
+    db.prepare('UPDATE users SET role = ? WHERE id = ?').run('judge', user.id);
+  }
+
+  // 2. Generate judge record
+  const judgeId = `jdg_${crypto.randomUUID()}`;
+  db.prepare(`
+    INSERT INTO judges (id, event_id, user_id, name, email)
+    VALUES (?, ?, ?, ?, ?)
+  `).run(judgeId, req.eventId, user.id, cleanName, cleanEmail);
+
+  // 3. Create active event membership
+  db.prepare(`
+    INSERT OR IGNORE INTO event_memberships (id, event_id, user_id, role, status, created_at)
+    VALUES (?, ?, ?, 'judge', 'active', ?)
+  `).run(`mem_${crypto.randomUUID()}`, req.eventId, user.id, new Date().toISOString());
+
+  // 4. Associate tracks if provided
+  const targetTracks = Array.isArray(track_ids) ? track_ids : (Array.isArray(tracks) ? tracks : []);
+  const addedTracks = [];
+  for (const trkId of targetTracks) {
+    if (typeof trkId === 'string' && trkId.trim()) {
+      const validTrack = db.prepare('SELECT id, name FROM tracks WHERE id = ? AND event_id = ?').get(trkId.trim(), req.eventId);
+      if (validTrack) {
+        db.prepare(`
+          INSERT OR IGNORE INTO judge_tracks (judge_id, track_id)
+          VALUES (?, ?)
+        `).run(judgeId, validTrack.id);
+        addedTracks.push(validTrack);
+      }
+    }
+  }
+
+  // 5. Audit log
+  recordAuditLog({
+    eventId: req.eventId,
+    userId: req.user.id,
+    role: req.user.role,
+    action: 'judge.created',
+    resourceType: 'judge',
+    resourceId: judgeId,
+    details: { name: cleanName, email: cleanEmail, tracks: addedTracks.map(t => t.name) }
+  });
+
+  res.status(201).json({
+    message: 'Judge added successfully to event',
+    judge: {
+      id: judgeId,
+      name: cleanName,
+      email: cleanEmail,
+      user_id: user.id,
+      tracks: addedTracks,
+      assignments_count: 0,
+      completed_reviews: 0
+    }
+  });
+});
+
+// DELETE /api/organizer/judges/:id - Remove a judge from the event
+router.delete('/api/organizer/judges/:id', (req, res) => {
+  const db = getDb();
+  const judgeId = req.params.id;
+
+  const judge = db.prepare('SELECT id, name, email, event_id FROM judges WHERE id = ?').get(judgeId);
+  if (!judge) {
+    return res.status(404).json({ error: `Judge '${judgeId}' not found` });
+  }
+
+  if (judge.event_id !== req.eventId) {
+    return res.status(400).json({ error: 'Judge belongs to a different event' });
+  }
+
+  // Remove judge tracks, assignments, reviews
+  db.prepare('DELETE FROM judge_tracks WHERE judge_id = ?').run(judgeId);
+  db.prepare('DELETE FROM judge_assignments WHERE judge_id = ? AND event_id = ?').run(judgeId, req.eventId);
+  db.prepare('DELETE FROM judges WHERE id = ?').run(judgeId);
+
+  recordAuditLog({
+    eventId: req.eventId,
+    userId: req.user.id,
+    role: req.user.role,
+    action: 'judge.removed',
+    resourceType: 'judge',
+    resourceId: judgeId,
+    details: { name: judge.name, email: judge.email }
+  });
+
+  res.json({ message: 'Judge removed successfully from event' });
 });
 
 // GET /api/organizer/rubric
