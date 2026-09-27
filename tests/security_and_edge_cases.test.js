@@ -439,3 +439,45 @@ test('Edge Cases - Health API detects zero-variance judge jdg_07 and duplicate t
   const dupFlag = data.health.flags.find(f => f.type === 'duplicate_submission' && f.resource_id === 'tm_07');
   assert.ok(dupFlag, 'Must detect duplicate submission flag for tm_07');
 });
+
+// ============================================================================
+// 8. ORGANIZER MANAGEMENT & OPERATIONS ENDPOINTS
+// ============================================================================
+
+test('Organizer APIs - Projects, Teams, Judges, and Rubric endpoints work for organizer', async () => {
+  const prjRes = await request('/api/organizer/projects', { headers: { 'Cookie': 'session=org_7f2a' } });
+  assert.strictEqual(prjRes.status, 200);
+  const prjData = JSON.parse(prjRes.body);
+  assert.ok(Array.isArray(prjData.projects));
+  assert.ok(prjData.projects.length >= 40);
+
+  const tmRes = await request('/api/organizer/teams', { headers: { 'Cookie': 'session=org_7f2a' } });
+  assert.strictEqual(tmRes.status, 200);
+  const tmData = JSON.parse(tmRes.body);
+  assert.ok(Array.isArray(tmData.teams));
+  assert.ok(tmData.teams.length >= 40);
+
+  const jdgRes = await request('/api/organizer/judges', { headers: { 'Cookie': 'session=org_7f2a' } });
+  assert.strictEqual(jdgRes.status, 200);
+  const jdgData = JSON.parse(jdgRes.body);
+  assert.ok(Array.isArray(jdgData.judges));
+  assert.ok(jdgData.judges.length >= 30);
+
+  const rubRes = await request('/api/organizer/rubric', { headers: { 'Cookie': 'session=org_7f2a' } });
+  assert.strictEqual(rubRes.status, 200);
+  const rubData = JSON.parse(rubRes.body);
+  assert.ok(Array.isArray(rubData.criteria));
+  assert.ok(rubData.criteria.length >= 3);
+});
+
+test('Organizer APIs - Non-organizer is rejected from projects, teams, judges endpoints with 401 or 403', async () => {
+  const participantRes = await request('/api/organizer/projects', { headers: { 'Cookie': 'session=prt_2e88' } });
+  assert.ok(participantRes.status === 401 || participantRes.status === 403);
+
+  const judgeRes = await request('/api/organizer/teams', { headers: { 'Cookie': 'session=jdg_a_91bc' } });
+  assert.ok(judgeRes.status === 401 || judgeRes.status === 403);
+
+  const anonRes = await request('/api/organizer/judges');
+  assert.ok(anonRes.status === 401 || anonRes.status === 403);
+});
+
