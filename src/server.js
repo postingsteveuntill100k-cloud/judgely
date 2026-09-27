@@ -52,14 +52,20 @@ app.use((err, req, res, next) => {
   });
 });
 
-function startServer(port = PORT) {
-  // Ensure database exists and is seeded with fixtures.json
+function ensureSeeded() {
   const db = getDb();
   const event = db.prepare('SELECT id FROM events WHERE id = ?').get('evt_01');
   if (!event) {
     console.log('Database empty. Seeding fixtures.json...');
     seed(db);
   }
+}
+
+// Auto-seed on load so both server and test imports have data
+ensureSeeded();
+
+function startServer(port = PORT) {
+  ensureSeeded();
 
   const server = app.listen(port, () => {
     console.log('================================================================');
