@@ -1,6 +1,127 @@
 {
   "audits": [
     {
+      "id": "aud_2ee83de1-7664-4c12-8a1c-a57f85d82385",
+      "event_id": "evt_01",
+      "user_id": "usr_organizer",
+      "role": "organizer",
+      "action": "export.csv_generated",
+      "resource_type": "results_export",
+      "resource_id": "evt_01",
+      "details": "{\"totalRankedProjects\":41}",
+      "timestamp": "2026-09-27T20:24:37.626Z"
+    },
+    {
+      "id": "aud_7e9bd337-fc56-47a9-a1cf-9859ee6c2210",
+      "event_id": "evt_01",
+      "user_id": "usr_organizer",
+      "role": "organizer",
+      "action": "event.results_visibility_changed",
+      "resource_type": "event",
+      "resource_id": "evt_01",
+      "details": "{\"results_released\":true}",
+      "timestamp": "2026-09-27T20:24:34.156Z"
+    },
+    {
+      "id": "aud_2417e6b2-f4dd-40a2-a10c-5b8b06919b07",
+      "event_id": "evt_01",
+      "user_id": "usr_jdg_01",
+      "role": "judge",
+      "action": "review.submitted",
+      "resource_type": "review",
+      "resource_id": "rev_prj_07_jdg_01",
+      "details": "{\"projectId\":\"prj_07\",\"judgeId\":\"jdg_01\",\"totalWeightedScore\":4.4,\"criteria\":{\"functionality\":4.5,\"quality\":4,\"innovation\":4.8}}",
+      "timestamp": "2026-09-27T20:24:34.095Z"
+    },
+    {
+      "id": "aud_ec1a11e7-3870-4a4c-bf3d-c49f0f1bdc1f",
+      "event_id": "evt_01",
+      "user_id": "usr_organizer",
+      "role": "organizer",
+      "action": "judge.removed",
+      "resource_type": "judge",
+      "resource_id": "jdg_934218ca-3dfd-4f91-96e0-e6c475866043",
+      "details": "{\"name\":\"Dr. Sarah Chen\",\"email\":\"sarah.chen@evaluation.org\"}",
+      "timestamp": "2026-09-27T20:24:32.224Z"
+    },
+    {
+      "id": "aud_864b2b5a-bc2f-4922-a87d-14e7641ffd5c",
+      "event_id": "evt_01",
+      "user_id": "usr_cdf5bc56-f1ce-4fb7-b643-68a8ea791991",
+      "role": "judge",
+      "action": "auth.google_login",
+      "resource_type": "session",
+      "resource_id": null,
+      "details": "{\"email\":\"sarah.chen@evaluation.org\",\"provider\":\"google\"}",
+      "timestamp": "2026-09-27T20:24:32.208Z"
+    },
+    {
+      "id": "aud_6fff195a-d2d1-429d-bed0-71e9cf32d86c",
+      "event_id": "evt_01",
+      "user_id": "usr_organizer",
+      "role": "organizer",
+      "action": "judge.created",
+      "resource_type": "judge",
+      "resource_id": "jdg_934218ca-3dfd-4f91-96e0-e6c475866043",
+      "details": "{\"name\":\"Dr. Sarah Chen\",\"email\":\"sarah.chen@evaluation.org\",\"tracks\":[\"Developer tools\"]}",
+      "timestamp": "2026-09-27T20:24:32.183Z"
+    },
+    {
+      "id": "aud_2972be68-01bc-48fd-8243-ecf593cabb6c",
+      "event_id": "evt_01",
+      "user_id": "usr_organizer",
+      "role": "organizer",
+      "action": "export.csv_generated",
+      "resource_type": "results_export",
+      "resource_id": "evt_01",
+      "details": "{\"totalRankedProjects\":41}",
+      "timestamp": "2026-09-27T20:24:31.636Z"
+    },
+    {
+      "id": "aud_dc01369d-fa7b-4ee4-8a13-8c8bf0ffa28b",
+      "event_id": "evt_01",
+      "user_id": "usr_abhinav",
+      "role": "organizer",
+      "action": "auth.google_login",
+      "resource_type": "session",
+      "resource_id": null,
+      "details": "{\"email\":\"quality.prashanth@gmail.com\",\"provider\":\"google\"}",
+      "timestamp": "2026-09-27T20:24:31.187Z"
+    },
+    {
+      "id": "aud_786ea702-fbea-4f49-b9fe-710ce274754e",
+      "event_id": "evt_01",
+      "user_id": "usr_cd8a7f83-ac56-41cb-ac09-bcf6576252f6",
+      "role": "participant",
+      "action": "auth.google_login",
+      "resource_type": "session",
+      "resource_id": null,
+      "details": "{\"email\":\"new_hacker_1790540671132@gmail.com\",\"provider\":\"google\"}",
+      "timestamp": "2026-09-27T20:24:31.167Z"
+    },
+    {
+      "id": "aud_c5893d9a-8153-40c1-ba21-fe493f1a172c",
+      "event_id": "evt_01",
+      "user_id": "usr_jdg_01",
+      "role": "judge",
+      "action": "auth.google_login",
+      "resource_type": "session",
+      "resource_id": null,
+      "details": "{\"email\":\"tomas.varga@example.org\",\"provider\":\"google\"}",
+      "timestamp": "2026-09-27T20:24:31.075Z"
+    },
+    {
+      "id": "aud_8a98a7d7-4a99-4e6e-8934-1a5f3bd8548d",
+      "event_id": "evt_01",
+      "user_id": "usr_participant",
+      "role": "participant",
+      "action": "auth.google_login",
+      "resource_type": "session",
+      "resource_id": null,
+      "details": "{\"email\":\"priya1@example.org\",\"provider\":\"google\"}",
+      "timestamp": "2026-09-27T20:24:31.019Z"
+    },
+    {
       "id": "aud_79b0c22c-75fe-4375-8916-fe6ef8f66903",
       "event_id": "evt_01",
       "user_id": "usr_organizer",
@@ -428,116 +549,6 @@
       "resource_id": "evt_01",
       "details": "{\"totalRankedProjects\":41}",
       "timestamp": "2026-09-27T17:52:51.586Z"
-    },
-    {
-      "id": "aud_eace3ebc-2161-4b61-8746-e96cec44eabe",
-      "event_id": "evt_01",
-      "user_id": "usr_jdg_01",
-      "role": "judge",
-      "action": "auth.google_login",
-      "resource_type": "session",
-      "resource_id": null,
-      "details": "{\"email\":\"tomas.varga@example.org\",\"provider\":\"google\"}",
-      "timestamp": "2026-09-27T17:52:50.917Z"
-    },
-    {
-      "id": "aud_3d82971d-a2a9-4f95-ac55-2fa322a1def7",
-      "event_id": "evt_01",
-      "user_id": "usr_participant",
-      "role": "participant",
-      "action": "auth.google_login",
-      "resource_type": "session",
-      "resource_id": null,
-      "details": "{\"email\":\"priya1@example.org\",\"provider\":\"google\"}",
-      "timestamp": "2026-09-27T17:52:50.875Z"
-    },
-    {
-      "id": "aud_9eef1b97-676b-410e-a699-cf118f66aebe",
-      "event_id": "evt_01",
-      "user_id": "usr_abhinav",
-      "role": "organizer",
-      "action": "auth.google_login",
-      "resource_type": "session",
-      "resource_id": null,
-      "details": "{\"email\":\"quality.prashanth@gmail.com\",\"provider\":\"google\"}",
-      "timestamp": "2026-09-27T17:45:13.749Z"
-    },
-    {
-      "id": "aud_47945118-b2f3-45de-9310-7f905b063168",
-      "event_id": "evt_01",
-      "user_id": "usr_organizer",
-      "role": "organizer",
-      "action": "export.csv_generated",
-      "resource_type": "results_export",
-      "resource_id": "evt_01",
-      "details": "{\"totalRankedProjects\":41}",
-      "timestamp": "2026-09-27T17:45:08.758Z"
-    },
-    {
-      "id": "aud_dd152f9c-84ac-4e02-868e-e67478e5671a",
-      "event_id": "evt_01",
-      "user_id": "usr_organizer",
-      "role": "organizer",
-      "action": "event.results_visibility_changed",
-      "resource_type": "event",
-      "resource_id": "evt_01",
-      "details": "{\"results_released\":true}",
-      "timestamp": "2026-09-27T17:45:01.505Z"
-    },
-    {
-      "id": "aud_289a588f-e68a-49e4-ae2d-08a5f4a2e40d",
-      "event_id": "evt_01",
-      "user_id": "usr_jdg_01",
-      "role": "judge",
-      "action": "review.submitted",
-      "resource_type": "review",
-      "resource_id": "rev_prj_07_jdg_01",
-      "details": "{\"projectId\":\"prj_07\",\"judgeId\":\"jdg_01\",\"totalWeightedScore\":4.4,\"criteria\":{\"functionality\":4.5,\"quality\":4,\"innovation\":4.8}}",
-      "timestamp": "2026-09-27T17:45:01.443Z"
-    },
-    {
-      "id": "aud_27ea6307-8e99-45d0-b652-9dba822f55dd",
-      "event_id": "evt_01",
-      "user_id": "usr_organizer",
-      "role": "organizer",
-      "action": "export.csv_generated",
-      "resource_type": "results_export",
-      "resource_id": "evt_01",
-      "details": "{\"totalRankedProjects\":41}",
-      "timestamp": "2026-09-27T17:44:58.950Z"
-    },
-    {
-      "id": "aud_c6c78a52-e252-4f6d-aed4-79fae2015b80",
-      "event_id": "evt_01",
-      "user_id": "usr_jdg_01",
-      "role": "judge",
-      "action": "auth.google_login",
-      "resource_type": "session",
-      "resource_id": null,
-      "details": "{\"email\":\"tomas.varga@example.org\",\"provider\":\"google\"}",
-      "timestamp": "2026-09-27T17:44:58.244Z"
-    },
-    {
-      "id": "aud_cb7dde43-3997-447e-81c3-5d60b5fd5671",
-      "event_id": "evt_01",
-      "user_id": "usr_participant",
-      "role": "participant",
-      "action": "auth.google_login",
-      "resource_type": "session",
-      "resource_id": null,
-      "details": "{\"email\":\"priya1@example.org\",\"provider\":\"google\"}",
-      "timestamp": "2026-09-27T17:44:58.154Z"
-    },
-    {
-      "id": "aud_init_seed",
-      "event_id": "evt_01",
-      "user_id": "system",
-      "role": "system",
-      "action": "system.seed_fixtures",
-      "resource_type": "fixtures",
-      "resource_id": "evt_01",
-      "details": "{\"derived_event\":\"evt_01\",\"projects_count\":41,\"judges_count\":30,\"scores_count\":126,\"judge_a_mapped\":\"jdg_01\",\"judge_b_mapped\":\"jdg_02\"}",
-      "timestamp": "2026-09-27T17:44:15.413Z"
     }
   ]
 }

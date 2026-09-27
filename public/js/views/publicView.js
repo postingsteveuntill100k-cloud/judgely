@@ -1,4 +1,4 @@
-// Judgely Public Event & Editorial Showcase View
+// Hackerly Public Platform & Editorial Showcase View
 (function(window) {
   'use strict';
 
@@ -8,8 +8,11 @@
   let publicProjects = [];
   let publicTracks = [];
   let publicEvent = null;
+  let cachedEvents = [];
   let activeTrack = 'all';
   let searchQuery = '';
+  let hackathonFilter = 'all';
+  let hackathonSearch = '';
 
   async function render(container) {
     container.innerHTML = `
@@ -22,181 +25,155 @@
               <line x1="12" y1="8" x2="12.01" y2="8"></line>
             </svg>
             <div>
-              <strong>Hosted Showcase Shell:</strong> You are viewing the hosted read-only preview of Sample Hack 2026. For the authoritative evaluation engine, local database persistence, and offline testing, run self-hosted via Docker or Node.js.
+              <strong>Hosted Showcase Shell:</strong> You are viewing the live cloud showcase on Firebase. For the authoritative evaluation engine, local database persistence, and offline testing, run self-hosted via Docker or Node.js.
             </div>
           </div>
         ` : ''}
 
-        <!-- Hero Section -->
-        <section class="hero-section text-center mb-8" id="hero-section">
-          <div id="hero-status-container" class="mb-4">
-            <span class="badge badge-primary">Loading Event Context...</span>
+        <!-- 3D Spatial Hero Section -->
+        <section class="public-hero" id="hero-section">
+          <!-- Three.js Universe Layer -->
+          <div class="hero-universe-canvas-wrapper" aria-hidden="true">
+            <canvas id="hackerly-universe-canvas"></canvas>
           </div>
-          <h1 class="hero-headline" id="hero-event-title">Judgely Hackathon Showcase</h1>
-          <p class="hero-subhead" id="hero-event-desc">
-            Open-source judging infrastructure with transparent assignments, defensible scoring, and mathematical normalization.
-          </p>
-          <div class="flex justify-center gap-3 mt-6 flex-wrap">
-            <a href="#projects-showcase" class="btn btn-primary" id="btn-explore-projects">Explore Projects</a>
-            <a href="#tracks-section" class="btn btn-secondary" id="btn-view-tracks">View Tracks</a>
-            <button class="btn btn-secondary" id="btn-hero-host-event">+ Host a Hackathon</button>
+
+          <!-- Hero Content Layer -->
+          <div class="hero-content-layer">
+            <div class="hero-tag">
+              <span class="live-dot"></span>
+              <span id="hero-status-pill">HACKERLY PLATFORM • THE MODERN HACKATHON ECOSYSTEM</span>
+            </div>
+            <h1 class="hero-headline" id="hero-event-title">Where Serious Hackathons Happen.</h1>
+            <p class="hero-subtitle" id="hero-event-desc">
+              The unified operating system for builders, teams, and organizers. Discover high-stakes competitions, assemble teams, build ambitious software, and experience transparent, mathematically normalized evaluation.
+            </p>
+            <div class="hero-actions">
+              <a href="#hackathons-directory" class="btn btn-primary" id="btn-explore-hackathons">Explore Hackathons</a>
+              <a href="#projects-showcase" class="btn btn-secondary" id="btn-explore-projects">Browse Projects</a>
+              <button class="btn btn-secondary" id="btn-hero-host-event">+ Host a Hackathon</button>
+            </div>
           </div>
         </section>
 
-        <!-- Live Event Statistics Ribbon -->
-        <section class="metrics-grid mb-8" id="event-stats-ribbon">
+        <!-- Hackathon Lifecycle Walkthrough -->
+        <section class="mb-10" id="lifecycle-section">
+          <div class="section-eyebrow">The Complete Ecosystem</div>
+          <h2 class="section-title">Built for the Entire Hackathon Journey</h2>
+          <p class="section-subtitle">
+            Hackerly is not merely a judging tool or a submission form. It is the end-to-end infrastructure connecting builders, projects, and defensible outcomes.
+          </p>
+
+          <div class="lifecycle-grid">
+            <div class="lifecycle-card">
+              <div class="lifecycle-num">01 / DISCOVER</div>
+              <div class="lifecycle-title">Find Competitions</div>
+              <div class="lifecycle-desc">
+                Browse curated engineering hackathons with transparent rules, verified prize pools, and domain tracks.
+              </div>
+            </div>
+
+            <div class="lifecycle-card">
+              <div class="lifecycle-num">02 / TEAM UP</div>
+              <div class="lifecycle-title">Assemble Rosters</div>
+              <div class="lifecycle-desc">
+                Create or join teams, manage member invitations with cryptographic codes, and collaborate seamlessly.
+              </div>
+            </div>
+
+            <div class="lifecycle-card">
+              <div class="lifecycle-num">03 / BUILD</div>
+              <div class="lifecycle-title">Build Ambitious Code</div>
+              <div class="lifecycle-desc">
+                Build against clear rubrics, connect GitHub repositories and live deployments, and track milestone readiness.
+              </div>
+            </div>
+
+            <div class="lifecycle-card">
+              <div class="lifecycle-num">04 / SUBMIT</div>
+              <div class="lifecycle-title">Enforced Deadlines</div>
+              <div class="lifecycle-desc">
+                Server-enforced deadline timestamps guarantee fair submission windows with tamper-proof version control.
+              </div>
+            </div>
+
+            <div class="lifecycle-card">
+              <div class="lifecycle-num">05 / EVALUATE</div>
+              <div class="lifecycle-title">Defensible Judging</div>
+              <div class="lifecycle-desc">
+                Blind scoring, peer score privacy, weighted rubric criteria, and deterministic Z-score normalization.
+              </div>
+            </div>
+
+            <div class="lifecycle-card">
+              <div class="lifecycle-num">06 / SHOWCASE</div>
+              <div class="lifecycle-title">Permanent Gallery</div>
+              <div class="lifecycle-desc">
+                Persistent, searchable project archives celebrating builder achievements with verifiable credentials.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Live Platform Telemetry Ribbon -->
+        <section class="metrics-grid mb-10" id="event-stats-ribbon">
           <div class="metric-card">
-            <div class="metric-label">Registered Projects</div>
+            <div class="metric-label">Active Submissions</div>
             <div class="metric-value" id="stat-projects-count">-</div>
-            <div class="metric-subtext">Active Submissions</div>
+            <div class="metric-subtext">Verified projects in gallery</div>
           </div>
           <div class="metric-card">
-            <div class="metric-label">Competition Tracks</div>
+            <div class="metric-label">Domain Tracks</div>
             <div class="metric-value" id="stat-tracks-count">-</div>
-            <div class="metric-subtext">Domain Categories</div>
+            <div class="metric-subtext">Competitive technical categories</div>
           </div>
           <div class="metric-card">
             <div class="metric-label">Participating Teams</div>
             <div class="metric-value" id="stat-teams-count">-</div>
-            <div class="metric-subtext">Collaborative Units</div>
+            <div class="metric-subtext">Collaborative builder squads</div>
           </div>
           <div class="metric-card">
-            <div class="metric-label">Judging Engine</div>
+            <div class="metric-label">Evaluation Engine</div>
             <div class="metric-value text-success">Active</div>
-            <div class="metric-subtext">Z-Score Normalization</div>
+            <div class="metric-subtext">Z-Score Normalization & Blind RBAC</div>
           </div>
         </section>
 
-        <!-- Platform Hackathons Directory -->
-        <section class="mb-10" id="hackathons-directory">
+        <!-- Hackathon Discovery Directory (/hackathons) -->
+        <section class="mb-12" id="hackathons-directory">
           <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
             <div>
-              <div class="section-eyebrow">Platform Directory</div>
+              <div class="section-eyebrow">Hackathon Discovery</div>
               <h2 class="section-title">Explore Hackathons</h2>
-              <p class="section-subtitle">Discover active engineering hackathons, join teams, or host your own competition.</p>
+              <p class="section-subtitle">Discover active competitions, join teams to build, or launch your own hackathon.</p>
             </div>
-            <button class="btn btn-primary" id="btn-directory-host-event">+ Host a Hackathon</button>
+            <div class="flex gap-2 items-center flex-wrap">
+              <input type="text" id="hackathon-search-input" class="form-input" placeholder="Search hackathons..." style="width: 240px;">
+              <button class="btn btn-primary" id="btn-directory-host-event">+ Host a Hackathon</button>
+            </div>
           </div>
 
-          <div class="hackathons-filter-bar flex gap-2 mb-4 flex-wrap" id="hackathons-filter-bar">
-            <button type="button" class="pill active" data-filter="all">All Hackathons</button>
+          <div class="hackathons-filter-bar flex gap-2 mb-6 flex-wrap" id="hackathons-filter-bar">
+            <button type="button" class="pill active" data-filter="all">All Competitions</button>
             <button type="button" class="pill" data-filter="SUBMISSIONS_OPEN">Submissions Open</button>
             <button type="button" class="pill" data-filter="JUDGING">Judging in Progress</button>
             <button type="button" class="pill" data-filter="RESULTS_RELEASED">Results Announced</button>
           </div>
 
           <div class="hackathons-grid" id="hackathons-container">
-            <div class="p-6 text-center text-muted">Loading hackathons directory...</div>
+            <div class="p-6 text-center text-muted col-span-full">Loading hackathons directory...</div>
           </div>
         </section>
 
-        <!-- How Judging Works (5-Step Architectural Flow) -->
-        <section class="workflow-section" id="how-judging-works">
-          <div class="section-eyebrow">Defensible Evaluation</div>
-          <h2 class="section-title">How Judging Works</h2>
-          <p class="section-subtitle">
-            Judgely eliminates peer influence, score bias, and organizer subjectivity through deterministic cryptographic workflows.
-          </p>
-          <div class="workflow-steps-grid">
-            <div class="workflow-step-card">
-              <div class="workflow-step-num">1</div>
-              <div class="workflow-step-title">Assignment</div>
-              <div class="workflow-step-desc">
-                Domain judges are assigned to projects based on track expertise. Zero conflict of interest.
-              </div>
-            </div>
-            <div class="workflow-step-card">
-              <div class="workflow-step-num">2</div>
-              <div class="workflow-step-title">Blind Review</div>
-              <div class="workflow-step-desc">
-                Judges score projects in complete isolation. No judge can see peer scores or ranking progress.
-              </div>
-            </div>
-            <div class="workflow-step-card">
-              <div class="workflow-step-num">3</div>
-              <div class="workflow-step-title">Normalization</div>
-              <div class="workflow-step-desc">
-                Mathematical z-score normalization neutralizes harsh or lenient grading variances fairly.
-              </div>
-            </div>
-            <div class="workflow-step-card">
-              <div class="workflow-step-num">4</div>
-              <div class="workflow-step-title">Embargoed Results</div>
-              <div class="workflow-step-desc">
-                Results remain confidential until the organizer officially signs and publishes the ledger.
-              </div>
-            </div>
-            <div class="workflow-step-card">
-              <div class="workflow-step-num">5</div>
-              <div class="workflow-step-title">Verifiable Audit</div>
-              <div class="workflow-step-desc">
-                Every score, assignment, and status transition is recorded in an immutable audit trail.
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Event Timeline / Schedule Section -->
-        <section class="mb-8" id="schedule-section">
-          <div class="section-eyebrow">Event Lifecycle</div>
-          <h2 class="section-title">Competition Schedule</h2>
-          <div class="roadmap-steps mt-4">
-            <div class="roadmap-step">
-              <div class="step-num done">1</div>
-              <div class="step-meta">
-                <strong>Registration Opens</strong>
-                <span>Teams & Solo Participants Welcome</span>
-              </div>
-            </div>
-            <div class="roadmap-step">
-              <div class="step-num active">2</div>
-              <div class="step-meta">
-                <strong>Hacking & Building</strong>
-                <span>Collaborate on Repositories & Demos</span>
-              </div>
-            </div>
-            <div class="roadmap-step">
-              <div class="step-num">3</div>
-              <div class="step-meta">
-                <strong>Submissions Deadline</strong>
-                <span id="schedule-deadline-text">Enforced by Server</span>
-              </div>
-            </div>
-            <div class="roadmap-step">
-              <div class="step-num">4</div>
-              <div class="step-meta">
-                <strong>Blind Evaluation</strong>
-                <span>Domain Judges & Z-Score Normalization</span>
-              </div>
-            </div>
-            <div class="roadmap-step">
-              <div class="step-num">5</div>
-              <div class="step-meta">
-                <strong>Official Results</strong>
-                <span>Public Ledger & Final Standings</span>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <!-- Tracks Section -->
-        <section class="mb-8" id="tracks-section">
-          <div class="section-eyebrow">Competition Categories</div>
-          <h2 class="section-title">Hackathon Tracks</h2>
-          <div class="grid grid-3 gap-4 mt-4" id="tracks-cards-grid">
-            <div class="empty-state-box grid-col-all">Loading competition tracks...</div>
-          </div>
-        </section>
-
-        <!-- Projects Showcase Section -->
-        <section class="mb-8" id="projects-showcase">
-          <div class="flex justify-between items-center mb-4">
+        <!-- Projects Showcase Gallery (/projects) -->
+        <section class="mb-12" id="projects-showcase">
+          <div class="flex justify-between items-center mb-4 flex-wrap gap-3">
             <div>
-              <div class="section-eyebrow">Submissions Gallery</div>
-              <h2 class="section-title">Featured Projects</h2>
+              <div class="section-eyebrow">Submissions Showcase</div>
+              <h2 class="section-title">Project Gallery</h2>
+              <p class="section-subtitle">Explore working prototypes, repositories, and architectural solutions built on Hackerly.</p>
             </div>
             <div class="search-box">
-              <input type="text" id="project-search-input" class="form-input" placeholder="Search projects by title, summary, or stack..." style="width: 320px;">
+              <input type="text" id="project-search-input" class="form-input" placeholder="Search projects by title, stack, or team..." style="width: 320px;">
             </div>
           </div>
 
@@ -211,10 +188,66 @@
           </div>
         </section>
 
-        <!-- Judging Integrity Pillars -->
-        <section class="mb-8" id="integrity-section">
+        <!-- Tracks Section -->
+        <section class="mb-12" id="tracks-section">
+          <div class="section-eyebrow">Competition Categories</div>
+          <h2 class="section-title">Hackathon Tracks & Specializations</h2>
+          <p class="section-subtitle">Each track features tailored rubric criteria, specialized judges, and dedicated awards.</p>
+          <div class="grid grid-3 gap-4 mt-6" id="tracks-cards-grid">
+            <div class="empty-state-box grid-col-all">Loading competition tracks...</div>
+          </div>
+        </section>
+
+        <!-- Competition Schedule -->
+        <section class="mb-12" id="schedule-section">
+          <div class="section-eyebrow">Event Lifecycle</div>
+          <h2 class="section-title">Competition Timeline</h2>
+          <div class="roadmap-steps mt-6">
+            <div class="roadmap-step">
+              <div class="step-num done">1</div>
+              <div class="step-meta">
+                <strong>Registration Opens</strong>
+                <span>Rosters & Individual Entry</span>
+              </div>
+            </div>
+            <div class="roadmap-step">
+              <div class="step-num active">2</div>
+              <div class="step-meta">
+                <strong>Hacking & Building</strong>
+                <span>Collaborative Development</span>
+              </div>
+            </div>
+            <div class="roadmap-step">
+              <div class="step-num">3</div>
+              <div class="step-meta">
+                <strong>Submissions Lock</strong>
+                <span id="schedule-deadline-text">Server Enforced</span>
+              </div>
+            </div>
+            <div class="roadmap-step">
+              <div class="step-num">4</div>
+              <div class="step-meta">
+                <strong>Blind Evaluation</strong>
+                <span>Isolated Reviews & Normalization</span>
+              </div>
+            </div>
+            <div class="roadmap-step">
+              <div class="step-num">5</div>
+              <div class="step-meta">
+                <strong>Results Released</strong>
+                <span>Public Standings & Awards</span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Defensible Evaluation Architecture -->
+        <section class="mb-12" id="integrity-section">
           <div class="section-eyebrow">Architecture Guarantees</div>
           <h2 class="section-title">Built for Serious Competitions</h2>
+          <p class="section-subtitle">
+            Hackerly eliminates peer bias, score inflation, and organizer favoritism through mathematical normalization and cryptographic audit trails.
+          </p>
           <div class="integrity-grid mt-6">
             <div class="integrity-card">
               <div class="integrity-card-icon">
@@ -222,18 +255,20 @@
                   <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
                 </svg>
               </div>
-              <h4>Role Isolation</h4>
-              <p>Strict server-side RBAC ensures judges cannot inspect peer evaluations, and participants cannot access private scores.</p>
+              <h4>Role Isolation & Privacy</h4>
+              <p>Strict server-side RBAC ensures judges evaluate in isolation: Judge A cannot view Judge B's scores, and participants cannot access evaluations prior to release.</p>
             </div>
+
             <div class="integrity-card">
               <div class="integrity-card-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                   <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
                 </svg>
               </div>
-              <h4>Mathematical Proof</h4>
-              <p>Standardized score distribution prevents outlier judges from disproportionately swaying winning project outcomes.</p>
+              <h4>Mathematical Normalization</h4>
+              <p>Z-score normalization transforms raw judge scores, neutralizing both overly generous and harsh graders to produce statistically defensible final rankings.</p>
             </div>
+
             <div class="integrity-card">
               <div class="integrity-card-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -241,9 +276,10 @@
                   <polyline points="12 6 12 12 14 14"></polyline>
                 </svg>
               </div>
-              <h4>Auditable Timeline</h4>
-              <p>Every assignment, submission edit, score submission, and configuration change is logged with cryptographically strong UUIDs.</p>
+              <h4>Immutable Audit Ledger</h4>
+              <p>Every assignment, submission version, review submission, score change, and result publication is timestamped and recorded in the audit log.</p>
             </div>
+
             <div class="integrity-card">
               <div class="integrity-card-icon">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -254,14 +290,33 @@
                 </svg>
               </div>
               <h4>Self-Hostable Core</h4>
-              <p>Deploy Judgely anywhere in 30 seconds via Docker and SQLite. 100% offline capable with zero external cloud dependencies.</p>
+              <p>Deploy Hackerly anywhere with Docker and SQLite. Full local database persistence, 100% offline ready, with zero mandatory cloud accounts.</p>
             </div>
+          </div>
+        </section>
+
+        <!-- Bottom CTA -->
+        <section class="card p-8 text-center mb-8" style="background: linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(16,185,129,0.06) 100%);">
+          <h2 class="text-2xl font-bold mb-2">Ready to run your next hackathon?</h2>
+          <p class="text-muted max-width-600 mx-auto mb-6">
+            Join thousands of developers, organizers, and universities running seamless competitions on Hackerly.
+          </p>
+          <div class="flex justify-center gap-3 flex-wrap">
+            <button class="btn btn-primary" id="btn-bottom-host-hackathon">+ Host a Hackathon</button>
+            <button class="btn btn-secondary" id="btn-bottom-signin">Sign In to Platform</button>
           </div>
         </section>
       </div>
     `;
 
-    // Bind search and filter events
+    // 1. Initialize Three.js Spatial Universe in Hero
+    if (window.HackerlyUniverse) {
+      setTimeout(() => {
+        window.HackerlyUniverse.init('hackerly-universe-canvas');
+      }, 50);
+    }
+
+    // 2. Bind Project Search & Track Filter
     const searchInput = document.getElementById('project-search-input');
     if (searchInput) {
       searchInput.addEventListener('input', (e) => {
@@ -270,54 +325,79 @@
       });
     }
 
-    // Bind host event CTA in hero
+    // 3. Bind Hackathon Search & Status Filters
+    const hackathonSearchInput = document.getElementById('hackathon-search-input');
+    if (hackathonSearchInput) {
+      hackathonSearchInput.addEventListener('input', (e) => {
+        hackathonSearch = e.target.value.toLowerCase().trim();
+        filterAndRenderHackathons();
+      });
+    }
+
+    document.querySelectorAll('#hackathons-filter-bar .pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('#hackathons-filter-bar .pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        hackathonFilter = pill.getAttribute('data-filter') || 'all';
+        filterAndRenderHackathons();
+      });
+    });
+
+    // 4. Bind Host Event CTAs
     const btnHeroHost = document.getElementById('btn-hero-host-event');
     if (btnHeroHost && window.Judgely.showCreateHackathonModal) {
       btnHeroHost.addEventListener('click', window.Judgely.showCreateHackathonModal);
     }
 
-    // Bind directory host button
     const btnDirHost = document.getElementById('btn-directory-host-event');
     if (btnDirHost && window.Judgely.showCreateHackathonModal) {
       btnDirHost.addEventListener('click', window.Judgely.showCreateHackathonModal);
     }
 
-    // Bind hackathon status filter pills
-    document.querySelectorAll('#hackathons-filter-bar .pill').forEach(pill => {
-      pill.addEventListener('click', () => {
-        document.querySelectorAll('#hackathons-filter-bar .pill').forEach(p => p.classList.remove('active'));
-        pill.classList.add('active');
-        const filter = pill.getAttribute('data-filter') || 'all';
-        renderHackathonsDirectory(cachedEvents, filter);
-      });
-    });
+    const btnBottomHost = document.getElementById('btn-bottom-host-hackathon');
+    if (btnBottomHost && window.Judgely.showCreateHackathonModal) {
+      btnBottomHost.addEventListener('click', window.Judgely.showCreateHackathonModal);
+    }
 
-    // Fetch live data from backend
+    const btnBottomSignIn = document.getElementById('btn-bottom-signin');
+    if (btnBottomSignIn) {
+      btnBottomSignIn.addEventListener('click', () => {
+        window.Judgely.navigateTo('login');
+      });
+    }
+
+    // 5. Fetch live data from backend
     await loadPublicData();
   }
 
-  let cachedEvents = [];
+  function filterAndRenderHackathons() {
+    let filtered = cachedEvents || [];
+    if (hackathonFilter !== 'all') {
+      filtered = filtered.filter(e => e.status === hackathonFilter);
+    }
+    if (hackathonSearch) {
+      filtered = filtered.filter(e =>
+        (e.name && e.name.toLowerCase().includes(hackathonSearch)) ||
+        (e.description && e.description.toLowerCase().includes(hackathonSearch))
+      );
+    }
+    renderHackathonsCards(filtered);
+  }
 
-  function renderHackathonsDirectory(events, filter = 'all') {
-    cachedEvents = events || [];
+  function renderHackathonsCards(events) {
     const container = document.getElementById('hackathons-container');
     if (!container) return;
 
-    let filtered = cachedEvents;
-    if (filter !== 'all') {
-      filtered = cachedEvents.filter(e => e.status === filter);
-    }
-
-    if (filtered.length === 0) {
+    if (!events || events.length === 0) {
       container.innerHTML = `
         <div class="empty-state-box text-center p-6 bg-surface rounded border col-span-full">
-          <p class="text-muted">No hackathons currently matching this status filter.</p>
+          <p class="text-muted">No hackathons currently matching your search and filter criteria.</p>
         </div>
       `;
       return;
     }
 
-    container.innerHTML = filtered.map(evt => {
+    container.innerHTML = events.map(evt => {
       const isCurrent = evt.id === window.Judgely.state.activeEventId;
       const statusBadge = evt.status === 'RESULTS_RELEASED'
         ? '<span class="badge badge-success">● Results Released</span>'
@@ -335,7 +415,7 @@
             ${isCurrent ? '<span class="badge badge-info text-xs">Viewing</span>' : ''}
           </div>
           <h3 class="hackathon-card-title">${escapeHtml(evt.name)}</h3>
-          <p class="hackathon-card-desc">${escapeHtml(evt.description || 'Open-source engineering competition on Judgely.')}</p>
+          <p class="hackathon-card-desc">${escapeHtml(evt.description || 'Open-source engineering competition on Hackerly.')}</p>
           
           <div class="hackathon-card-meta">
             <div class="meta-item">
@@ -384,7 +464,8 @@
       ]);
 
       if (eventsRes.status === 'fulfilled' && eventsRes.value && eventsRes.value.events) {
-        renderHackathonsDirectory(eventsRes.value.events);
+        cachedEvents = eventsRes.value.events;
+        filterAndRenderHackathons();
       }
 
       if (eventRes.status === 'fulfilled') {
@@ -393,8 +474,6 @@
       } else {
         const heroTitle = document.getElementById('hero-event-title');
         if (heroTitle) heroTitle.textContent = 'Event Details Temporarily Unavailable';
-        const heroStatus = document.getElementById('hero-status-container');
-        if (heroStatus) heroStatus.innerHTML = '<span class="badge badge-danger">Connection Error</span>';
       }
 
       if (tracksRes.status === 'fulfilled') {
@@ -418,7 +497,7 @@
         }
       }
 
-      // Update metrics ribbon
+      // Update platform metrics ribbon
       const statProjects = document.getElementById('stat-projects-count');
       if (statProjects) statProjects.textContent = publicProjects.length;
 
@@ -439,221 +518,236 @@
   function updateEventHeader(event) {
     if (!event) return;
     const titleEl = document.getElementById('hero-event-title');
-    if (titleEl) titleEl.textContent = event.name || 'Hackathon Championship';
-
-    const descEl = document.getElementById('hero-event-desc');
-    if (descEl && event.description) descEl.textContent = event.description;
-
-    const navEvent = document.getElementById('header-event-name');
-    if (navEvent) navEvent.textContent = event.name;
-
-    const statusContainer = document.getElementById('hero-status-container');
-    if (statusContainer) {
-      const isClosed = event.submissions_close && new Date(event.submissions_close) < new Date();
-      if (event.results_released) {
-        statusContainer.innerHTML = '<span class="badge badge-success">Official Results Published</span>';
-      } else if (isClosed) {
-        statusContainer.innerHTML = '<span class="badge badge-warning">Submissions Closed • Judging In Progress</span>';
-      } else {
-        statusContainer.innerHTML = '<span class="badge badge-primary">Submissions Open</span>';
-      }
+    if (titleEl && event.name) {
+      titleEl.textContent = event.name;
     }
 
-    const scheduleDeadline = document.getElementById('schedule-deadline-text');
-    if (scheduleDeadline && event.submissions_close) {
-      scheduleDeadline.textContent = new Date(event.submissions_close).toUTCString();
+    const descEl = document.getElementById('hero-event-desc');
+    if (descEl && event.description) {
+      descEl.textContent = event.description;
+    }
+
+    const navEvent = document.getElementById('header-event-name');
+    if (navEvent && event.name) {
+      navEvent.textContent = event.name;
+    }
+
+    const deadlineEl = document.getElementById('schedule-deadline-text');
+    if (deadlineEl && event.submissions_close) {
+      const d = new Date(event.submissions_close);
+      deadlineEl.textContent = isNaN(d.getTime()) ? event.submissions_close : d.toLocaleString();
     }
   }
 
   function renderTracks(tracks) {
-    const cardsContainer = document.getElementById('tracks-cards-grid');
+    // 1. Render Track Filter Pills
     const pillsContainer = document.getElementById('track-filter-pills');
-
-    if (cardsContainer) {
-      if (!tracks || tracks.length === 0) {
-        cardsContainer.innerHTML = '<div class="empty-state-box grid-col-all">No tracks configured for this event.</div>';
-      } else {
-        cardsContainer.innerHTML = tracks.map(t => `
-          <div class="card p-4">
-            <span class="badge badge-primary mb-2">${escapeHtml(t.id)}</span>
-            <h4 class="font-bold mb-1">${escapeHtml(t.name)}</h4>
-            <p class="text-muted text-sm">${escapeHtml(t.description || 'Projects building solutions in this category.')}</p>
-          </div>
-        `).join('');
-      }
-    }
-
-    if (pillsContainer && tracks && tracks.length > 0) {
-      const totalCount = publicProjects.length;
-      pillsContainer.innerHTML = `
-        <button class="pill ${activeTrack === 'all' ? 'active' : ''}" data-track="all">All Tracks (${totalCount})</button>
+    if (pillsContainer) {
+      const pillsHtml = `
+        <button class="pill ${activeTrack === 'all' ? 'active' : ''}" data-track="all">All Tracks (${publicProjects.length})</button>
         ${tracks.map(t => {
           const count = publicProjects.filter(p => p.track_id === t.id).length;
-          return `
-            <button class="pill ${activeTrack === t.id ? 'active' : ''}" data-track="${escapeHtml(t.id)}">
-              ${escapeHtml(t.name)} (${count})
-            </button>
-          `;
+          return `<button class="pill ${activeTrack === t.id ? 'active' : ''}" data-track="${escapeHtml(t.id)}">${escapeHtml(t.name)} (${count})</button>`;
         }).join('')}
       `;
+      pillsContainer.innerHTML = pillsHtml;
 
-      pillsContainer.querySelectorAll('.pill').forEach(btn => {
-        btn.addEventListener('click', () => {
-          pillsContainer.querySelectorAll('.pill').forEach(b => b.classList.remove('active'));
-          btn.classList.add('active');
-          activeTrack = btn.getAttribute('data-track');
+      pillsContainer.querySelectorAll('.pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          pillsContainer.querySelectorAll('.pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+          activeTrack = pill.getAttribute('data-track');
           renderFilteredProjects();
         });
       });
     }
+
+    // 2. Render Track Cards Grid
+    const tracksGrid = document.getElementById('tracks-cards-grid');
+    if (tracksGrid) {
+      if (tracks.length === 0) {
+        tracksGrid.innerHTML = '<div class="empty-state-box grid-col-all">No tracks configured yet.</div>';
+        return;
+      }
+
+      tracksGrid.innerHTML = tracks.map(t => `
+        <div class="card p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="track-badge">${escapeHtml(t.id)}</span>
+              <span class="mono text-xs text-muted">Track</span>
+            </div>
+            <h3 class="font-bold text-lg mb-2">${escapeHtml(t.name)}</h3>
+            <p class="text-sm text-muted mb-4">${escapeHtml(t.description || 'Focused technical challenge track.')}</p>
+          </div>
+          <div class="pt-4 border-t flex justify-between items-center text-xs text-muted">
+            <span>Specialized Evaluation</span>
+            <span class="text-primary font-semibold">Active</span>
+          </div>
+        </div>
+      `).join('');
+    }
   }
 
   function renderFilteredProjects() {
-    const container = document.getElementById('projects-grid-container');
-    if (!container) return;
+    const grid = document.getElementById('projects-grid-container');
+    if (!grid) return;
 
     let filtered = publicProjects;
+
+    // Filter by track
     if (activeTrack !== 'all') {
       filtered = filtered.filter(p => p.track_id === activeTrack);
     }
+
+    // Filter by search query
     if (searchQuery) {
       filtered = filtered.filter(p => {
-        const matchTitle = (p.title || '').toLowerCase().includes(searchQuery);
-        const matchSummary = (p.summary || '').toLowerCase().includes(searchQuery);
-        const matchTech = (p.tech_stack || '').toLowerCase().includes(searchQuery);
-        const matchTeam = (p.team_name || '').toLowerCase().includes(searchQuery);
-        return matchTitle || matchSummary || matchTech || matchTeam;
+        const titleMatch = (p.title || '').toLowerCase().includes(searchQuery);
+        const summaryMatch = (p.summary || '').toLowerCase().includes(searchQuery);
+        const teamMatch = (p.team_name || '').toLowerCase().includes(searchQuery);
+        const techMatch = (p.technologies || []).some(t => t.toLowerCase().includes(searchQuery));
+        return titleMatch || summaryMatch || teamMatch || techMatch;
       });
     }
 
     if (filtered.length === 0) {
-      container.innerHTML = `
-        <div class="empty-state-box">
-          <h4 class="font-semibold mb-2">No projects found</h4>
-          <p class="text-muted text-sm">Try adjusting your track filter or search query.</p>
+      grid.innerHTML = `
+        <div class="empty-state-box grid-col-all">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="text-muted mb-2">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <h4 class="font-semibold mb-1">No matching projects found</h4>
+          <p class="text-sm text-muted">Try adjusting your search query or track filter.</p>
         </div>
       `;
       return;
     }
 
-    container.innerHTML = filtered.map(p => {
-      const techTags = p.tech_stack ? p.tech_stack.split(',').map(s => s.trim()).filter(Boolean) : [];
+    const isReleased = publicEvent && (publicEvent.results_released || publicEvent.status === 'RESULTS_RELEASED');
+
+    grid.innerHTML = filtered.map(p => {
+      const trackObj = publicTracks.find(t => t.id === p.track_id);
+      const trackName = trackObj ? trackObj.name : (p.track_id || 'General');
+
+      const scoreDisplay = isReleased && p.normalized_score !== undefined && p.normalized_score !== null
+        ? `<span class="score-pill">Score: <strong>${Number(p.normalized_score).toFixed(2)}</strong></span>`
+        : `<span class="score-pill status-eval">Evaluation in progress</span>`;
+
       return `
-        <div class="card project-card" data-project-id="${escapeHtml(p.id)}">
-          <div class="flex justify-between items-center mb-2">
-            <span class="badge badge-secondary">${escapeHtml(p.track_name || p.track_id || 'Track')}</span>
-            <span class="mono text-muted text-xs">${escapeHtml(p.id)}</span>
+        <article class="project-card" data-id="${escapeHtml(p.id)}" data-track="${escapeHtml(p.track_id || '')}">
+          <div class="card-header">
+            <span class="track-badge">${escapeHtml(trackName)}</span>
+            <span class="project-id">${escapeHtml(p.id)}</span>
           </div>
-          <h3 class="font-bold mb-2">${escapeHtml(p.title)}</h3>
-          <p class="text-muted text-sm mb-3 line-clamp-3">${escapeHtml(p.summary || 'No overview provided.')}</p>
-          ${techTags.length > 0 ? `
-            <div class="project-tech-tags">
-              ${techTags.slice(0, 3).map(t => `<span class="tech-tag">${escapeHtml(t)}</span>`).join('')}
-              ${techTags.length > 3 ? `<span class="tech-tag text-muted">+${techTags.length - 3}</span>` : ''}
-            </div>
-          ` : ''}
-          <div class="project-card-footer flex justify-between items-center border-t pt-3 mt-auto">
-            <span class="text-xs text-muted">by <strong>${escapeHtml(p.team_name || 'Team')}</strong></span>
-            <button class="btn btn-secondary btn-sm view-project-btn" data-id="${escapeHtml(p.id)}">View Details &rarr;</button>
+          <h3 class="project-title">${escapeHtml(p.title)}</h3>
+          <p class="project-team">by <strong>${escapeHtml(p.team_name || 'Independent Builder')}</strong></p>
+          <p class="project-summary">${escapeHtml(p.summary || 'No project description provided.')}</p>
+          <div class="card-footer">
+            ${scoreDisplay}
+            <span class="reviews-pill">${p.review_count || 0} review${p.review_count === 1 ? '' : 's'}</span>
           </div>
-        </div>
+        </article>
       `;
     }).join('');
 
-    container.querySelectorAll('.view-project-btn').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const pid = btn.getAttribute('data-id');
-        showProjectDetailModal(pid);
-      });
-    });
-
-    container.querySelectorAll('.project-card').forEach(card => {
+    // Attach click listeners to open detailed project modal
+    grid.querySelectorAll('.project-card').forEach(card => {
       card.addEventListener('click', () => {
-        const pid = card.getAttribute('data-project-id');
-        showProjectDetailModal(pid);
+        const pid = card.getAttribute('data-id');
+        openProjectDetailModal(pid);
       });
     });
   }
 
-  async function showProjectDetailModal(projectId) {
-    openModal('Loading Project Details...', '<div class="p-6 text-center text-muted">Fetching project information...</div>');
-
+  async function openProjectDetailModal(projectId) {
     try {
-      const data = await api.getProject(projectId);
-      const project = data.project || data;
+      const p = await api.getProject(projectId);
+      if (!p) return;
 
-      const safeRepo = sanitizeUrl(project.repo_url);
-      const safeDemo = sanitizeUrl(project.demo_url);
-
-      const memberItems = (project.members || []).map(m => {
-        const name = typeof m === 'object' ? (m.name || m.user_name || 'Participant') : 'Participant';
-        const role = typeof m === 'object' && m.role ? `(${m.role})` : '';
-        return `<li><strong>${escapeHtml(name)}</strong> ${escapeHtml(role)}</li>`;
-      }).join('');
-
-      const normalizedResultBadge = (project.normalized_score !== undefined && project.normalized_score !== null) ? `
-        <div class="card p-4 mb-4" style="background-color: var(--success-bg); border-color: var(--success-border);">
-          <h4 class="text-success font-bold mb-1">Official Evaluation Result</h4>
-          <p class="text-sm">Final Normalized Score: <strong>${Number(project.normalized_score).toFixed(3)}</strong> (Rank #${project.rank})</p>
-        </div>
-      ` : '';
+      const trackObj = publicTracks.find(t => t.id === p.track_id);
+      const trackName = trackObj ? trackObj.name : (p.track_id || 'General');
+      const isReleased = publicEvent && (publicEvent.results_released || publicEvent.status === 'RESULTS_RELEASED');
 
       const modalHtml = `
-        <div class="project-modal-content">
-          ${normalizedResultBadge}
-          <div class="flex justify-between items-center mb-2">
-            <span class="badge badge-primary">${escapeHtml(project.track_name || project.track_id || 'Track')}</span>
-            <div class="flex items-center gap-2">
-              <span class="badge badge-success capitalize">${escapeHtml(project.status || 'Submitted')}</span>
-              <span class="mono text-muted text-xs">${escapeHtml(project.id)}</span>
+        <div class="project-modal-view">
+          <div class="flex justify-between items-start mb-4">
+            <div>
+              <span class="track-badge mb-2 inline-block">${escapeHtml(trackName)}</span>
+              <h2 class="text-2xl font-bold">${escapeHtml(p.title)}</h2>
+              <div class="text-sm text-muted mt-1">
+                Team: <strong class="text-main">${escapeHtml(p.team_name || 'Independent Builder')}</strong>
+              </div>
+            </div>
+            <div class="text-right">
+              <span class="mono text-xs text-muted block mb-1">PROJECT ID</span>
+              <span class="badge badge-secondary">${escapeHtml(p.id)}</span>
             </div>
           </div>
-          <h2 class="font-bold text-xl mb-1">${escapeHtml(project.title)}</h2>
-          <div class="flex justify-between items-center flex-wrap gap-2 text-xs text-muted mb-4">
-            <span>Submitted by <strong>${escapeHtml(project.team_name || 'Team')}</strong></span>
-            <span>${project.submitted_at ? new Date(project.submitted_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : ''}</span>
+
+          <div class="project-detail-section mb-6">
+            <h4 class="font-semibold text-sm text-muted uppercase tracking-wider mb-2">Project Summary</h4>
+            <p class="text-body leading-relaxed">${escapeHtml(p.summary || 'No description provided.')}</p>
           </div>
 
-          <!-- Quick Action Buttons at Top -->
-          ${(safeRepo || safeDemo) ? `
-            <div class="flex gap-2 mb-4 pb-3 border-b">
-              ${safeRepo ? `<a href="${escapeHtml(safeRepo)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">GitHub Repository &nearr;</a>` : ''}
-              ${safeDemo ? `<a href="${escapeHtml(safeDemo)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">Live Demo &nearr;</a>` : ''}
+          ${p.technologies && p.technologies.length > 0 ? `
+            <div class="project-detail-section mb-6">
+              <h4 class="font-semibold text-sm text-muted uppercase tracking-wider mb-2">Technologies & Architecture</h4>
+              <div class="flex gap-2 flex-wrap">
+                ${p.technologies.map(t => `<span class="badge badge-subtle">${escapeHtml(t)}</span>`).join('')}
+              </div>
             </div>
           ` : ''}
 
-          <div class="mb-4">
-            <h4 class="font-semibold text-sm mb-1 text-muted uppercase">Project Overview</h4>
-            <p class="text-sm leading-relaxed text-body">${escapeHtml(project.summary || 'No description provided.')}</p>
+          <div class="project-detail-section mb-6">
+            <h4 class="font-semibold text-sm text-muted uppercase tracking-wider mb-2">Links & Resources</h4>
+            <div class="flex gap-3 flex-wrap">
+              ${p.repo_url ? `
+                <a href="${sanitizeUrl(p.repo_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm inline-flex items-center gap-2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+                  </svg>
+                  Repository
+                </a>
+              ` : '<span class="text-sm text-muted">No repository provided</span>'}
+
+              ${p.demo_url ? `
+                <a href="${sanitizeUrl(p.demo_url)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm inline-flex items-center gap-2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polygon points="10 8 16 12 10 16 10 8"></polygon>
+                  </svg>
+                  Live Deployment
+                </a>
+              ` : ''}
+            </div>
           </div>
 
-          ${project.tech_stack ? `
-            <div class="mb-4">
-              <h4 class="font-semibold text-sm mb-1 text-muted uppercase">Technologies</h4>
-              <p class="mono text-xs p-2 rounded" style="background: var(--bg-subtle);">${escapeHtml(project.tech_stack)}</p>
+          <div class="project-detail-section pt-4 border-t flex justify-between items-center">
+            <div>
+              <span class="text-xs text-muted block">Evaluation Status</span>
+              <strong>${isReleased ? 'Official Results Released' : 'Judging in Progress'}</strong>
             </div>
-          ` : ''}
-
-          ${memberItems ? `
-            <div class="mb-4">
-              <h4 class="font-semibold text-sm mb-1 text-muted uppercase">Contributors</h4>
-              <ul class="text-sm text-muted pl-4">${memberItems}</ul>
-            </div>
-          ` : ''}
+            ${isReleased && p.normalized_score !== undefined ? `
+              <div class="text-right">
+                <span class="text-xs text-muted block">Final Normalized Score</span>
+                <span class="font-bold text-lg text-primary">${Number(p.normalized_score).toFixed(2)}</span>
+              </div>
+            ` : ''}
+          </div>
         </div>
       `;
 
-      openModal(project.title, modalHtml);
+      openModal('Project Overview', modalHtml);
     } catch (err) {
-      openModal('Project Unavailable', `<div class="p-6 text-center text-danger">${escapeHtml(err.message)}</div>`);
+      showToast('Could not load project details', 'error');
     }
   }
 
-  window.Judgely = window.Judgely || {};
   window.Judgely.views = window.Judgely.views || {};
   window.Judgely.views.public = {
-    render,
+    render: render,
     reload: loadPublicData
   };
 })(window);

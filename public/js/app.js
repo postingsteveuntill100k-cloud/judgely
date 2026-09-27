@@ -435,7 +435,7 @@
       </form>
     `;
 
-    openModal('Host a Hackathon on Judgely', wizardHtml);
+    openModal('Host a Hackathon on Hackerly', wizardHtml);
 
     const btnWizardGoogle = document.getElementById('btn-wizard-google-signin');
     if (btnWizardGoogle) {

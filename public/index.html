@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Judgely — Hackathon Submission & Judging Platform</title>
+  <title>Hackerly — The Modern Hackathon Platform</title>
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -17,13 +18,20 @@
     <header class="app-header" id="app-header">
       <div class="header-container">
         <div class="brand-group" id="nav-brand" role="button" tabindex="0">
-          <div class="brand-symbol">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+          <div class="brand-symbol" aria-hidden="true">
+            <svg width="22" height="22" viewBox="0 0 32 32" fill="none" stroke="currentColor">
+              <path d="M7 6V26" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"/>
+              <path d="M25 6V26" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"/>
+              <path d="M7 16H25" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"/>
+              <circle cx="7" cy="6" r="3" fill="#38bdf8" stroke="none"/>
+              <circle cx="25" cy="6" r="3" fill="#38bdf8" stroke="none"/>
+              <circle cx="16" cy="16" r="3.5" fill="#10b981" stroke="none"/>
+              <circle cx="7" cy="26" r="3" fill="#6366f1" stroke="none"/>
+              <circle cx="25" cy="26" r="3" fill="#6366f1" stroke="none"/>
             </svg>
           </div>
           <div class="brand-meta">
-            <span class="brand-name">JUDGELY</span>
+            <span class="brand-name">HACKERLY</span>
             <span class="brand-context" id="header-event-name">Hackathon Platform</span>
           </div>
         </div>
@@ -62,13 +70,24 @@
     <footer class="app-footer">
       <div class="footer-container">
         <div class="footer-brand">
-          <strong>JUDGELY</strong>
-          <span>Open-Source Hackathon Infrastructure</span>
+          <div class="flex items-center gap-2">
+            <div class="brand-symbol" style="width: 24px; height: 24px;">
+              <svg width="16" height="16" viewBox="0 0 32 32" fill="none" stroke="currentColor">
+                <path d="M7 6V26" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"/>
+                <path d="M25 6V26" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"/>
+                <path d="M7 16H25" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"/>
+              </svg>
+            </div>
+            <strong>HACKERLY</strong>
+          </div>
+          <span>The Complete Modern Hackathon Platform</span>
         </div>
         <div class="footer-links">
           <span>Self-Hosted & Offline Ready</span>
           <span class="sep">•</span>
-          <span>Transparent Scoring & Normalization</span>
+          <span>Docker & SQLite Compatible</span>
+          <span class="sep">•</span>
+          <span>Deterministic Scoring & Normalization</span>
         </div>
       </div>
     </footer>
@@ -93,6 +112,8 @@
     <!-- SSR_INJECTION_POINT -->
   </div>
 
+  <script src="/js/vendor/three.min.js"></script>
+  <script src="/js/universe.js"></script>
   <script src="/js/state.js"></script>
   <script src="/js/api.js"></script>
   <script src="/js/views/publicView.js"></script>

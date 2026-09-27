@@ -13,14 +13,16 @@
         <div class="auth-card-modern">
           <!-- Brand Badge -->
           <div class="auth-brand-badge mb-3">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            <svg width="20" height="20" viewBox="0 0 32 32" fill="none" stroke="currentColor">
+              <path d="M7 6V26" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"/>
+              <path d="M25 6V26" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"/>
+              <path d="M7 16H25" stroke="currentColor" stroke-width="2.75" stroke-linecap="round"/>
             </svg>
-            <span>JUDGELY PLATFORM</span>
+            <span>HACKERLY PLATFORM</span>
           </div>
 
-          <h1 class="auth-title">Welcome to Judgely</h1>
-          <p class="auth-subtitle">Transparent judging infrastructure & defensible outcomes for serious hackathons</p>
+          <h1 class="auth-title">Welcome to Hackerly</h1>
+          <p class="auth-subtitle">The modern platform where hackathons happen</p>
 
           <div id="auth-error-banner" class="auth-error-alert" style="display:none;"></div>
 
@@ -235,7 +237,7 @@
 
         try {
           const res = await api.register(email, password, name);
-          showToast(`Account created! Welcome to Judgely, ${res.user.name}.`, 'success');
+          showToast(`Account created! Welcome to Hackerly, ${res.user.name}.`, 'success');
           window.Judgely.onLoginSuccess(res.user);
         } catch (err) {
           showError(err.message || 'Registration failed. Please check your details.');
@@ -395,7 +397,7 @@
 
             <!-- Footer Notice -->
             <div class="google-chooser-footer">
-              <p>To continue, Google will share your name, email address, language preference, and profile picture with Judgely. Before using this app, you can review Judgely's privacy policy and terms of service.</p>
+              <p>To continue, Google will share your name, email address, language preference, and profile picture with Hackerly. Before using this app, you can review Hackerly's privacy policy and terms of service.</p>
             </div>
           </div>
         </div>

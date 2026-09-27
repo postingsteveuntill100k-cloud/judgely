@@ -205,7 +205,7 @@
           </div>
         ` : `
           <h3 class="font-bold mb-2">You are not in a team</h3>
-          <p class="text-muted text-sm mb-4">Every project submission in Judgely requires a team entity. Create your team or join an existing one.</p>
+          <p class="text-muted text-sm mb-4">Every project submission on Hackerly requires a team entity. Create your team or join an existing one.</p>
           
           <div class="grid grid-2 gap-4">
             <div class="p-4 rounded border" style="background: var(--bg-surface);">

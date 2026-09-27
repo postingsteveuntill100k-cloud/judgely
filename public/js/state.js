@@ -100,4 +100,5 @@
   window.Judgely.openModal = openModal;
   window.Judgely.closeModal = closeModal;
   window.Judgely.showToast = showToast;
+  window.Hackerly = window.Judgely;
 })(window);
