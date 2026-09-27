@@ -1,6 +1,5 @@
 # Dependencies
 node_modules/
-package-lock.json
 
 # Local SQLite databases and write-ahead logs
 data/*.db
