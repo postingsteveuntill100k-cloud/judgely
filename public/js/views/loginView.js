@@ -103,18 +103,22 @@
             <!-- Demo Persona Controls: STRICTLY gated to DEMO_MODE=true -->
             ${isDemo ? `
               <div class="mt-6 pt-4 border-t" id="demo-persona-controls">
-                <div class="text-xs font-semibold text-muted text-center uppercase mb-3">
-                  Developer Demo Personas (DEMO_MODE=true)
+                <div class="flex items-center justify-between mb-3">
+                  <span class="text-xs font-bold text-muted uppercase">Fast Demo Switcher</span>
+                  <span class="badge badge-warning text-xs">DEMO_MODE</span>
                 </div>
                 <div class="flex flex-col gap-2">
-                  <button type="button" class="btn btn-secondary btn-sm w-full demo-role-btn" data-role="participant">
-                    Continue as Participant Demo (Priya Nair)
+                  <button type="button" id="btn-demo-participant" class="btn btn-secondary btn-sm w-full demo-role-btn flex justify-between items-center" data-role="participant">
+                    <span class="font-semibold text-left">Priya Nair <span class="text-xs text-muted font-normal">(Team Lead)</span></span>
+                    <span class="role-tag participant">Participant</span>
                   </button>
-                  <button type="button" class="btn btn-secondary btn-sm w-full demo-role-btn" data-role="judge_a">
-                    Continue as Judge Demo (Tomas Varga)
+                  <button type="button" id="btn-demo-judge" class="btn btn-secondary btn-sm w-full demo-role-btn flex justify-between items-center" data-role="judge_a">
+                    <span class="font-semibold text-left">Tomas Varga <span class="text-xs text-muted font-normal">(Domain Judge)</span></span>
+                    <span class="role-tag judge">Judge</span>
                   </button>
-                  <button type="button" class="btn btn-secondary btn-sm w-full demo-role-btn" data-role="organizer">
-                    Continue as Organizer Demo (Hackathon Ops)
+                  <button type="button" id="btn-demo-organizer" class="btn btn-secondary btn-sm w-full demo-role-btn flex justify-between items-center" data-role="organizer">
+                    <span class="font-semibold text-left">Hackathon Ops <span class="text-xs text-muted font-normal">(Event Admin)</span></span>
+                    <span class="role-tag organizer">Organizer</span>
                   </button>
                 </div>
               </div>

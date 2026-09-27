@@ -40,6 +40,11 @@ app.get('/', (req, res) => {
   res.redirect('/projects');
 });
 
+// Serve SPA shell for client-side role and auth routes
+app.get(['/login', '/participant', '/judge', '/organizer', '/workspace'], (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/index.html'));
+});
+
 // Global error handler
 app.use((err, req, res, next) => {
   console.error('Unhandled server error:', err);

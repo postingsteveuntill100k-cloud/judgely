@@ -199,6 +199,18 @@
         <h2 class="text-xl font-bold mb-1">${escapeHtml(assignment.title)}</h2>
         <p class="text-xs text-muted mb-3">Submitted by <strong>${escapeHtml(assignment.team_name || 'Team')}</strong> • Track: <strong>${escapeHtml(assignment.track_name || assignment.track_id)}</strong></p>
 
+        ${isDone ? `
+          <div class="card p-3 mb-4 flex items-center justify-between" style="background-color: var(--success-bg); border-color: var(--success-border);">
+            <div class="flex items-center gap-2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="text-success">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              <span class="text-xs text-success font-semibold">Evaluation recorded in ledger. You may recalibrate scores or feedback below.</span>
+            </div>
+            <span class="badge badge-success text-xs">Submitted</span>
+          </div>
+        ` : ''}
+
         <div class="card p-3 mb-4" style="background-color: var(--bg-subtle);">
           <p class="text-sm leading-relaxed">${escapeHtml(assignment.summary || 'No project description provided.')}</p>
           <div class="flex gap-4 text-xs mt-3 pt-2 border-t">

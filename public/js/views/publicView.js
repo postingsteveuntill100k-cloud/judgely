@@ -307,13 +307,17 @@
     }
 
     if (pillsContainer && tracks && tracks.length > 0) {
+      const totalCount = publicProjects.length;
       pillsContainer.innerHTML = `
-        <button class="pill ${activeTrack === 'all' ? 'active' : ''}" data-track="all">All Tracks</button>
-        ${tracks.map(t => `
-          <button class="pill ${activeTrack === t.id ? 'active' : ''}" data-track="${escapeHtml(t.id)}">
-            ${escapeHtml(t.name)}
-          </button>
-        `).join('')}
+        <button class="pill ${activeTrack === 'all' ? 'active' : ''}" data-track="all">All Tracks (${totalCount})</button>
+        ${tracks.map(t => {
+          const count = publicProjects.filter(p => p.track_id === t.id).length;
+          return `
+            <button class="pill ${activeTrack === t.id ? 'active' : ''}" data-track="${escapeHtml(t.id)}">
+              ${escapeHtml(t.name)} (${count})
+            </button>
+          `;
+        }).join('')}
       `;
 
       pillsContainer.querySelectorAll('.pill').forEach(btn => {
@@ -355,20 +359,29 @@
       return;
     }
 
-    container.innerHTML = filtered.map(p => `
-      <div class="card project-card" data-project-id="${escapeHtml(p.id)}">
-        <div class="flex justify-between items-center mb-2">
-          <span class="badge badge-secondary">${escapeHtml(p.track_name || p.track_id || 'Track')}</span>
-          <span class="mono text-muted text-xs">${escapeHtml(p.id)}</span>
+    container.innerHTML = filtered.map(p => {
+      const techTags = p.tech_stack ? p.tech_stack.split(',').map(s => s.trim()).filter(Boolean) : [];
+      return `
+        <div class="card project-card" data-project-id="${escapeHtml(p.id)}">
+          <div class="flex justify-between items-center mb-2">
+            <span class="badge badge-secondary">${escapeHtml(p.track_name || p.track_id || 'Track')}</span>
+            <span class="mono text-muted text-xs">${escapeHtml(p.id)}</span>
+          </div>
+          <h3 class="font-bold mb-2">${escapeHtml(p.title)}</h3>
+          <p class="text-muted text-sm mb-3 line-clamp-3">${escapeHtml(p.summary || 'No overview provided.')}</p>
+          ${techTags.length > 0 ? `
+            <div class="project-tech-tags">
+              ${techTags.slice(0, 3).map(t => `<span class="tech-tag">${escapeHtml(t)}</span>`).join('')}
+              ${techTags.length > 3 ? `<span class="tech-tag text-muted">+${techTags.length - 3}</span>` : ''}
+            </div>
+          ` : ''}
+          <div class="project-card-footer flex justify-between items-center border-t pt-3 mt-auto">
+            <span class="text-xs text-muted">by <strong>${escapeHtml(p.team_name || 'Team')}</strong></span>
+            <button class="btn btn-secondary btn-sm view-project-btn" data-id="${escapeHtml(p.id)}">View Details &rarr;</button>
+          </div>
         </div>
-        <h3 class="font-bold mb-2">${escapeHtml(p.title)}</h3>
-        <p class="text-muted text-sm mb-4 line-clamp-3">${escapeHtml(p.summary || 'No overview provided.')}</p>
-        <div class="project-card-footer flex justify-between items-center border-t pt-3 mt-auto">
-          <span class="text-xs text-muted">by <strong>${escapeHtml(p.team_name || 'Team')}</strong></span>
-          <button class="btn btn-secondary btn-sm view-project-btn" data-id="${escapeHtml(p.id)}">View Details &rarr;</button>
-        </div>
-      </div>
-    `).join('');
+      `;
+    }).join('');
 
     container.querySelectorAll('.view-project-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {

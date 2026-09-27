@@ -25,31 +25,42 @@
         </div>
 
         <!-- Hackathon Roadmap Stepper -->
-        <div class="card p-6 mb-8">
-          <h3 class="font-bold mb-4">Hackathon Roadmap</h3>
-          <div class="flex justify-between items-center flex-wrap gap-4">
-            <div class="flex items-center gap-2">
-              <span class="badge badge-success">&#10003; 1. Registered</span>
-              <span class="text-muted text-xs">&rarr;</span>
+        <div class="roadmap-container mb-8">
+          <div class="roadmap-steps">
+            <div class="roadmap-step">
+              <div class="step-num done">&#10003;</div>
+              <div class="step-meta">
+                <strong>1. Registration</strong>
+                <span>Verified Participant</span>
+              </div>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="badge ${user.team_id ? 'badge-success' : 'badge-warning'}">
-                ${user.team_id ? '&#10003; 2. Formed Team' : '2. Join/Create Team'}
-              </span>
-              <span class="text-muted text-xs">&rarr;</span>
+            <div class="roadmap-step">
+              <div class="step-num ${user.team_id ? 'done' : 'active'}">${user.team_id ? '&#10003;' : '2'}</div>
+              <div class="step-meta">
+                <strong>2. Team Formation</strong>
+                <span>${user.team_id ? escapeHtml(user.team_name || 'Team Formed') : 'Create / Join Team'}</span>
+              </div>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="badge ${user.project_id ? 'badge-success' : 'badge-primary'}">
-                ${user.project_id ? '&#10003; 3. Project Submitted' : '3. Submit Project'}
-              </span>
-              <span class="text-muted text-xs">&rarr;</span>
+            <div class="roadmap-step">
+              <div class="step-num ${user.project_id ? 'done' : (user.team_id ? 'active' : '')}">${user.project_id ? '&#10003;' : '3'}</div>
+              <div class="step-meta">
+                <strong>3. Project Submission</strong>
+                <span>${user.project_id ? 'Submitted' : 'Pending Submission'}</span>
+              </div>
             </div>
-            <div class="flex items-center gap-2">
-              <span class="badge badge-secondary">4. Blind Judging</span>
-              <span class="text-muted text-xs">&rarr;</span>
+            <div class="roadmap-step">
+              <div class="step-num">4</div>
+              <div class="step-meta">
+                <strong>4. Blind Judging</strong>
+                <span>Domain Evaluation</span>
+              </div>
             </div>
-            <div>
-              <span class="badge badge-secondary">5. Normalized Standings</span>
+            <div class="roadmap-step">
+              <div class="step-num">5</div>
+              <div class="step-meta">
+                <strong>5. Results</strong>
+                <span>Normalized Standings</span>
+              </div>
             </div>
           </div>
         </div>
@@ -105,6 +116,7 @@
     const area = document.getElementById('participant-content-area');
     if (!area) return;
 
+    try {
       const [meRes, tracksRes, eventRes] = await Promise.all([
         api.getMe(),
         api.getTracks(),

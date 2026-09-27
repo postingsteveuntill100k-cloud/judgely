@@ -23,6 +23,12 @@ router.get('/api/organizer/overview', (req, res) => {
   });
 });
 
+// GET /api/organizer/health
+router.get('/api/organizer/health', (req, res) => {
+  const health = getJudgingHealth(req.eventId);
+  res.json({ health });
+});
+
 // GET /api/organizer/projects
 router.get('/api/organizer/projects', (req, res) => {
   const db = getDb();

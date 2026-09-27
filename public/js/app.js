@@ -6,37 +6,47 @@
   const api = window.Judgely.api;
 
   async function init() {
-    // 1. Fetch server runtime configuration
-    try {
-      const config = await api.getConfig();
-      setState({
-        demoMode: Boolean(config.demo_mode),
-        googleAuth: Boolean(config.google_auth),
-        googleClientId: config.google_client_id || ''
-      });
-    } catch (e) {
-      console.warn('Could not load auth config; using offline defaults:', e.message);
-    }
-
-    // 2. Fetch authenticated session identity
-    try {
-      const meRes = await api.getMe();
-      if (meRes && meRes.user && meRes.user.role && meRes.user.role !== 'visitor') {
-        setState({ user: meRes.user });
-      }
-    } catch (e) {
-      console.warn('Visitor session active.');
-    }
-
-    // 3. Bind header branding and navigation actions
+    // 1. Bind global header branding and modal system immediately
     bindHeaderNavigation();
     bindModalSystem();
 
-    // 4. Determine initial route from URL path or role
+    // 2. Render initial view immediately based on URL pathname or current role
     routeFromLocation();
 
-    // 5. Subscribe to state changes to update navigation header
+    // 3. Subscribe to state changes to keep header updated
     window.Judgely.subscribe(onStateChange);
+
+    // 4. Fetch server runtime configuration and session identity in parallel
+    try {
+      const [configRes, meRes] = await Promise.allSettled([
+        api.getConfig(),
+        api.getMe()
+      ]);
+
+      if (configRes.status === 'fulfilled' && configRes.value) {
+        setState({
+          demoMode: Boolean(configRes.value.demo_mode),
+          googleAuth: Boolean(configRes.value.google_auth),
+          googleClientId: configRes.value.google_client_id || ''
+        });
+        if (state.currentView === 'login') {
+          renderCurrentView();
+        }
+      }
+
+      if (meRes.status === 'fulfilled' && meRes.value && meRes.value.user) {
+        const user = meRes.value.user;
+        if (user.role && user.role !== 'visitor') {
+          setState({ user });
+          // If user is at root showcase, transition to their role workspace
+          if (window.location.pathname === '/' || window.location.pathname === '/login') {
+            navigateTo(user.role);
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Could not complete background auth sync:', e.message);
+    }
   }
 
   function routeFromLocation() {
@@ -132,9 +142,9 @@
 
       userActions.innerHTML = `
         <div class="flex items-center gap-3">
-          <div class="user-profile-badge">
+          <div class="user-identity-chip">
             <span class="user-name">${escapeHtml(user.name || user.email)}</span>
-            <span class="badge badge-secondary capitalize">${escapeHtml(user.role)}</span>
+            <span class="role-tag ${escapeHtml(user.role)}">${escapeHtml(user.role)}</span>
           </div>
           <button class="btn btn-secondary btn-sm" id="btn-header-signout">Sign Out</button>
         </div>
@@ -155,11 +165,28 @@
       }
     } else {
       nav.innerHTML = `
-        <a href="#projects-showcase" class="nav-link">Projects</a>
-        <a href="#tracks-section" class="nav-link">Tracks</a>
-        <a href="#how-judging-works" class="nav-link">How Judging Works</a>
-        <a href="#integrity-section" class="nav-link">Integrity</a>
+        <a href="#projects-showcase" class="nav-link public-anchor" data-target="projects-showcase">Projects</a>
+        <a href="#tracks-section" class="nav-link public-anchor" data-target="tracks-section">Tracks</a>
+        <a href="#how-judging-works" class="nav-link public-anchor" data-target="how-judging-works">How Judging Works</a>
+        <a href="#integrity-section" class="nav-link public-anchor" data-target="integrity-section">Integrity</a>
       `;
+
+      nav.querySelectorAll('.public-anchor').forEach(a => {
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          const targetId = a.getAttribute('data-target');
+          if (state.currentView !== 'public') {
+            navigateTo('public');
+            setTimeout(() => {
+              const el = document.getElementById(targetId);
+              if (el) el.scrollIntoView({ behavior: 'smooth' });
+            }, 100);
+          } else {
+            const el = document.getElementById(targetId);
+            if (el) el.scrollIntoView({ behavior: 'smooth' });
+          }
+        });
+      });
 
       userActions.innerHTML = `
         ${state.currentView === 'login' ? `
