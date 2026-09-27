@@ -1,0 +1,27 @@
+{
+  "name": "judgely",
+  "version": "1.0.0",
+  "description": "Judgely: open-source judging infrastructure for hackathons",
+  "main": "src/server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node src/server.js",
+    "seed": "node src/db/seeder.js",
+    "test": "node --test tests/*.test.js",
+    "check": "python3 run.py .dogfood.toml"
+  },
+  "keywords": [
+    "hackathon",
+    "judging",
+    "rubric",
+    "normalization",
+    "dogfood"
+  ],
+  "author": "Hackathon Raptors / Judgely Team",
+  "engines": {
+    "node": ">=22.5.0"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}

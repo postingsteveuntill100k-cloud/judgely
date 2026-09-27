@@ -1,0 +1,7 @@
+node_modules
+data/*.db-journal
+data/*.db-wal
+.git
+.gemini
+tests
+*.log

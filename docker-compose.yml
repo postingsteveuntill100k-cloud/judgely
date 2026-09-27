@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  judgely:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: judgely
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - NODE_ENV=production
+    volumes:
+      - judgely_data:/app/data
+    restart: unless-stopped
+
+volumes:
+  judgely_data:

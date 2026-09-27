@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Judgely — Open-Source Judging Infrastructure</title>
+  <meta name="description" content="Judgely is open-source hackathon judging infrastructure: transparent assignments, defensible scoring, explainable normalization, and self-hosted operation.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+  <!-- Global Demo Role Switcher Bar -->
+  <header class="role-bar">
+    <div class="role-bar-container">
+      <div class="brand">
+        <span class="logo-accent">JUDGELY</span>
+        <span class="sub-accent">/ INFRA</span>
+      </div>
+      <div class="role-selector">
+        <span class="role-label">ACTIVE ROLE:</span>
+        <div class="btn-group" id="role-buttons">
+          <button class="role-btn active" data-role="visitor" data-token="">Visitor</button>
+          <button class="role-btn" data-role="participant" data-token="prt_2e88">Participant</button>
+          <button class="role-btn" data-role="judge" data-token="jdg_a_91bc">Judge A (Tomas)</button>
+          <button class="role-btn" data-role="judge" data-token="jdg_b_44de">Judge B (Wei)</button>
+          <button class="role-btn" data-role="organizer" data-token="org_7f2a">Organizer</button>
+        </div>
+      </div>
+      <div class="role-bar-right">
+        <div class="auth-pill" id="current-auth-pill">
+          <span class="indicator live"></span>
+          <span id="auth-role-text">Public Visitor</span>
+        </div>
+        <button class="btn btn-sm btn-outline theme-toggle-btn" id="btn-theme-toggle" aria-label="Toggle Light and Dark Mode">
+          <span class="theme-icon">◐</span> <span class="theme-label">Theme</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Navigation Bar -->
+  <nav class="main-nav">
+    <div class="nav-container">
+      <div class="nav-tabs">
+        <button class="nav-tab active" data-view="gallery">Projects Gallery</button>
+        <button class="nav-tab" data-view="judge" id="tab-judge">Judge Portal</button>
+        <button class="nav-tab" data-view="organizer" id="tab-organizer">Organizer Command Center</button>
+        <button class="nav-tab" data-view="normalization">Normalization Proof</button>
+        <button class="nav-tab" data-view="audit" id="tab-audit">Audit Trail</button>
+      </div>
+      <div class="nav-actions">
+        <button class="btn btn-outline" id="btn-submit-project">+ Submit Project</button>
+        <button class="btn btn-export" id="btn-quick-export" title="Export CSV for Organizer">CSV Export</button>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Event Status Banner -->
+  <div class="status-banner" id="event-status-banner">
+    <div class="banner-container">
+      <div class="status-item">
+        <span class="status-dot warning"></span>
+        <span>EVENT: <strong id="banner-event-name">Sample Hack 2026</strong></span>
+      </div>
+      <div class="status-item">
+        <span>SUBMISSIONS CLOSE: <strong id="banner-close-date">2026-03-01 18:00 UTC</strong></span>
+      </div>
+      <div class="status-badge closed" id="banner-closed-badge">SUBMISSIONS CLOSED</div>
+    </div>
+  </div>
+
+  <!-- Main Content Container -->
+  <main class="main-container">
+    <!-- VIEW: PUBLIC GALLERY -->
+    <section id="view-gallery" class="view-panel active">
+      <div class="section-header">
+        <div>
+          <h1 class="view-title">Project Gallery</h1>
+          <p class="view-subtitle">Browse, filter, and inspect hackathon submissions with real-time scoring data.</p>
+        </div>
+        <div class="gallery-controls">
+          <input type="text" id="gallery-search" class="input-search" placeholder="Search project title, team, summary...">
+        </div>
+      </div>
+
+      <!-- Track Filter Bar -->
+      <div class="track-filters" id="track-filter-container">
+        <button class="track-pill active" data-track="all">All Tracks</button>
+      </div>
+
+      <!-- Projects Grid -->
+      <div class="projects-grid" id="projects-grid">
+        <div class="loading-state">Loading seeded projects...</div>
+      </div>
+    </section>
+
+    <!-- VIEW: JUDGE PORTAL -->
+    <section id="view-judge" class="view-panel">
+      <div class="section-header">
+        <div>
+          <h1 class="view-title">Judge Scoring Portal</h1>
+          <p class="view-subtitle" id="judge-subtitle">Review assigned submissions, evaluate weighted rubric criteria, and submit auditable scores.</p>
+        </div>
+        <div class="judge-isolation-notice">
+          <span class="shield-icon">&#128737;</span>
+          <span>Role Isolation Active: You can only view your own reviews. Peer judge scores are strictly inaccessible.</span>
+        </div>
+      </div>
+
+      <div class="judge-assignments-container" id="judge-assignments-list">
+        <div class="loading-state">Loading assigned projects...</div>
+      </div>
+    </section>
+
+    <!-- VIEW: ORGANIZER COMMAND CENTER -->
+    <section id="view-organizer" class="view-panel">
+      <div class="section-header">
+        <div>
+          <h1 class="view-title">Organizer Command Center</h1>
+          <p class="view-subtitle">Monitor judging health, review coverage, detect anomalies, manage assignments, and export final results.</p>
+        </div>
+        <div class="org-actions">
+          <button class="btn btn-primary" id="btn-org-export-csv">&#128196; Download Official CSV Export</button>
+        </div>
+      </div>
+
+      <!-- KPI Metrics Bar -->
+      <div class="kpi-grid" id="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-label">TOTAL PROJECTS</div>
+          <div class="kpi-value" id="kpi-projects">--</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">REGISTERED JUDGES</div>
+          <div class="kpi-value" id="kpi-judges">--</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kpi-label">REVIEWS SUBMITTED</div>
+          <div class="kpi-value" id="kpi-reviews">--</div>
+        </div>
+        <div class="kpi-card highlight">
+          <div class="kpi-label">COVERAGE RATE</div>
+          <div class="kpi-value" id="kpi-coverage">--%</div>
+        </div>
+      </div>
+
+      <!-- Coverage Breakdown -->
+      <div class="card panel-card">
+        <h3 class="card-title">Review Coverage Distribution</h3>
+        <div class="coverage-bar-wrapper">
+          <div class="coverage-bar" id="coverage-progress-bar"></div>
+        </div>
+        <div class="coverage-legend" id="coverage-legend">
+          <!-- Filled via JS -->
+        </div>
+      </div>
+
+      <!-- Flags & Anomalies Section -->
+      <div class="card panel-card">
+        <div class="card-header-row">
+          <h3 class="card-title">Judging Integrity & Anomaly Flags</h3>
+          <span class="badge notice">Flagged for organizer review</span>
+        </div>
+        <p class="section-desc">Heuristic detection for zero-variance grading, multiple team submissions, and polarized scores.</p>
+        <div class="flags-list" id="flags-container">
+          <!-- Filled via JS -->
+        </div>
+      </div>
+
+      <!-- Two Column Layout: Assignments & Judge Workload -->
+      <div class="two-col-grid">
+        <!-- New Assignment Form -->
+        <div class="card panel-card">
+          <h3 class="card-title">Assign Judge to Project</h3>
+          <p class="section-desc">Manual assignment with automated track compatibility matching.</p>
+          <form id="form-assign-judge" class="assign-form">
+            <div class="form-group">
+              <label for="assign-project">Select Project</label>
+              <select id="assign-project" class="form-select" required></select>
+            </div>
+            <div class="form-group">
+              <label for="assign-judge">Select Judge</label>
+              <select id="assign-judge" class="form-select" required></select>
+            </div>
+            <div id="assign-track-warning" class="track-match-hint"></div>
+            <button type="submit" class="btn btn-outline">+ Create Assignment</button>
+          </form>
+        </div>
+
+        <!-- Deadline / Demo Controls -->
+        <div class="card panel-card">
+          <h3 class="card-title">Portal Settings & Submission Deadline</h3>
+          <p class="section-desc">Toggle the event deadline to demonstrate submission enforcement live.</p>
+          <div class="deadline-settings">
+            <div class="form-group">
+              <label>Current Submissions Close (UTC)</label>
+              <input type="text" id="input-close-date" class="form-input" readonly>
+            </div>
+            <div class="btn-group-column">
+              <button class="btn btn-sm btn-outline" id="btn-set-deadline-past">Set Deadline in Past (Closed)</button>
+              <button class="btn btn-sm btn-outline" id="btn-set-deadline-future">Set Deadline in Future (Open)</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: NORMALIZATION PROOF & RANKINGS -->
+    <section id="view-normalization" class="view-panel">
+      <div class="section-header">
+        <div>
+          <h1 class="view-title">Normalization Proof & Methodology</h1>
+          <p class="view-subtitle">Cross-judge Z-score standardization, variance regularization, and Bayesian shrinkage.</p>
+        </div>
+        <div class="ranking-toggle-group">
+          <span class="toggle-label">Rank Order:</span>
+          <button class="btn btn-sm btn-outline active" id="btn-toggle-norm">Normalized Rank</button>
+          <button class="btn btn-sm btn-outline" id="btn-toggle-raw">Raw Rank</button>
+        </div>
+      </div>
+
+      <!-- Methodology Card -->
+      <div class="card panel-card methodology-card">
+        <h3 class="card-title">&#128300; Mathematical Normalization Formula</h3>
+        <p class="math-intro">Judgely standardizes judge grading variances to eliminate harsh/lenient judge bias while protecting small sample sizes:</p>
+        <div class="math-display">
+          <code>z_{i,j} = \frac{s_{i,j} - \mu_j}{\max(\sigma_j, 0.35)} \qquad \longrightarrow \qquad s'_{i,j} = \text{clamp}(\mu_{global} + z_{i,j} \cdot \sigma_{global}, 0, 5)</code>
+        </div>
+        <div class="math-meta" id="norm-global-meta">
+          Global Review Mean: <strong id="meta-global-mean">--</strong> &nbsp;|&nbsp; Global Spread: <strong id="meta-global-std">--</strong> &nbsp;|&nbsp; Total Reviews: <strong id="meta-global-reviews">--</strong>
+        </div>
+      </div>
+
+      <!-- Rankings Table -->
+      <div class="card panel-card table-wrapper">
+        <table class="data-table" id="rankings-table">
+          <thead>
+            <tr>
+              <th style="width: 70px;">Rank</th>
+              <th>Project & Team</th>
+              <th>Track</th>
+              <th>Raw Score</th>
+              <th>Normalized Score</th>
+              <th>Delta (&Delta;)</th>
+              <th>Reviews</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="rankings-table-body">
+            <tr><td colspan="8" class="loading-state">Calculating normalized rankings...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Judge Distribution Section -->
+      <div class="card panel-card" style="margin-top: 24px;">
+        <h3 class="card-title">Judge Calibration & Distribution Inspector</h3>
+        <p class="section-desc">Empirical scoring distributions per judge showing bias and variance adjustments.</p>
+        <div class="judge-grid" id="judge-distributions-grid">
+          <!-- Filled via JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW: AUDIT TRAIL -->
+    <section id="view-audit" class="view-panel">
+      <div class="section-header">
+        <div>
+          <h1 class="view-title">Audit Trail</h1>
+          <p class="view-subtitle">Immutable chronological log of submissions, assignments, reviews, edits, and exports.</p>
+        </div>
+        <button class="btn btn-outline" id="btn-refresh-audit">&#8635; Refresh</button>
+      </div>
+
+      <div class="card panel-card table-wrapper">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th style="width: 170px;">Timestamp</th>
+              <th>Actor</th>
+              <th>Role</th>
+              <th>Action</th>
+              <th>Resource</th>
+              <th>Details</th>
+            </tr>
+          </thead>
+          <tbody id="audit-table-body">
+            <tr><td colspan="6" class="loading-state">Loading audit events...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <!-- MODAL: Project Detail & "Why this score?" -->
+  <div class="modal-backdrop" id="modal-project-detail">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <span class="track-badge" id="modal-proj-track">Track</span>
+          <h2 class="modal-title" id="modal-proj-title">Project Title</h2>
+          <p class="modal-subtitle" id="modal-proj-team">by Team</p>
+        </div>
+        <button class="modal-close" id="btn-close-proj-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="detail-section">
+          <h4>Project Summary</h4>
+          <p id="modal-proj-summary" class="summary-text"></p>
+          <div class="links-row" id="modal-proj-links"></div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Score Breakdown & Explanation</h4>
+          <div class="score-summary-grid">
+            <div class="score-box">
+              <span class="box-label">NORMALIZED SCORE</span>
+              <span class="box-val" id="modal-proj-norm-score">--</span>
+            </div>
+            <div class="score-box">
+              <span class="box-label">RAW AVERAGE</span>
+              <span class="box-val" id="modal-proj-raw-score">--</span>
+            </div>
+            <div class="score-box">
+              <span class="box-label">OFFICIAL RANK</span>
+              <span class="box-val" id="modal-proj-rank">--</span>
+            </div>
+            <div class="score-box">
+              <span class="box-label">RANK DELTA</span>
+              <span class="box-val" id="modal-proj-delta">--</span>
+            </div>
+          </div>
+          <div class="explanation-box" id="modal-proj-explanation"></div>
+        </div>
+
+        <div class="detail-section">
+          <h4>Individual Judge Evaluations</h4>
+          <div class="reviews-list" id="modal-proj-reviews"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Submit / Edit Review (for Judges) -->
+  <div class="modal-backdrop" id="modal-scoring">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title" id="modal-scoring-title">Evaluate Project</h2>
+          <p class="modal-subtitle" id="modal-scoring-subtitle"></p>
+        </div>
+        <button class="modal-close" id="btn-close-scoring-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="form-scoring">
+          <input type="hidden" id="scoring-project-id">
+          <div class="rubric-inputs-container" id="rubric-inputs-container">
+            <!-- Dynamically populated criteria sliders -->
+          </div>
+          <div class="form-group" style="margin-top: 18px;">
+            <label for="scoring-comment">Constructive Feedback / Comments</label>
+            <textarea id="scoring-comment" class="form-textarea" rows="3" placeholder="Provide feedback explaining your evaluation..."></textarea>
+          </div>
+          <div class="modal-footer">
+            <div class="computed-score-preview">
+              Weighted Score: <strong id="scoring-preview-total">0.00</strong> / 5.00
+            </div>
+            <button type="submit" class="btn btn-primary" id="btn-submit-scoring">Submit Review</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: Submit Project Form (Participant) -->
+  <div class="modal-backdrop" id="modal-submit-project">
+    <div class="modal-dialog">
+      <div class="modal-header">
+        <div>
+          <h2 class="modal-title">Submit Hackathon Project</h2>
+          <p class="modal-subtitle">Submit your team's project before the deadline.</p>
+        </div>
+        <button class="modal-close" id="btn-close-submit-modal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div id="submit-notice-container"></div>
+        <form id="form-submit-project">
+          <div class="form-group">
+            <label for="input-sub-title">Project Title *</label>
+            <input type="text" id="input-sub-title" class="form-input" required placeholder="e.g. Signal Drift">
+          </div>
+          <div class="form-group">
+            <label for="input-sub-track">Track *</label>
+            <select id="input-sub-track" class="form-select" required></select>
+          </div>
+          <div class="form-group">
+            <label for="input-sub-team">Team Name</label>
+            <input type="text" id="input-sub-team" class="form-input" placeholder="e.g. NorthKiln">
+          </div>
+          <div class="form-group">
+            <label for="input-sub-repo">Repository URL</label>
+            <input type="url" id="input-sub-repo" class="form-input" placeholder="https://github.com/team/project">
+          </div>
+          <div class="form-group">
+            <label for="input-sub-summary">Summary & Pitch</label>
+            <textarea id="input-sub-summary" class="form-textarea" rows="3" placeholder="Explain what your project does..."></textarea>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-outline" id="btn-cancel-submit">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-send-submission">Submit Project</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- SSR_INJECTION_POINT -->
+
+  <footer class="app-footer">
+    <div class="footer-container">
+      <div>JUDGELY · DOGFOOD 2026 PROTOTYPE &nbsp;|&nbsp; Open Source Judging Infrastructure</div>
+      <div>Zero external cloud dependencies &bull; SQLite Persistence &bull; Strict Role Isolation</div>
+    </div>
+  </footer>
+
+  <script src="/js/app.js"></script>
+</body>
+</html>
