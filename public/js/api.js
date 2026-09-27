@@ -111,16 +111,16 @@
         return { success: true, user };
       }
 
-      // Hackathon Operations (Organizer)
-      if (email === 'organizer@samplehack.org' || email === 'admin@example.org') {
+      // Hackathon Operations & Abhinav Reddy (Organizer & Platform Lead)
+      if (email === 'quality.prashanth@gmail.com' || email === 'organizer@samplehack.org' || email === 'admin@example.org' || email === 'organizer@judgely.local') {
         const user = {
-          id: 'usr_org_01',
-          name: 'Hackathon Operations',
-          email: 'organizer@samplehack.org',
+          id: email === 'quality.prashanth@gmail.com' ? 'usr_abhinav' : 'usr_org_01',
+          name: email === 'quality.prashanth@gmail.com' ? 'Abhinav reddy' : 'Hackathon Operations',
+          email: email,
           role: 'organizer'
         };
         localStorage.setItem('judgely_session_user', JSON.stringify(user));
-        return { success: true, user };
+        return { success: true, user, role: 'organizer' };
       }
 
       // Check registered users from fixtures if available
@@ -197,6 +197,54 @@
       }
       localStorage.setItem('judgely_session_user', JSON.stringify(user));
       return { success: true, user };
+    }
+
+    // 2b. Registration Fallback
+    if (cleanUrl === '/api/auth/register') {
+      let body = options.body;
+      if (typeof body === 'string') {
+        try { body = JSON.parse(body); } catch (_) {}
+      }
+      const email = (body && body.email || '').trim().toLowerCase();
+      const name = (body && body.name || email.split('@')[0]);
+      const user = {
+        id: `usr_${Date.now()}`,
+        name: name,
+        email: email,
+        role: 'participant'
+      };
+      localStorage.setItem('judgely_session_user', JSON.stringify(user));
+      return { success: true, user, message: 'Account created successfully' };
+    }
+
+    // 2c. Event Creation Fallback
+    if (cleanUrl === '/api/events' && options.method === 'POST') {
+      let body = options.body;
+      if (typeof body === 'string') {
+        try { body = JSON.parse(body); } catch (_) {}
+      }
+      const eventName = (body && body.name) || 'New Hackathon';
+      const eventId = `evt_${Date.now()}`;
+      const newEvent = {
+        id: eventId,
+        name: eventName,
+        description: (body && body.description) || '',
+        submissions_close: (body && body.submissions_close) || new Date(Date.now() + 14 * 86400000).toISOString(),
+        results_released: false,
+        status: 'SUBMISSIONS_OPEN',
+        stats: { projects_count: 0, teams_count: 0, tracks_count: 3, judges_count: 0 },
+        user_role: 'organizer'
+      };
+      if (body && body.organizer_email) {
+        const orgUser = {
+          id: `usr_${Date.now()}`,
+          name: body.organizer_name || 'Organizer',
+          email: body.organizer_email,
+          role: 'organizer'
+        };
+        localStorage.setItem('judgely_session_user', JSON.stringify(orgUser));
+      }
+      return { success: true, event: newEvent, role: 'organizer', message: 'Hackathon created successfully!' };
     }
 
     // 4. Guest Mode Fallback
@@ -285,6 +333,13 @@
     },
     login: async (email, password) => {
       const res = await request('/api/auth/login', { method: 'POST', body: { email, password } });
+      if (res && res.user && typeof window !== 'undefined' && window.localStorage) {
+        window.localStorage.setItem('judgely_session_user', JSON.stringify(res.user));
+      }
+      return res;
+    },
+    register: async (email, password, name) => {
+      const res = await request('/api/auth/register', { method: 'POST', body: { email, password, name } });
       if (res && res.user && typeof window !== 'undefined' && window.localStorage) {
         window.localStorage.setItem('judgely_session_user', JSON.stringify(res.user));
       }

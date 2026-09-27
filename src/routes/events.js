@@ -97,15 +97,57 @@ router.get('/api/events/:id', (req, res) => {
 
 // POST /api/events - Create a new Hackathon (Self-Service Organizer Lifecycle)
 router.post('/api/events', (req, res) => {
-  if (!req.user || req.user.role === 'visitor') {
-    return res.status(401).json({
-      error: 'Unauthorized',
-      message: 'You must be signed in to create and host a hackathon.'
-    });
-  }
-
   const db = getDb();
-  const { name, description, submissions_close, tracks, rubric } = req.body || {};
+  let hostUserId = (req.user && req.user.id !== 'usr_guest') ? req.user.id : null;
+  let hostUser = (req.user && req.user.id !== 'usr_guest') ? req.user : null;
+
+  const { name, description, submissions_close, tracks, rubric, organizer_name, organizer_email, organizer_password } = req.body || {};
+
+  if (!hostUserId) {
+    if (!organizer_email || typeof organizer_email !== 'string' || !organizer_email.includes('@')) {
+      return res.status(401).json({
+        error: 'Unauthorized',
+        message: 'Please provide your organizer email and name to host this hackathon, or sign in.'
+      });
+    }
+
+    const cleanEmail = organizer_email.trim().toLowerCase();
+    const cleanName = (organizer_name && typeof organizer_name === 'string' && organizer_name.trim()) ? organizer_name.trim() : cleanEmail.split('@')[0];
+
+    let user = db.prepare('SELECT id, email, name, role FROM users WHERE email = ? COLLATE NOCASE').get(cleanEmail);
+    if (!user) {
+      const { hashPassword } = require('../services/passwords');
+      const pass = organizer_password || 'organizer123';
+      const { hash, salt } = hashPassword(pass);
+      const newUserId = `usr_${crypto.randomUUID()}`;
+      const now = new Date().toISOString();
+      db.prepare(`
+        INSERT INTO users (id, email, name, role, password_hash, salt, created_at)
+        VALUES (?, ?, ?, 'organizer', ?, ?, ?)
+      `).run(newUserId, cleanEmail, cleanName, hash, salt, now);
+      user = db.prepare('SELECT id, email, name, role FROM users WHERE id = ?').get(newUserId);
+    }
+
+    // Create session token and cookie
+    const token = `sess_${crypto.randomBytes(24).toString('hex')}`;
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+    db.prepare('INSERT INTO sessions (id, user_id, token, created_at, expires_at) VALUES (?, ?, ?, ?, ?)')
+      .run(`sid_${crypto.randomUUID()}`, user.id, token, new Date().toISOString(), expiresAt);
+
+    const isProd = process.env.NODE_ENV === 'production';
+    const cookieOptions = [
+      `session=${token}`,
+      'Path=/',
+      'HttpOnly',
+      'SameSite=Lax',
+      `Expires=${new Date(expiresAt).toUTCString()}`,
+      isProd ? 'Secure' : ''
+    ].filter(Boolean).join('; ');
+    res.setHeader('Set-Cookie', cookieOptions);
+
+    hostUserId = user.id;
+    hostUser = user;
+  }
 
   if (!name || typeof name !== 'string' || name.trim().length < 3) {
     return res.status(400).json({ error: 'Hackathon name is required (minimum 3 characters).' });
@@ -173,16 +215,11 @@ router.post('/api/events', (req, res) => {
   db.prepare(`
     INSERT INTO event_memberships (id, event_id, user_id, role, status, created_at)
     VALUES (?, ?, ?, 'organizer', 'active', ?)
-  `).run(`mem_${crypto.randomUUID()}`, eventId, req.user.id, now);
-
-  // If user role was visitor, promote to organizer globally as well
-  if (req.user.role === 'visitor') {
-    db.prepare(`UPDATE users SET role = 'organizer' WHERE id = ?`).run(req.user.id);
-  }
+  `).run(`mem_${crypto.randomUUID()}`, eventId, hostUserId, now);
 
   recordAuditLog({
     eventId,
-    userId: req.user.id,
+    userId: hostUserId,
     role: 'organizer',
     action: 'event.created',
     resourceType: 'event',

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const crypto = require('node:crypto');
 const { getDb } = require('../db/database');
-const { verifyPassword } = require('../services/passwords');
+const { hashPassword, verifyPassword } = require('../services/passwords');
 
 const { verifyGoogleIdentity, resolveIdentityMembership } = require('../services/authProviders');
 const { recordAuditLog } = require('../services/audit');
@@ -153,6 +153,49 @@ router.post('/api/auth/login', (req, res) => {
       email: user.email,
       name: user.name,
       role: user.role
+    }
+  });
+});
+
+// POST /api/auth/register - Open user registration for the platform
+router.post('/api/auth/register', (req, res) => {
+  const db = getDb();
+  const { email, password, name } = req.body || {};
+
+  if (!email || typeof email !== 'string' || !email.includes('@')) {
+    return res.status(400).json({ error: 'Valid email address is required' });
+  }
+
+  if (!password || typeof password !== 'string' || password.length < 6) {
+    return res.status(400).json({ error: 'Password must be at least 6 characters' });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const cleanName = (name && typeof name === 'string' && name.trim()) ? name.trim() : cleanEmail.split('@')[0];
+
+  const existing = db.prepare('SELECT id FROM users WHERE email = ? COLLATE NOCASE').get(cleanEmail);
+  if (existing) {
+    return res.status(409).json({ error: 'An account with this email address already exists. Please sign in.' });
+  }
+
+  const { hash, salt } = hashPassword(password);
+  const userId = `usr_${crypto.randomUUID()}`;
+  const now = new Date().toISOString();
+
+  db.prepare(`
+    INSERT INTO users (id, email, name, role, password_hash, salt, created_at)
+    VALUES (?, ?, ?, 'participant', ?, ?, ?)
+  `).run(userId, cleanEmail, cleanName, hash, salt, now);
+
+  createSession(userId, res);
+
+  res.status(201).json({
+    message: 'Account created successfully',
+    user: {
+      id: userId,
+      email: cleanEmail,
+      name: cleanName,
+      role: 'participant'
     }
   });
 });

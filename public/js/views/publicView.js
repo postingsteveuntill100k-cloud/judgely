@@ -67,6 +67,29 @@
           </div>
         </section>
 
+        <!-- Platform Hackathons Directory -->
+        <section class="mb-10" id="hackathons-directory">
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <div>
+              <div class="section-eyebrow">Platform Directory</div>
+              <h2 class="section-title">Explore Hackathons</h2>
+              <p class="section-subtitle">Discover active engineering hackathons, join teams, or host your own competition.</p>
+            </div>
+            <button class="btn btn-primary" id="btn-directory-host-event">+ Host a Hackathon</button>
+          </div>
+
+          <div class="hackathons-filter-bar flex gap-2 mb-4 flex-wrap" id="hackathons-filter-bar">
+            <button type="button" class="pill active" data-filter="all">All Hackathons</button>
+            <button type="button" class="pill" data-filter="SUBMISSIONS_OPEN">Submissions Open</button>
+            <button type="button" class="pill" data-filter="JUDGING">Judging in Progress</button>
+            <button type="button" class="pill" data-filter="RESULTS_RELEASED">Results Announced</button>
+          </div>
+
+          <div class="hackathons-grid" id="hackathons-container">
+            <div class="p-6 text-center text-muted">Loading hackathons directory...</div>
+          </div>
+        </section>
+
         <!-- How Judging Works (5-Step Architectural Flow) -->
         <section class="workflow-section" id="how-judging-works">
           <div class="section-eyebrow">Defensible Evaluation</div>
@@ -253,18 +276,116 @@
       btnHeroHost.addEventListener('click', window.Judgely.showCreateHackathonModal);
     }
 
+    // Bind directory host button
+    const btnDirHost = document.getElementById('btn-directory-host-event');
+    if (btnDirHost && window.Judgely.showCreateHackathonModal) {
+      btnDirHost.addEventListener('click', window.Judgely.showCreateHackathonModal);
+    }
+
+    // Bind hackathon status filter pills
+    document.querySelectorAll('#hackathons-filter-bar .pill').forEach(pill => {
+      pill.addEventListener('click', () => {
+        document.querySelectorAll('#hackathons-filter-bar .pill').forEach(p => p.classList.remove('active'));
+        pill.classList.add('active');
+        const filter = pill.getAttribute('data-filter') || 'all';
+        renderHackathonsDirectory(cachedEvents, filter);
+      });
+    });
+
     // Fetch live data from backend
     await loadPublicData();
+  }
+
+  let cachedEvents = [];
+
+  function renderHackathonsDirectory(events, filter = 'all') {
+    cachedEvents = events || [];
+    const container = document.getElementById('hackathons-container');
+    if (!container) return;
+
+    let filtered = cachedEvents;
+    if (filter !== 'all') {
+      filtered = cachedEvents.filter(e => e.status === filter);
+    }
+
+    if (filtered.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state-box text-center p-6 bg-surface rounded border col-span-full">
+          <p class="text-muted">No hackathons currently matching this status filter.</p>
+        </div>
+      `;
+      return;
+    }
+
+    container.innerHTML = filtered.map(evt => {
+      const isCurrent = evt.id === window.Judgely.state.activeEventId;
+      const statusBadge = evt.status === 'RESULTS_RELEASED'
+        ? '<span class="badge badge-success">● Results Released</span>'
+        : (evt.status === 'JUDGING'
+            ? '<span class="badge badge-warning">● In Judging</span>'
+            : '<span class="badge badge-primary">● Submissions Open</span>');
+
+      const closeDate = new Date(evt.submissions_close);
+      const deadlineStr = isNaN(closeDate.getTime()) ? 'Open' : closeDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' });
+
+      return `
+        <div class="hackathon-card ${isCurrent ? 'active-event' : ''}">
+          <div class="hackathon-card-header">
+            ${statusBadge}
+            ${isCurrent ? '<span class="badge badge-info text-xs">Viewing</span>' : ''}
+          </div>
+          <h3 class="hackathon-card-title">${escapeHtml(evt.name)}</h3>
+          <p class="hackathon-card-desc">${escapeHtml(evt.description || 'Open-source engineering competition on Judgely.')}</p>
+          
+          <div class="hackathon-card-meta">
+            <div class="meta-item">
+              <span class="meta-label">Deadline</span>
+              <span class="meta-val">${deadlineStr}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Projects</span>
+              <span class="meta-val">${evt.stats?.projects_count ?? 0}</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Teams</span>
+              <span class="meta-val">${evt.stats?.teams_count ?? 0}</span>
+            </div>
+          </div>
+
+          <div class="hackathon-card-actions mt-auto">
+            <button class="btn btn-primary btn-sm w-full btn-switch-hackathon" data-id="${evt.id}">
+              ${isCurrent ? 'Viewing Active Showcase' : 'Enter Hackathon'}
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    container.querySelectorAll('.btn-switch-hackathon').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const id = btn.getAttribute('data-id');
+        if (id) {
+          window.Judgely.state.activeEventId = id;
+          localStorage.setItem('judgely_active_event_id', id);
+          window.Judgely.navigateTo('public');
+        }
+      });
+    });
   }
 
   async function loadPublicData() {
     try {
       const activeId = window.Judgely.state.activeEventId;
-      const [eventRes, tracksRes, projectsRes] = await Promise.allSettled([
+      const [eventRes, tracksRes, projectsRes, eventsRes] = await Promise.allSettled([
         api.getEvent(activeId),
         api.getTracks(),
-        api.getProjects(activeId)
+        api.getProjects(activeId),
+        api.getEvents()
       ]);
+
+      if (eventsRes.status === 'fulfilled' && eventsRes.value && eventsRes.value.events) {
+        renderHackathonsDirectory(eventsRes.value.events);
+      }
 
       if (eventRes.status === 'fulfilled') {
         publicEvent = eventRes.value;

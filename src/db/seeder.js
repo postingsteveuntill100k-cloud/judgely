@@ -151,6 +151,21 @@ function seed(dbInstance = null, fixtureData = null) {
     insertSession.run('sess_org', 'usr_organizer', DEMO_SESSIONS.ORGANIZER, nowIso, farFuture);
     insertEventMembership.run('mem_usr_organizer', event.id, 'usr_organizer', 'organizer', nowIso);
 
+    // Seed Abhinav Reddy (Platform Admin & Organizer)
+    const abhinavPass = hashPassword('abhinav123');
+    insertUser.run(
+      'usr_abhinav',
+      'quality.prashanth@gmail.com',
+      'Abhinav reddy',
+      'organizer',
+      abhinavPass.hash,
+      abhinavPass.salt,
+      'sess_abhinav_admin',
+      nowIso
+    );
+    insertSession.run('sess_abhinav', 'usr_abhinav', 'sess_abhinav_admin', nowIso, farFuture);
+    insertEventMembership.run('mem_usr_abhinav', event.id, 'usr_abhinav', 'organizer', nowIso);
+
     // Identify Judge A and Judge B from the actual judges in fixture
     const judgeList = fixtures.judges || [];
     if (judgeList.length < 2) {

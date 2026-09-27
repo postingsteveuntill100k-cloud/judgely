@@ -24,6 +24,12 @@
 
           <div id="auth-error-banner" class="auth-error-alert" style="display:none;"></div>
 
+          <!-- Auth Tabs -->
+          <div class="auth-tabs mb-4 flex gap-2 p-1 bg-subtle rounded-md">
+            <button type="button" class="auth-tab-btn active flex-1 py-2 text-sm font-semibold rounded text-center" id="tab-auth-login">Sign In</button>
+            <button type="button" class="auth-tab-btn flex-1 py-2 text-sm font-semibold rounded text-center text-muted" id="tab-auth-register">Create Account</button>
+          </div>
+
           <!-- Google Authentication Button (Official Style) -->
           <button class="btn-google" id="btn-continue-google" type="button">
             <svg width="20" height="20" viewBox="0 0 24 24">
@@ -36,10 +42,10 @@
           </button>
 
           <div class="auth-divider">
-            <span>or sign in with workspace credentials</span>
+            <span id="auth-divider-text">or sign in with email</span>
           </div>
 
-          <!-- Standard Email / Password Form -->
+          <!-- Standard Email / Password Form (Sign In) -->
           <form id="login-form" class="auth-form-body">
             <div class="form-group mb-3">
               <label for="login-email" class="form-label">Email Address</label>
@@ -52,7 +58,29 @@
             </div>
 
             <button type="submit" class="btn btn-primary w-full" id="btn-submit-login">
-              Sign In to Workspace
+              Sign In to Platform
+            </button>
+          </form>
+
+          <!-- Register Form (Create Account) -->
+          <form id="register-form" class="auth-form-body" style="display:none;">
+            <div class="form-group mb-3">
+              <label for="reg-name" class="form-label">Full Name</label>
+              <input type="text" id="reg-name" class="form-input" placeholder="e.g. Abhinav Reddy" required autocomplete="name">
+            </div>
+
+            <div class="form-group mb-3">
+              <label for="reg-email" class="form-label">Email Address</label>
+              <input type="email" id="reg-email" class="form-input" placeholder="name@domain.com" required autocomplete="username">
+            </div>
+
+            <div class="form-group mb-4">
+              <label for="reg-password" class="form-label">Password (min 6 characters)</label>
+              <input type="password" id="reg-password" class="form-input" placeholder="••••••••" required minlength="6" autocomplete="new-password">
+            </div>
+
+            <button type="submit" class="btn btn-primary w-full" id="btn-submit-register">
+              Create Account & Enter Platform
             </button>
           </form>
 
@@ -140,6 +168,36 @@
       }
     }
 
+    // Tabs: Sign In vs Create Account
+    const tabLogin = document.getElementById('tab-auth-login');
+    const tabRegister = document.getElementById('tab-auth-register');
+    const registerForm = document.getElementById('register-form');
+    const authDividerText = document.getElementById('auth-divider-text');
+
+    if (tabLogin && tabRegister && form && registerForm) {
+      tabLogin.addEventListener('click', () => {
+        clearError();
+        tabLogin.classList.add('active');
+        tabLogin.classList.remove('text-muted');
+        tabRegister.classList.remove('active');
+        tabRegister.classList.add('text-muted');
+        form.style.display = 'block';
+        registerForm.style.display = 'none';
+        if (authDividerText) authDividerText.textContent = 'or sign in with email';
+      });
+
+      tabRegister.addEventListener('click', () => {
+        clearError();
+        tabRegister.classList.add('active');
+        tabRegister.classList.remove('text-muted');
+        tabLogin.classList.remove('active');
+        tabLogin.classList.add('text-muted');
+        form.style.display = 'none';
+        registerForm.style.display = 'block';
+        if (authDividerText) authDividerText.textContent = 'or create an account with email';
+      });
+    }
+
     // Email/Password Login
     if (form) {
       form.addEventListener('submit', async (e) => {
@@ -157,6 +215,30 @@
           window.Judgely.onLoginSuccess(res.user);
         } catch (err) {
           showError(err.message || 'Authentication failed. Please verify your credentials.');
+        } finally {
+          if (btn) btn.disabled = false;
+        }
+      });
+    }
+
+    // Create Account Form
+    if (registerForm) {
+      registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        clearError();
+        const name = document.getElementById('reg-name').value.trim();
+        const email = document.getElementById('reg-email').value.trim();
+        const password = document.getElementById('reg-password').value;
+
+        const btn = document.getElementById('btn-submit-register');
+        if (btn) btn.disabled = true;
+
+        try {
+          const res = await api.register(email, password, name);
+          showToast(`Account created! Welcome to Judgely, ${res.user.name}.`, 'success');
+          window.Judgely.onLoginSuccess(res.user);
+        } catch (err) {
+          showError(err.message || 'Registration failed. Please check your details.');
         } finally {
           if (btn) btn.disabled = false;
         }
@@ -237,11 +319,14 @@
 
             <!-- Account List -->
             <div class="google-account-list" id="google-accounts-container">
-              <!-- Account 1: Abhinav reddy (from user screenshot) -->
+              <!-- Account 1: Abhinav reddy (Organizer & Platform Lead) -->
               <button type="button" class="google-account-item" data-email="quality.prashanth@gmail.com">
-                <div class="google-avatar avatar-teal">A</div>
+                <div class="google-avatar avatar-purple">A</div>
                 <div class="google-account-info">
-                  <span class="google-user-name">Abhinav reddy</span>
+                  <div class="flex items-center gap-2">
+                    <span class="google-user-name">Abhinav reddy</span>
+                    <span class="google-role-pill organizer">Organizer</span>
+                  </div>
                   <span class="google-user-email">quality.prashanth@gmail.com</span>
                 </div>
               </button>

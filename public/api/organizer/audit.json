@@ -1,7 +1,7 @@
 {
   "audits": [
     {
-      "id": "aud_f110663e-21be-492b-a65c-5f8bf12ca0b9",
+      "id": "aud_1a46931f-ffac-4f19-9c26-562a1837db36",
       "event_id": "evt_01",
       "user_id": "usr_organizer",
       "role": "organizer",
@@ -9,10 +9,10 @@
       "resource_type": "results_export",
       "resource_id": "evt_01",
       "details": "{\"totalRankedProjects\":41}",
-      "timestamp": "2026-09-27T16:41:29.162Z"
+      "timestamp": "2026-09-27T17:53:00.717Z"
     },
     {
-      "id": "aud_a8583fa7-dfa1-4ad9-b99c-9e116d4e1877",
+      "id": "aud_26041a54-12a4-4b3c-8580-8fe90515346d",
       "event_id": "evt_01",
       "user_id": "usr_organizer",
       "role": "organizer",
@@ -20,10 +20,10 @@
       "resource_type": "event",
       "resource_id": "evt_01",
       "details": "{\"results_released\":true}",
-      "timestamp": "2026-09-27T16:41:25.807Z"
+      "timestamp": "2026-09-27T17:52:54.402Z"
     },
     {
-      "id": "aud_2f15dabb-90a1-4114-ba57-4b2392f64c27",
+      "id": "aud_c56de036-c5f8-47c1-85d3-d011e7047cc4",
       "event_id": "evt_01",
       "user_id": "usr_jdg_01",
       "role": "judge",
@@ -31,10 +31,10 @@
       "resource_type": "review",
       "resource_id": "rev_prj_07_jdg_01",
       "details": "{\"projectId\":\"prj_07\",\"judgeId\":\"jdg_01\",\"totalWeightedScore\":4.4,\"criteria\":{\"functionality\":4.5,\"quality\":4,\"innovation\":4.8}}",
-      "timestamp": "2026-09-27T16:41:25.746Z"
+      "timestamp": "2026-09-27T17:52:54.323Z"
     },
     {
-      "id": "aud_10f7598a-ad30-4b34-89de-93816fa5ba95",
+      "id": "aud_53976398-d74d-498c-afc5-b00cd3e9d1d5",
       "event_id": "evt_01",
       "user_id": "usr_organizer",
       "role": "organizer",
@@ -42,10 +42,10 @@
       "resource_type": "results_export",
       "resource_id": "evt_01",
       "details": "{\"totalRankedProjects\":41}",
-      "timestamp": "2026-09-27T16:41:23.737Z"
+      "timestamp": "2026-09-27T17:52:51.586Z"
     },
     {
-      "id": "aud_af83235c-cf25-4771-9ed5-eae153ad3e07",
+      "id": "aud_eace3ebc-2161-4b61-8746-e96cec44eabe",
       "event_id": "evt_01",
       "user_id": "usr_jdg_01",
       "role": "judge",
@@ -53,10 +53,10 @@
       "resource_type": "session",
       "resource_id": null,
       "details": "{\"email\":\"tomas.varga@example.org\",\"provider\":\"google\"}",
-      "timestamp": "2026-09-27T16:41:23.105Z"
+      "timestamp": "2026-09-27T17:52:50.917Z"
     },
     {
-      "id": "aud_78e6ef4c-4676-4431-9372-f2f5ee3153cd",
+      "id": "aud_3d82971d-a2a9-4f95-ac55-2fa322a1def7",
       "event_id": "evt_01",
       "user_id": "usr_participant",
       "role": "participant",
@@ -64,10 +64,21 @@
       "resource_type": "session",
       "resource_id": null,
       "details": "{\"email\":\"priya1@example.org\",\"provider\":\"google\"}",
-      "timestamp": "2026-09-27T16:41:23.044Z"
+      "timestamp": "2026-09-27T17:52:50.875Z"
     },
     {
-      "id": "aud_4280163e-eeb7-4254-a758-bea0f307c897",
+      "id": "aud_9eef1b97-676b-410e-a699-cf118f66aebe",
+      "event_id": "evt_01",
+      "user_id": "usr_abhinav",
+      "role": "organizer",
+      "action": "auth.google_login",
+      "resource_type": "session",
+      "resource_id": null,
+      "details": "{\"email\":\"quality.prashanth@gmail.com\",\"provider\":\"google\"}",
+      "timestamp": "2026-09-27T17:45:13.749Z"
+    },
+    {
+      "id": "aud_47945118-b2f3-45de-9310-7f905b063168",
       "event_id": "evt_01",
       "user_id": "usr_organizer",
       "role": "organizer",
@@ -75,10 +86,10 @@
       "resource_type": "results_export",
       "resource_id": "evt_01",
       "details": "{\"totalRankedProjects\":41}",
-      "timestamp": "2026-09-27T16:40:18.116Z"
+      "timestamp": "2026-09-27T17:45:08.758Z"
     },
     {
-      "id": "aud_6d3bd6e9-0780-484f-b4ab-dbd9eb2e6580",
+      "id": "aud_dd152f9c-84ac-4e02-868e-e67478e5671a",
       "event_id": "evt_01",
       "user_id": "usr_organizer",
       "role": "organizer",
@@ -86,10 +97,10 @@
       "resource_type": "event",
       "resource_id": "evt_01",
       "details": "{\"results_released\":true}",
-      "timestamp": "2026-09-27T16:39:54.987Z"
+      "timestamp": "2026-09-27T17:45:01.505Z"
     },
     {
-      "id": "aud_26850ac5-741e-4b29-9930-0aa4b2f7d1e7",
+      "id": "aud_289a588f-e68a-49e4-ae2d-08a5f4a2e40d",
       "event_id": "evt_01",
       "user_id": "usr_jdg_01",
       "role": "judge",
@@ -97,10 +108,10 @@
       "resource_type": "review",
       "resource_id": "rev_prj_07_jdg_01",
       "details": "{\"projectId\":\"prj_07\",\"judgeId\":\"jdg_01\",\"totalWeightedScore\":4.4,\"criteria\":{\"functionality\":4.5,\"quality\":4,\"innovation\":4.8}}",
-      "timestamp": "2026-09-27T16:39:54.930Z"
+      "timestamp": "2026-09-27T17:45:01.443Z"
     },
     {
-      "id": "aud_acbf1f7e-0b54-48d1-816a-7790d8d12abf",
+      "id": "aud_27ea6307-8e99-45d0-b652-9dba822f55dd",
       "event_id": "evt_01",
       "user_id": "usr_organizer",
       "role": "organizer",
@@ -108,10 +119,10 @@
       "resource_type": "results_export",
       "resource_id": "evt_01",
       "details": "{\"totalRankedProjects\":41}",
-      "timestamp": "2026-09-27T16:39:53.014Z"
+      "timestamp": "2026-09-27T17:44:58.950Z"
     },
     {
-      "id": "aud_e4533aee-859f-4ba9-b3f9-0233f48e7838",
+      "id": "aud_c6c78a52-e252-4f6d-aed4-79fae2015b80",
       "event_id": "evt_01",
       "user_id": "usr_jdg_01",
       "role": "judge",
@@ -119,10 +130,10 @@
       "resource_type": "session",
       "resource_id": null,
       "details": "{\"email\":\"tomas.varga@example.org\",\"provider\":\"google\"}",
-      "timestamp": "2026-09-27T16:39:52.464Z"
+      "timestamp": "2026-09-27T17:44:58.244Z"
     },
     {
-      "id": "aud_be1f5516-54aa-44b6-9d44-2bf2e72f9868",
+      "id": "aud_cb7dde43-3997-447e-81c3-5d60b5fd5671",
       "event_id": "evt_01",
       "user_id": "usr_participant",
       "role": "participant",
@@ -130,7 +141,7 @@
       "resource_type": "session",
       "resource_id": null,
       "details": "{\"email\":\"priya1@example.org\",\"provider\":\"google\"}",
-      "timestamp": "2026-09-27T16:39:52.430Z"
+      "timestamp": "2026-09-27T17:44:58.154Z"
     },
     {
       "id": "aud_init_seed",
@@ -141,7 +152,7 @@
       "resource_type": "fixtures",
       "resource_id": "evt_01",
       "details": "{\"derived_event\":\"evt_01\",\"projects_count\":41,\"judges_count\":30,\"scores_count\":126,\"judge_a_mapped\":\"jdg_01\",\"judge_b_mapped\":\"jdg_02\"}",
-      "timestamp": "2026-09-27T16:39:00.325Z"
+      "timestamp": "2026-09-27T17:44:15.413Z"
     }
   ]
 }

@@ -6,7 +6,7 @@
       "assignment_id": "asg_prj_07_jdg_01",
       "project_id": "prj_07",
       "assignment_status": "completed",
-      "assigned_at": "2026-09-27T16:39:00.325Z",
+      "assigned_at": "2026-09-27T17:44:15.413Z",
       "project_title": "Dry Harbour",
       "project_summary": "One line of what it does.",
       "repo_url": "https://example.org/repo/07",
@@ -18,7 +18,7 @@
       "review_id": "rev_prj_07_jdg_01",
       "total_weighted_score": 4.4,
       "comment": "Excellent execution on edge optimization.",
-      "submitted_at": "2026-09-27T16:41:25.740Z",
+      "submitted_at": "2026-09-27T17:52:54.317Z",
       "criteria": {
         "functionality": 4.5,
         "innovation": 4.8,

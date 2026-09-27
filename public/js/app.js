@@ -346,12 +346,6 @@
 
   function showCreateHackathonModal() {
     const isAuthed = state.user && state.user.role && state.user.role !== 'visitor';
-    if (!isAuthed) {
-      showToast('Please sign in or create an account to host a hackathon.', 'info');
-      navigateTo('login');
-      return;
-    }
-
     const twoWeeksOut = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
 
     const wizardHtml = `
@@ -360,14 +354,37 @@
           Launch a complete, self-contained hackathon with custom tracks, weighted judging rubric, and automated verification.
         </p>
 
+        ${!isAuthed ? `
+          <!-- Organizer Information (for visitors / new hosts) -->
+          <div class="p-3 mb-4 rounded border" style="background: rgba(99, 102, 241, 0.08); border-color: rgba(99, 102, 241, 0.25);">
+            <div class="text-xs font-bold uppercase tracking-wider text-accent mb-2">Host & Organizer Account</div>
+            <div class="grid grid-cols-2 gap-3 mb-2">
+              <div>
+                <label class="form-label text-xs" for="wizard-org-name">Your Full Name *</label>
+                <input type="text" id="wizard-org-name" class="form-input" required placeholder="e.g. Abhinav Reddy" value="${state.user?.name && state.user.name !== 'Guest Explorer' ? escapeHtml(state.user.name) : ''}">
+              </div>
+              <div>
+                <label class="form-label text-xs" for="wizard-org-email">Your Email Address *</label>
+                <input type="email" id="wizard-org-email" class="form-input" required placeholder="name@domain.com" value="${state.user?.email && !state.user.email.includes('samplehack.org') ? escapeHtml(state.user.email) : ''}">
+              </div>
+            </div>
+            <p class="text-xs text-muted">You will automatically be registered as the Lead Organizer with full access to the Command Center.</p>
+          </div>
+        ` : `
+          <div class="p-2 mb-3 rounded border text-xs flex items-center justify-between" style="background: var(--bg-surface);">
+            <span>Hosting as: <strong>${escapeHtml(state.user.name || state.user.email)}</strong></span>
+            <span class="badge badge-primary">Lead Organizer</span>
+          </div>
+        `}
+
         <div class="form-group mb-3">
           <label class="form-label" for="wizard-event-name">Hackathon Name *</label>
-          <input type="text" id="wizard-event-name" class="form-input" required placeholder="E.g. Nexus AI World Cup 2026" minlength="3">
+          <input type="text" id="wizard-event-name" class="form-input" required placeholder="E.g. Global Agentic Hackathon 2026" minlength="3">
         </div>
 
         <div class="form-group mb-3">
           <label class="form-label" for="wizard-event-desc">Event Mission & Overview</label>
-          <textarea id="wizard-event-desc" class="form-textarea" rows="3" placeholder="Building the next generation of verifiable autonomous software..."></textarea>
+          <textarea id="wizard-event-desc" class="form-textarea" rows="2" placeholder="Building the next generation of verifiable autonomous software and open protocols..."></textarea>
         </div>
 
         <div class="form-group mb-4">
@@ -393,7 +410,7 @@
 
         <div class="border-t pt-3 mb-4">
           <label class="form-label mb-2">Authoritative Judging Rubric</label>
-          <div class="flex gap-2 text-xs">
+          <div class="flex gap-2 text-xs flex-wrap">
             <span class="badge badge-primary">Technical Execution (40%)</span>
             <span class="badge badge-primary">Innovation (35%)</span>
             <span class="badge badge-primary">Practical Utility (25%)</span>
@@ -402,7 +419,7 @@
 
         <div class="flex justify-end gap-3 border-t pt-4">
           <button type="button" class="btn btn-secondary" onclick="window.Judgely.closeModal()">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="btn-submit-create-event">Launch Hackathon</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-create-event">🚀 Launch Hackathon</button>
         </div>
       </form>
     `;
@@ -420,15 +437,33 @@
         const description = document.getElementById('wizard-event-desc').value.trim();
         const deadline = document.getElementById('wizard-event-deadline').value;
 
+        const payload = {
+          name,
+          description,
+          submissions_close: new Date(deadline).toISOString()
+        };
+
+        if (!isAuthed) {
+          const orgNameInput = document.getElementById('wizard-org-name');
+          const orgEmailInput = document.getElementById('wizard-org-email');
+          if (orgNameInput && orgEmailInput) {
+            payload.organizer_name = orgNameInput.value.trim();
+            payload.organizer_email = orgEmailInput.value.trim();
+          }
+        }
+
         try {
-          const res = await api.createEvent({
-            name,
-            description,
-            submissions_close: new Date(deadline).toISOString()
-          });
+          const res = await api.createEvent(payload);
 
           showToast('Hackathon created successfully! Welcome to your operations center.', 'success');
           closeModal();
+
+          if (res.user) {
+            state.user = res.user;
+            localStorage.setItem('judgely_session_user', JSON.stringify(res.user));
+          } else if (state.user) {
+            state.user.role = 'organizer';
+          }
 
           // Refresh events directory
           const eventsRes = await api.getEvents();
@@ -439,7 +474,6 @@
           // Switch active event to new hackathon
           state.activeEventId = res.event.id;
           localStorage.setItem('judgely_active_event_id', res.event.id);
-          state.user.role = 'organizer';
 
           navigateTo('organizer');
         } catch (err) {
