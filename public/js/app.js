@@ -249,18 +249,42 @@ function switchView(viewName) {
   if (viewName === 'audit') loadAuditTrail();
 }
 
+let staticFixturesData = null;
+
+async function getStaticFixtures() {
+  if (!staticFixturesData) {
+    const res = await fetch('/fixtures.json');
+    staticFixturesData = await res.json();
+  }
+  return staticFixturesData;
+}
+
 // Data loaders
 async function loadEventData() {
   try {
     const res = await apiFetch('/api/event');
-    const event = await res.json();
-    state.event = event;
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok || contentType.includes('text/html')) {
+      const data = await getStaticFixtures();
+      state.event = data.event;
+    } else {
+      state.event = await res.json();
+    }
+  } catch (err) {
+    try {
+      const data = await getStaticFixtures();
+      state.event = data.event;
+    } catch (e) {
+      console.error('Failed to load event data:', e);
+    }
+  }
 
-    document.getElementById('banner-event-name').textContent = event.name;
-    document.getElementById('banner-close-date').textContent = new Date(event.submissions_close).toUTCString();
-    document.getElementById('input-close-date').value = event.submissions_close;
+  if (state.event) {
+    document.getElementById('banner-event-name').textContent = state.event.name;
+    document.getElementById('banner-close-date').textContent = new Date(state.event.submissions_close).toUTCString();
+    document.getElementById('input-close-date').value = state.event.submissions_close;
 
-    const isClosed = new Date() > new Date(event.submissions_close);
+    const isClosed = new Date() > new Date(state.event.submissions_close);
     const badge = document.getElementById('banner-closed-badge');
     if (isClosed) {
       badge.textContent = 'SUBMISSIONS CLOSED';
@@ -269,57 +293,90 @@ async function loadEventData() {
       badge.textContent = 'SUBMISSIONS OPEN';
       badge.className = 'status-badge open';
     }
-  } catch (err) {
-    console.error('Failed to load event data:', err);
   }
 }
 
 async function loadTracks() {
   try {
     const res = await apiFetch('/api/tracks');
-    const data = await res.json();
-    state.tracks = data.tracks || [];
-
-    const container = document.getElementById('track-filter-container');
-    container.innerHTML = '<button class="track-pill active" data-track="all">All Tracks</button>';
-
-    state.tracks.forEach(track => {
-      const btn = document.createElement('button');
-      btn.className = 'track-pill';
-      btn.dataset.track = track.id;
-      btn.textContent = track.name;
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.track-pill').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        state.selectedTrack = track.id;
-        renderGallery();
-      });
-      container.appendChild(btn);
-    });
-
-    // Populate track select in submission modal
-    const subTrackSelect = document.getElementById('input-sub-track');
-    subTrackSelect.innerHTML = '';
-    state.tracks.forEach(t => {
-      const opt = document.createElement('option');
-      opt.value = t.id;
-      opt.textContent = t.name;
-      subTrackSelect.appendChild(opt);
-    });
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok || contentType.includes('text/html')) {
+      const data = await getStaticFixtures();
+      state.tracks = data.tracks || [];
+    } else {
+      const data = await res.json();
+      state.tracks = data.tracks || [];
+    }
   } catch (err) {
-    console.error('Failed to load tracks:', err);
+    try {
+      const data = await getStaticFixtures();
+      state.tracks = data.tracks || [];
+    } catch (e) {
+      console.error('Failed to load tracks:', e);
+    }
   }
+
+  const container = document.getElementById('track-filter-container');
+  container.innerHTML = '<button class="track-pill active" data-track="all">All Tracks</button>';
+
+  state.tracks.forEach(track => {
+    const btn = document.createElement('button');
+    btn.className = 'track-pill';
+    btn.dataset.track = track.id;
+    btn.textContent = track.name;
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.track-pill').forEach(p => p.classList.remove('active'));
+      btn.classList.add('active');
+      state.selectedTrack = track.id;
+      renderGallery();
+    });
+    container.appendChild(btn);
+  });
+
+  // Populate track select in submission modal
+  const subTrackSelect = document.getElementById('input-sub-track');
+  subTrackSelect.innerHTML = '';
+  state.tracks.forEach(t => {
+    const opt = document.createElement('option');
+    opt.value = t.id;
+    opt.textContent = t.name;
+    subTrackSelect.appendChild(opt);
+  });
 }
 
 async function loadProjects() {
   try {
     const res = await apiFetch('/api/projects');
-    const data = await res.json();
-    state.projects = data.projects || [];
-    renderGallery();
+    const contentType = res.headers.get('content-type') || '';
+    if (!res.ok || contentType.includes('text/html')) {
+      const data = await getStaticFixtures();
+      const teamMap = {};
+      (data.teams || []).forEach(t => teamMap[t.id] = t.name);
+      const trackMap = {};
+      (data.tracks || []).forEach(t => trackMap[t.id] = t.name);
+
+      state.projects = (data.projects || []).map(p => ({
+        ...p,
+        team_name: teamMap[p.team] || p.team,
+        track_name: trackMap[p.track] || p.track,
+        track_id: p.track,
+        normalized_score: 0,
+        raw_score: 0,
+        review_count: 0
+      }));
+    } else {
+      const data = await res.json();
+      state.projects = data.projects || [];
+    }
   } catch (err) {
-    console.error('Failed to load projects:', err);
+    try {
+      const data = await getStaticFixtures();
+      state.projects = data.projects || [];
+    } catch (e) {
+      console.error('Failed to load projects:', e);
+    }
   }
+  renderGallery();
 }
 
 // Render Gallery
