@@ -1,0 +1,52 @@
+{
+  "event_id": "evt_01",
+  "judge_id": "jdg_01",
+  "assignments": [
+    {
+      "assignment_id": "asg_prj_07_jdg_01",
+      "project_id": "prj_07",
+      "assignment_status": "completed",
+      "assigned_at": "2026-09-27T05:35:41.457Z",
+      "project_title": "Dry Harbour",
+      "project_summary": "One line of what it does.",
+      "repo_url": "https://example.org/repo/07",
+      "demo_url": "",
+      "tech_stack": "Node.js, SQLite, TypeScript",
+      "track_id": "trk_03",
+      "track_name": "Accessibility",
+      "team_name": "CopperLedger",
+      "review_id": "rev_prj_07_jdg_01",
+      "total_weighted_score": 4.4,
+      "comment": "Excellent execution on edge optimization.",
+      "submitted_at": "2026-09-27T15:34:10.539Z",
+      "criteria": {
+        "functionality": 4.5,
+        "innovation": 4.8,
+        "quality": 4
+      }
+    }
+  ],
+  "rubric": [
+    {
+      "id": "crit_functionality",
+      "name": "functionality",
+      "description": "Evaluation criterion measuring project functionality",
+      "weight": 0.4,
+      "max_score": 5
+    },
+    {
+      "id": "crit_quality",
+      "name": "quality",
+      "description": "Evaluation criterion measuring project quality",
+      "weight": 0.35,
+      "max_score": 5
+    },
+    {
+      "id": "crit_innovation",
+      "name": "innovation",
+      "description": "Evaluation criterion measuring project innovation",
+      "weight": 0.25,
+      "max_score": 5
+    }
+  ]
+}

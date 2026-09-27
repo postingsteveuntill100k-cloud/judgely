@@ -56,6 +56,46 @@
         "destination": "/api/results.json"
       },
       {
+        "source": "/api/organizer/overview",
+        "destination": "/api/organizer/overview.json"
+      },
+      {
+        "source": "/api/organizer/health",
+        "destination": "/api/organizer/health.json"
+      },
+      {
+        "source": "/api/organizer/projects",
+        "destination": "/api/organizer/projects.json"
+      },
+      {
+        "source": "/api/organizer/teams",
+        "destination": "/api/organizer/teams.json"
+      },
+      {
+        "source": "/api/organizer/judges",
+        "destination": "/api/organizer/judges.json"
+      },
+      {
+        "source": "/api/organizer/assignments",
+        "destination": "/api/organizer/assignments.json"
+      },
+      {
+        "source": "/api/organizer/rubric",
+        "destination": "/api/organizer/rubric.json"
+      },
+      {
+        "source": "/api/organizer/audit",
+        "destination": "/api/organizer/audit.json"
+      },
+      {
+        "source": "/api/judge/assignments",
+        "destination": "/api/judge/assignments.json"
+      },
+      {
+        "source": "/api/fixtures",
+        "destination": "/fixtures.json"
+      },
+      {
         "source": "/projects",
         "destination": "/index.html"
       },
