@@ -332,7 +332,9 @@ function seed(dbInstance = null, fixtureData = null) {
       scoresCount: (fixtures.scores || []).length
     };
   } catch (err) {
-    db.exec('ROLLBACK;');
+    try {
+      db.exec('ROLLBACK;');
+    } catch (_) {}
     throw err;
   }
 }

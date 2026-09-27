@@ -20,6 +20,7 @@ function getDb(inMemory = false) {
     }
     instance = new DatabaseSync(DB_PATH);
     instance.exec('PRAGMA journal_mode = WAL;');
+    instance.exec('PRAGMA busy_timeout = 5000;');
     instance.exec('PRAGMA foreign_keys = ON;');
     initSchema(instance);
 
