@@ -143,24 +143,76 @@ function handleSubmission(req, res) {
     }
   }
 
-  // BUG 9 Fix: Verify team does not already have an active submission
+  const isDraft = Boolean(req.body && (req.body.is_draft || req.body.status === 'draft'));
+
+  // BUG 9 Fix: Verify team submission status
   const existingProject = db.prepare(`
-    SELECT id, title FROM projects
+    SELECT id, title, status FROM projects
     WHERE team_id = ? AND event_id = ? AND status != 'withdrawn'
   `).get(resolvedTeamId, req.eventId);
 
   if (existingProject) {
-    return res.status(409).json({
-      error: 'Conflict',
-      message: `Your team has already submitted project '${existingProject.title}' (${existingProject.id}). Please update your existing submission instead.`,
-      project_id: existingProject.id
+    if (existingProject.status === 'submitted') {
+      return res.status(409).json({
+        error: 'Conflict',
+        message: `Your team has already submitted project '${existingProject.title}' (${existingProject.id}). Please update your existing submission instead.`,
+        project_id: existingProject.id
+      });
+    }
+
+    // Existing project is a draft: update in place or promote to submitted
+    const newStatus = isDraft ? 'draft' : 'submitted';
+    db.prepare(`
+      UPDATE projects SET
+        title = ?,
+        summary = ?,
+        tech_stack = ?,
+        repo_url = ?,
+        demo_url = ?,
+        track_id = ?,
+        updated_at = ?,
+        status = ?,
+        submitted_at = CASE WHEN ? = 'submitted' THEN ? ELSE submitted_at END
+      WHERE id = ? AND event_id = ?
+    `).run(
+      title.trim(),
+      (summary && typeof summary === 'string') ? summary.trim() : '',
+      (tech_stack && typeof tech_stack === 'string') ? tech_stack.trim() : '',
+      (repo_url && typeof repo_url === 'string') ? repo_url.trim() : '',
+      (demo_url && typeof demo_url === 'string') ? demo_url.trim() : '',
+      selectedTrackId,
+      now.toISOString(),
+      newStatus,
+      newStatus,
+      now.toISOString(),
+      existingProject.id,
+      req.eventId
+    );
+
+    recordAuditLog({
+      eventId: req.eventId,
+      userId: req.user.id,
+      role: req.user.role,
+      action: isDraft ? 'project.draft_updated' : 'project.submitted',
+      resourceType: 'project',
+      resourceId: existingProject.id,
+      details: { title: title.trim(), teamId: resolvedTeamId, status: newStatus }
+    });
+
+    return res.status(200).json({
+      message: isDraft ? 'Draft updated successfully' : 'Project submitted successfully',
+      project_id: existingProject.id,
+      team_id: resolvedTeamId,
+      status: newStatus
     });
   }
 
   const projectId = `prj_${crypto.randomUUID()}`;
+  const initialStatus = isDraft ? 'draft' : 'submitted';
+
   db.prepare(`
     INSERT INTO projects (id, event_id, team_id, track_id, title, summary, tech_stack, repo_url, demo_url, submitted_at, updated_at, status)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'submitted')
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     projectId,
     req.eventId,
@@ -172,23 +224,25 @@ function handleSubmission(req, res) {
     (repo_url && typeof repo_url === 'string') ? repo_url.trim() : '',
     (demo_url && typeof demo_url === 'string') ? demo_url.trim() : '',
     now.toISOString(),
-    now.toISOString()
+    now.toISOString(),
+    initialStatus
   );
 
   recordAuditLog({
     eventId: req.eventId,
     userId: req.user.id,
     role: req.user.role,
-    action: 'project.submitted',
+    action: isDraft ? 'project.draft_saved' : 'project.submitted',
     resourceType: 'project',
     resourceId: projectId,
-    details: { title: title.trim(), teamId: resolvedTeamId, trackId: selectedTrackId }
+    details: { title: title.trim(), teamId: resolvedTeamId, trackId: selectedTrackId, status: initialStatus }
   });
 
   return res.status(201).json({
-    message: 'Project submitted successfully',
+    message: isDraft ? 'Draft saved successfully' : 'Project submitted successfully',
     project_id: projectId,
-    team_id: resolvedTeamId
+    team_id: resolvedTeamId,
+    status: initialStatus
   });
 }
 
@@ -426,6 +480,58 @@ router.post('/api/teams', requireRole('participant'), requireEventMembership, (r
     message: 'Team created successfully',
     team_id: teamId,
     name: name.trim()
+  });
+});
+
+// POST /api/teams/join - Join a team via team code or ID
+router.post('/api/teams/join', requireRole('participant'), requireEventMembership, (req, res) => {
+  const db = getDb();
+  const { code, team_id } = req.body || {};
+  const targetTeamId = (code || team_id || '').trim();
+
+  if (!targetTeamId) {
+    return res.status(400).json({ error: 'Team code or ID is required.' });
+  }
+
+  const team = db.prepare('SELECT id, name, event_id FROM teams WHERE id = ?').get(targetTeamId);
+  if (!team || team.event_id !== req.eventId) {
+    return res.status(404).json({ error: `Team with code '${targetTeamId}' not found in this hackathon.` });
+  }
+
+  const alreadyInTeam = db.prepare(`
+    SELECT t.id, t.name FROM team_members tm
+    JOIN teams t ON tm.team_id = t.id
+    WHERE t.event_id = ? AND (tm.user_id = ? OR tm.email = ?)
+  `).get(req.eventId, req.user.id, req.user.email);
+
+  if (alreadyInTeam) {
+    if (alreadyInTeam.id === team.id) {
+      return res.json({ message: `You are already a member of ${team.name}.`, team_id: team.id });
+    }
+    return res.status(400).json({
+      error: `You are already a member of team '${alreadyInTeam.name}' in this hackathon. You must leave your current team first.`
+    });
+  }
+
+  db.prepare(`
+    INSERT INTO team_members (team_id, email, user_id, role)
+    VALUES (?, ?, ?, 'member')
+  `).run(team.id, req.user.email, req.user.id);
+
+  recordAuditLog({
+    eventId: req.eventId,
+    userId: req.user.id,
+    role: req.user.role,
+    action: 'team.joined',
+    resourceType: 'team',
+    resourceId: team.id,
+    details: { teamName: team.name }
+  });
+
+  res.json({
+    message: `Successfully joined ${team.name}!`,
+    team_id: team.id,
+    team_name: team.name
   });
 });
 

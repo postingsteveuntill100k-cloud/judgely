@@ -1,6 +1,56 @@
 {
   "tracks": [
     {
+      "id": "evt_autonomous_syste_ea0d5f_trk_agents",
+      "name": "Agents",
+      "description": "Autonomous agents"
+    },
+    {
+      "id": "evt_autonomous_syste_ea0d5f_trk_tools",
+      "name": "Developer Tools",
+      "description": "Compilers and debuggers"
+    },
+    {
+      "id": "evt_autonomous_syste_fe34ae_trk_agents",
+      "name": "Agents",
+      "description": "Autonomous agents"
+    },
+    {
+      "id": "evt_autonomous_syste_fe34ae_trk_tools",
+      "name": "Developer Tools",
+      "description": "Compilers and debuggers"
+    },
+    {
+      "id": "evt_collab_hackathon_bab9c6_trk_evt_collab_hackathon_bab9c6_1",
+      "name": "Autonomous Systems & AI",
+      "description": "Agentic workflows, self-improving loops, and cognitive architecture."
+    },
+    {
+      "id": "evt_collab_hackathon_bab9c6_trk_evt_collab_hackathon_bab9c6_2",
+      "name": "Developer Tools & Infra",
+      "description": "Core compilers, debugging harnesses, and open protocols."
+    },
+    {
+      "id": "evt_collab_hackathon_bab9c6_trk_evt_collab_hackathon_bab9c6_3",
+      "name": "Open Innovation",
+      "description": "Moonshot applications pushing creative boundaries."
+    },
+    {
+      "id": "evt_collab_hackathon_fc709c_trk_evt_collab_hackathon_fc709c_1",
+      "name": "Autonomous Systems & AI",
+      "description": "Agentic workflows, self-improving loops, and cognitive architecture."
+    },
+    {
+      "id": "evt_collab_hackathon_fc709c_trk_evt_collab_hackathon_fc709c_2",
+      "name": "Developer Tools & Infra",
+      "description": "Core compilers, debugging harnesses, and open protocols."
+    },
+    {
+      "id": "evt_collab_hackathon_fc709c_trk_evt_collab_hackathon_fc709c_3",
+      "name": "Open Innovation",
+      "description": "Moonshot applications pushing creative boundaries."
+    },
+    {
       "id": "trk_01",
       "name": "Developer tools",
       "description": "Projects advancing the frontier of developer tools."

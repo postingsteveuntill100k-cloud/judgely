@@ -58,6 +58,20 @@ function exportStaticApi() {
     });
   }
 
+  // 3b. /api/events.json (List of all hackathons)
+  const allEvents = db.prepare('SELECT * FROM events ORDER BY created_at DESC').all().map(e => ({
+    ...e,
+    results_released: Boolean(e.results_released),
+    status: e.results_released ? 'RESULTS_RELEASED' : (new Date(e.submissions_close) < new Date() ? 'JUDGING' : 'SUBMISSIONS_OPEN'),
+    stats: {
+      projects_count: db.prepare(`SELECT COUNT(*) AS count FROM projects WHERE event_id = ? AND status = 'submitted'`).get(e.id).count,
+      teams_count: db.prepare(`SELECT COUNT(*) AS count FROM teams WHERE event_id = ?`).get(e.id).count,
+      tracks_count: db.prepare(`SELECT COUNT(*) AS count FROM tracks WHERE event_id = ?`).get(e.id).count,
+      judges_count: db.prepare(`SELECT COUNT(*) AS count FROM judges WHERE event_id = ?`).get(e.id).count
+    }
+  }));
+  writeJson(path.join(PUBLIC_API_DIR, 'events.json'), { events: allEvents });
+
   // 4. /api/tracks.json
   const tracks = db.prepare('SELECT id, name, description FROM tracks ORDER BY id ASC').all();
   writeJson(path.join(PUBLIC_API_DIR, 'tracks.json'), { tracks });

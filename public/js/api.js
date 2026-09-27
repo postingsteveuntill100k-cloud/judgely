@@ -6,6 +6,11 @@
     const defaultHeaders = {
       'Accept': 'application/json'
     };
+
+    if (window.Judgely && window.Judgely.state && window.Judgely.state.activeEventId) {
+      defaultHeaders['x-event-id'] = window.Judgely.state.activeEventId;
+    }
+
     if (options.body && typeof options.body === 'object' && !(options.body instanceof FormData)) {
       defaultHeaders['Content-Type'] = 'application/json';
       options.body = JSON.stringify(options.body);
@@ -316,10 +321,16 @@
       }
     },
 
+    // Multi-Event discovery & lifecycle endpoints
+    getEvents: () => request('/api/events'),
+    createEvent: (eventData) => request('/api/events', { method: 'POST', body: eventData }),
+    registerForEvent: (eventId) => request(`/api/events/${encodeURIComponent(eventId)}/register`, { method: 'POST' }),
+    getMyEvents: () => request('/api/user/events'),
+
     // Public event endpoints
-    getEvent: () => request('/api/event'),
+    getEvent: (eventId) => request(eventId ? `/api/events/${encodeURIComponent(eventId)}` : '/api/event'),
     getTracks: () => request('/api/tracks'),
-    getProjects: () => request('/api/projects'),
+    getProjects: (eventId) => request(eventId ? `/api/projects?event_id=${encodeURIComponent(eventId)}` : '/api/projects'),
     getProject: async (id) => {
       try {
         return await request(`/api/projects/${encodeURIComponent(id)}`);
@@ -336,6 +347,8 @@
 
     // Participant endpoints
     createTeam: (name) => request('/api/teams', { method: 'POST', body: { name } }),
+    joinTeam: (code) => request('/api/teams/join', { method: 'POST', body: { code } }),
+    saveDraft: (projectData) => request('/api/submissions', { method: 'POST', body: { ...projectData, is_draft: true } }),
     submitProject: (projectData) => request('/api/submissions', { method: 'POST', body: projectData }),
     updateProject: (id, projectData) => request(`/api/submissions/${encodeURIComponent(id)}`, { method: 'PUT', body: projectData }),
     withdrawProject: (id) => request(`/api/submissions/${encodeURIComponent(id)}/withdraw`, { method: 'POST' }),

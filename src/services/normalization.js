@@ -27,7 +27,7 @@ function calculateNormalizedRankings(eventId) {
     FROM projects p
     LEFT JOIN teams t ON p.team_id = t.id
     LEFT JOIN tracks tr ON p.track_id = tr.id
-    WHERE p.event_id = ?
+    WHERE p.event_id = ? AND p.status != 'draft' AND p.status != 'withdrawn'
   `);
   const projects = projectsStmt.all(targetEventId);
 
@@ -48,9 +48,18 @@ function calculateNormalizedRankings(eventId) {
 
   if (allReviews.length === 0) {
     return {
-      global: { mean: 0, stdDev: 0, totalReviews: 0 },
+      global: { mean: 0, stdDev: 0, totalReviews: 0, totalProjects: projects.length },
       judges: {},
-      rankings: []
+      rankings: projects.map((p, idx) => ({
+        ...p,
+        raw_score: null,
+        normalized_score: null,
+        rank: idx + 1,
+        rank_delta: 0,
+        review_count: 0,
+        explanation: 'Pending judging evaluation',
+        reviews_breakdown: []
+      }))
     };
   }
 

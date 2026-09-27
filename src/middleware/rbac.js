@@ -11,13 +11,27 @@ function requireRole(...allowedRoles) {
       });
     }
 
-    if (!allowedRoles.includes(req.user.role)) {
+    let effectiveRole = req.user.role;
+    if (req.eventId && req.user.id) {
+      const { getDb } = require('../db/database');
+      const db = getDb();
+      const membership = db.prepare(`
+        SELECT role FROM event_memberships
+        WHERE event_id = ? AND user_id = ? AND status = 'active'
+      `).get(req.eventId, req.user.id);
+      if (membership) {
+        effectiveRole = membership.role;
+      }
+    }
+
+    if (!allowedRoles.includes(effectiveRole)) {
       return res.status(403).json({
         error: 'Forbidden',
-        message: `Access denied. Required roles: ${allowedRoles.join(', ')}. Current role: ${req.user.role}.`
+        message: `Access denied. Required roles: ${allowedRoles.join(', ')}. Current role: ${effectiveRole}.`
       });
     }
 
+    req.user.effectiveRole = effectiveRole;
     next();
   };
 }

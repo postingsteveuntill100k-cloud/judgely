@@ -1,0 +1,23 @@
+{
+  "project": {
+    "id": "prj_63435216-3b87-4706-96a6-60673644d173",
+    "event_id": "evt_collab_hackathon_fc709c",
+    "team_id": "tm_755d6f18-ee67-4e74-b172-04f0bfd40813",
+    "track_id": "evt_collab_hackathon_fc709c_trk_evt_collab_hackathon_fc709c_1",
+    "title": "Hyperdrive Protocol",
+    "summary": "Production-ready autonomous compute engine",
+    "tech_stack": "",
+    "repo_url": "https://github.com/hyperdrive/engine",
+    "demo_url": "https://hyperdrive.example.org",
+    "status": "submitted",
+    "submitted_at": "2026-09-27T16:41:24.317Z",
+    "track_name": "Autonomous Systems & AI",
+    "team_name": "Team Hyperdrive",
+    "members": [
+      {
+        "name": "Priya Nair",
+        "role": "lead"
+      }
+    ]
+  }
+}

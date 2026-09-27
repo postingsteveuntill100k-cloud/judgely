@@ -5,6 +5,9 @@
   const state = {
     user: { role: 'visitor' },
     event: null,
+    activeEventId: '',
+    events: [],
+    myEvents: [],
     tracks: [],
     projects: [],
     selectedTrack: 'all',

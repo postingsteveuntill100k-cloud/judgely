@@ -2,7 +2,7 @@
 (function(window) {
   'use strict';
 
-  const { state, setState, escapeHtml, showToast } = window.Judgely;
+  const { state, setState, escapeHtml, showToast, openModal, closeModal } = window.Judgely;
   const api = window.Judgely.api;
 
   async function init() {
@@ -10,17 +10,24 @@
     bindHeaderNavigation();
     bindModalSystem();
 
-    // 2. Render initial view immediately based on URL pathname or current role
+    // 2. Load stored active event if present
+    const savedEventId = localStorage.getItem('judgely_active_event_id');
+    if (savedEventId) {
+      state.activeEventId = savedEventId;
+    }
+
+    // 3. Render initial view immediately based on URL pathname or current role
     routeFromLocation();
 
-    // 3. Subscribe to state changes to keep header updated
+    // 4. Subscribe to state changes to keep header updated
     window.Judgely.subscribe(onStateChange);
 
-    // 4. Fetch server runtime configuration and session identity in parallel
+    // 5. Fetch server runtime configuration, events directory, and session in parallel
     try {
-      const [configRes, meRes] = await Promise.allSettled([
+      const [configRes, meRes, eventsRes] = await Promise.allSettled([
         api.getConfig(),
-        api.getMe()
+        api.getMe(),
+        api.getEvents()
       ]);
 
       if (configRes.status === 'fulfilled' && configRes.value) {
@@ -34,19 +41,30 @@
         }
       }
 
+      if (eventsRes.status === 'fulfilled' && eventsRes.value && eventsRes.value.events) {
+        const events = eventsRes.value.events;
+        setState({ events });
+        if (!state.activeEventId && events.length > 0) {
+          state.activeEventId = events[0].id;
+          localStorage.setItem('judgely_active_event_id', events[0].id);
+        }
+      }
+
       if (meRes.status === 'fulfilled' && meRes.value && meRes.value.user) {
         const user = meRes.value.user;
         if (user.role && user.role !== 'visitor') {
           setState({ user });
-          // If user is at root showcase, transition to their role workspace
+          // If user is at root showcase or login, transition to their role workspace
           if (window.location.pathname === '/' || window.location.pathname === '/login') {
             navigateTo(user.role);
           }
         }
       }
     } catch (e) {
-      console.warn('Could not complete background auth sync:', e.message);
+      console.warn('Could not complete background bootstrap sync:', e.message);
     }
+
+    updateHeaderNav();
   }
 
   function routeFromLocation() {
@@ -113,17 +131,105 @@
     window.addEventListener('popstate', () => {
       routeFromLocation();
     });
+
+    // Close open dropdowns when clicking outside
+    document.addEventListener('click', (e) => {
+      const menu = document.getElementById('event-dropdown-menu');
+      const btn = document.getElementById('event-switcher-btn');
+      if (menu && btn && !menu.contains(e.target) && !btn.contains(e.target)) {
+        menu.style.display = 'none';
+      }
+    });
+  }
+
+  function setActiveEvent(eventId) {
+    state.activeEventId = eventId;
+    localStorage.setItem('judgely_active_event_id', eventId);
+    
+    // Find event and check user role for this event
+    const activeEvt = (state.events || []).find(e => e.id === eventId);
+    if (activeEvt && activeEvt.user_role) {
+      state.user.role = activeEvt.user_role;
+    }
+
+    showToast(`Switched active event to ${activeEvt ? activeEvt.name : eventId}`, 'info');
+    updateHeaderNav();
+    renderCurrentView();
   }
 
   function updateHeaderNav() {
     const nav = document.getElementById('header-nav');
     const userActions = document.getElementById('header-user-actions');
+    const eventNameEl = document.getElementById('header-event-name');
     if (!nav || !userActions) return;
 
     const user = state.user;
     const isAuthed = user && user.role && user.role !== 'visitor';
+    const events = state.events || [];
+    const activeEvt = events.find(e => e.id === state.activeEventId) || events[0];
 
-    // Populate navigation links based on context
+    // 1. Render Event Context Switcher in Brand Meta
+    if (eventNameEl) {
+      const evtDisplayName = activeEvt ? activeEvt.name : 'Hackathon Platform';
+      eventNameEl.innerHTML = `
+        <div class="event-switcher-wrapper">
+          <button class="event-switcher-btn" id="event-switcher-btn" type="button" aria-haspopup="true">
+            <span>${escapeHtml(evtDisplayName)}</span>
+            <span class="mono text-xs text-muted">▾</span>
+          </button>
+          <div class="event-dropdown-menu" id="event-dropdown-menu" style="display:none;">
+            <div class="event-dropdown-header">Active Hackathons</div>
+            <div id="event-dropdown-items-list">
+              ${events.map(e => `
+                <button type="button" class="event-dropdown-item ${e.id === (activeEvt ? activeEvt.id : '') ? 'active' : ''}" data-event-id="${escapeHtml(e.id)}">
+                  <span class="event-item-title">${escapeHtml(e.name)}</span>
+                  <div class="event-item-meta">
+                    <span class="badge ${e.status === 'RESULTS_RELEASED' ? 'badge-primary' : (e.status === 'JUDGING' ? 'badge-warning' : 'badge-success')}">
+                      ${escapeHtml(e.status.replace(/_/g, ' '))}
+                    </span>
+                    <span>${e.stats ? e.stats.projects_count : 0} projects</span>
+                  </div>
+                </button>
+              `).join('')}
+            </div>
+            <div class="event-dropdown-footer">
+              <button type="button" class="btn btn-primary btn-sm w-full" id="btn-dropdown-host-event">
+                + Host a Hackathon
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+
+      const switcherBtn = document.getElementById('event-switcher-btn');
+      const dropdownMenu = document.getElementById('event-dropdown-menu');
+      if (switcherBtn && dropdownMenu) {
+        switcherBtn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dropdownMenu.style.display = dropdownMenu.style.display === 'none' ? 'flex' : 'none';
+        });
+      }
+
+      dropdownMenu.querySelectorAll('.event-dropdown-item').forEach(item => {
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const targetId = item.getAttribute('data-event-id');
+          dropdownMenu.style.display = 'none';
+          setActiveEvent(targetId);
+        });
+      });
+
+      const btnHostDropdown = document.getElementById('btn-dropdown-host-event');
+      if (btnHostDropdown) {
+        btnHostDropdown.addEventListener('click', (e) => {
+          e.stopPropagation();
+          dropdownMenu.style.display = 'none';
+          showCreateHackathonModal();
+        });
+      }
+    }
+
+    // 2. Populate navigation links based on context
     if (isAuthed) {
       nav.innerHTML = `
         <button class="nav-link ${state.currentView === user.role ? 'active' : ''}" id="nav-workspace-btn">
@@ -131,6 +237,9 @@
         </button>
         <button class="nav-link ${state.currentView === 'public' ? 'active' : ''}" id="nav-gallery-btn">
           Public Showcase
+        </button>
+        <button class="nav-link" id="nav-host-btn">
+          + Host Hackathon
         </button>
       `;
 
@@ -140,8 +249,19 @@
       const glBtn = document.getElementById('nav-gallery-btn');
       if (glBtn) glBtn.addEventListener('click', () => navigateTo('public'));
 
+      const hostBtn = document.getElementById('nav-host-btn');
+      if (hostBtn) hostBtn.addEventListener('click', showCreateHackathonModal);
+
+      // Check if user is registered for current event
+      const isMemberOfCurrent = activeEvt && (activeEvt.user_role || user.role === 'organizer' || user.role === 'judge');
+
       userActions.innerHTML = `
         <div class="flex items-center gap-3">
+          ${!isMemberOfCurrent ? `
+            <button class="btn btn-primary btn-sm" id="btn-header-register-event">
+              Register for this Hackathon
+            </button>
+          ` : ''}
           <div class="user-identity-chip">
             <span class="user-name">${escapeHtml(user.name || user.email)}</span>
             <span class="role-tag ${escapeHtml(user.role)}">${escapeHtml(user.role)}</span>
@@ -149,6 +269,20 @@
           <button class="btn btn-secondary btn-sm" id="btn-header-signout">Sign Out</button>
         </div>
       `;
+
+      const btnReg = document.getElementById('btn-header-register-event');
+      if (btnReg && activeEvt) {
+        btnReg.addEventListener('click', async () => {
+          try {
+            const res = await api.registerForEvent(activeEvt.id);
+            showToast(res.message || 'Successfully registered!', 'success');
+            state.user.role = 'participant';
+            navigateTo('participant');
+          } catch (err) {
+            showToast(err.message || 'Registration failed', 'error');
+          }
+        });
+      }
 
       const btnSignOut = document.getElementById('btn-header-signout');
       if (btnSignOut) {
@@ -189,6 +323,7 @@
       });
 
       userActions.innerHTML = `
+        <button class="btn btn-secondary btn-sm" id="btn-header-host-guest">+ Host Hackathon</button>
         ${state.currentView === 'login' ? `
           <button class="btn btn-secondary btn-sm" id="btn-header-public">Back to Showcase</button>
         ` : `
@@ -196,11 +331,122 @@
         `}
       `;
 
+      const btnHostGuest = document.getElementById('btn-header-host-guest');
+      if (btnHostGuest) {
+        btnHostGuest.addEventListener('click', showCreateHackathonModal);
+      }
+
       const btnSignIn = document.getElementById('btn-header-signin');
       if (btnSignIn) btnSignIn.addEventListener('click', () => navigateTo('login'));
 
       const btnPublic = document.getElementById('btn-header-public');
       if (btnPublic) btnPublic.addEventListener('click', () => navigateTo('public'));
+    }
+  }
+
+  function showCreateHackathonModal() {
+    const isAuthed = state.user && state.user.role && state.user.role !== 'visitor';
+    if (!isAuthed) {
+      showToast('Please sign in or create an account to host a hackathon.', 'info');
+      navigateTo('login');
+      return;
+    }
+
+    const twoWeeksOut = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().slice(0, 16);
+
+    const wizardHtml = `
+      <form id="create-hackathon-form">
+        <p class="text-sm text-muted mb-4">
+          Launch a complete, self-contained hackathon with custom tracks, weighted judging rubric, and automated verification.
+        </p>
+
+        <div class="form-group mb-3">
+          <label class="form-label" for="wizard-event-name">Hackathon Name *</label>
+          <input type="text" id="wizard-event-name" class="form-input" required placeholder="E.g. Nexus AI World Cup 2026" minlength="3">
+        </div>
+
+        <div class="form-group mb-3">
+          <label class="form-label" for="wizard-event-desc">Event Mission & Overview</label>
+          <textarea id="wizard-event-desc" class="form-textarea" rows="3" placeholder="Building the next generation of verifiable autonomous software..."></textarea>
+        </div>
+
+        <div class="form-group mb-4">
+          <label class="form-label" for="wizard-event-deadline">Submissions Deadline *</label>
+          <input type="datetime-local" id="wizard-event-deadline" class="form-input" required value="${twoWeeksOut}">
+          <span class="text-xs text-muted mt-1">Deadlines are enforced on the backend. Submissions after this date are strictly rejected.</span>
+        </div>
+
+        <div class="border-t pt-3 mb-4">
+          <label class="form-label mb-2">Default Competition Tracks</label>
+          <div class="flex flex-col gap-2">
+            <div class="p-2 rounded border text-xs" style="background: var(--bg-surface);">
+              <strong>Track 1: Autonomous Systems & Agents</strong> — Cognitive loops, reasoning agents, and tools
+            </div>
+            <div class="p-2 rounded border text-xs" style="background: var(--bg-surface);">
+              <strong>Track 2: Developer Tools & Infrastructure</strong> — Compilers, debugging harnesses, and open protocols
+            </div>
+            <div class="p-2 rounded border text-xs" style="background: var(--bg-surface);">
+              <strong>Track 3: Open Innovation</strong> — Moonshot applications pushing creative boundaries
+            </div>
+          </div>
+        </div>
+
+        <div class="border-t pt-3 mb-4">
+          <label class="form-label mb-2">Authoritative Judging Rubric</label>
+          <div class="flex gap-2 text-xs">
+            <span class="badge badge-primary">Technical Execution (40%)</span>
+            <span class="badge badge-primary">Innovation (35%)</span>
+            <span class="badge badge-primary">Practical Utility (25%)</span>
+          </div>
+        </div>
+
+        <div class="flex justify-end gap-3 border-t pt-4">
+          <button type="button" class="btn btn-secondary" onclick="window.Judgely.closeModal()">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="btn-submit-create-event">Launch Hackathon</button>
+        </div>
+      </form>
+    `;
+
+    openModal('Host a Hackathon on Judgely', wizardHtml);
+
+    const form = document.getElementById('create-hackathon-form');
+    if (form) {
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = document.getElementById('btn-submit-create-event');
+        if (submitBtn) submitBtn.disabled = true;
+
+        const name = document.getElementById('wizard-event-name').value.trim();
+        const description = document.getElementById('wizard-event-desc').value.trim();
+        const deadline = document.getElementById('wizard-event-deadline').value;
+
+        try {
+          const res = await api.createEvent({
+            name,
+            description,
+            submissions_close: new Date(deadline).toISOString()
+          });
+
+          showToast('Hackathon created successfully! Welcome to your operations center.', 'success');
+          closeModal();
+
+          // Refresh events directory
+          const eventsRes = await api.getEvents();
+          if (eventsRes && eventsRes.events) {
+            setState({ events: eventsRes.events });
+          }
+
+          // Switch active event to new hackathon
+          state.activeEventId = res.event.id;
+          localStorage.setItem('judgely_active_event_id', res.event.id);
+          state.user.role = 'organizer';
+
+          navigateTo('organizer');
+        } catch (err) {
+          if (submitBtn) submitBtn.disabled = false;
+          showToast(err.message || 'Failed to create hackathon', 'error');
+        }
+      });
     }
   }
 
@@ -243,6 +489,8 @@
   window.Judgely = window.Judgely || {};
   window.Judgely.navigateTo = navigateTo;
   window.Judgely.onLoginSuccess = onLoginSuccess;
+  window.Judgely.setActiveEvent = setActiveEvent;
+  window.Judgely.showCreateHackathonModal = showCreateHackathonModal;
 
   // Boot on DOMContentLoaded
   if (document.readyState === 'loading') {

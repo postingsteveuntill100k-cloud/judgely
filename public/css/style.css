@@ -2008,3 +2008,97 @@ p:last-child {
     font-size: 2rem;
   }
 }
+
+/* Event Switcher & Multi-Event Navigation */
+.event-switcher-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.event-switcher-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(30, 41, 59, 0.7);
+  border: 1px solid var(--border-default);
+  padding: 0.35rem 0.75rem;
+  border-radius: var(--radius-sm);
+  color: var(--text-main);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.event-switcher-btn:hover {
+  background: rgba(51, 65, 85, 0.8);
+  border-color: var(--accent-primary);
+}
+
+.event-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  min-width: 280px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-md);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.event-dropdown-header {
+  padding: 0.5rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-subtle);
+  margin-bottom: 0.25rem;
+}
+
+.event-dropdown-item {
+  display: flex;
+  flex-direction: column;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  text-decoration: none;
+  color: var(--text-main);
+  border: none;
+  background: transparent;
+  text-align: left;
+  width: 100%;
+}
+
+.event-dropdown-item:hover, .event-dropdown-item.active {
+  background: rgba(99, 102, 241, 0.15);
+  border-left: 2px solid var(--accent-primary);
+}
+
+.event-item-title {
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+.event-item-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.event-dropdown-footer {
+  border-top: 1px solid var(--border-subtle);
+  padding-top: 0.5rem;
+  margin-top: 0.25rem;
+}
+

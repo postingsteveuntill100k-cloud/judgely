@@ -7,6 +7,7 @@ const { authMiddleware } = require('./middleware/auth');
 // Import routes
 const authRoutes = require('./routes/auth');
 const publicRoutes = require('./routes/public');
+const eventRoutes = require('./routes/events');
 const submissionRoutes = require('./routes/submissions');
 const judgeRoutes = require('./routes/judge');
 const organizerRoutes = require('./routes/organizer');
@@ -26,6 +27,7 @@ app.use(authMiddleware);
 // Mount API & page routes
 app.use(authRoutes);
 app.use(publicRoutes);
+app.use(eventRoutes);
 app.use(submissionRoutes);
 app.use(judgeRoutes);
 app.use(organizerRoutes);

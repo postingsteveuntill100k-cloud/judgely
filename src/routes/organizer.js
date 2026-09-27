@@ -7,7 +7,7 @@ const { getJudgingHealth } = require('../services/health');
 const { getAuditLogs, recordAuditLog } = require('../services/audit');
 
 // All organizer endpoints strictly require 'organizer' role, event resolution, and event membership
-router.use('/api/organizer', requireRole('organizer'), eventMiddleware, requireEventMembership);
+router.use('/api/organizer', eventMiddleware, requireRole('organizer'), requireEventMembership);
 
 // GET /api/organizer/overview
 router.get('/api/organizer/overview', (req, res) => {

@@ -36,9 +36,10 @@
           <p class="hero-subhead" id="hero-event-desc">
             Open-source judging infrastructure with transparent assignments, defensible scoring, and mathematical normalization.
           </p>
-          <div class="flex justify-center gap-3 mt-6">
+          <div class="flex justify-center gap-3 mt-6 flex-wrap">
             <a href="#projects-showcase" class="btn btn-primary" id="btn-explore-projects">Explore Projects</a>
             <a href="#tracks-section" class="btn btn-secondary" id="btn-view-tracks">View Tracks</a>
+            <button class="btn btn-secondary" id="btn-hero-host-event">+ Host a Hackathon</button>
           </div>
         </section>
 
@@ -107,6 +108,49 @@
               <div class="workflow-step-title">Verifiable Audit</div>
               <div class="workflow-step-desc">
                 Every score, assignment, and status transition is recorded in an immutable audit trail.
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Event Timeline / Schedule Section -->
+        <section class="mb-8" id="schedule-section">
+          <div class="section-eyebrow">Event Lifecycle</div>
+          <h2 class="section-title">Competition Schedule</h2>
+          <div class="roadmap-steps mt-4">
+            <div class="roadmap-step">
+              <div class="step-num done">1</div>
+              <div class="step-meta">
+                <strong>Registration Opens</strong>
+                <span>Teams & Solo Participants Welcome</span>
+              </div>
+            </div>
+            <div class="roadmap-step">
+              <div class="step-num active">2</div>
+              <div class="step-meta">
+                <strong>Hacking & Building</strong>
+                <span>Collaborate on Repositories & Demos</span>
+              </div>
+            </div>
+            <div class="roadmap-step">
+              <div class="step-num">3</div>
+              <div class="step-meta">
+                <strong>Submissions Deadline</strong>
+                <span id="schedule-deadline-text">Enforced by Server</span>
+              </div>
+            </div>
+            <div class="roadmap-step">
+              <div class="step-num">4</div>
+              <div class="step-meta">
+                <strong>Blind Evaluation</strong>
+                <span>Domain Judges & Z-Score Normalization</span>
+              </div>
+            </div>
+            <div class="roadmap-step">
+              <div class="step-num">5</div>
+              <div class="step-meta">
+                <strong>Official Results</strong>
+                <span>Public Ledger & Final Standings</span>
               </div>
             </div>
           </div>
@@ -203,16 +247,23 @@
       });
     }
 
+    // Bind host event CTA in hero
+    const btnHeroHost = document.getElementById('btn-hero-host-event');
+    if (btnHeroHost && window.Judgely.showCreateHackathonModal) {
+      btnHeroHost.addEventListener('click', window.Judgely.showCreateHackathonModal);
+    }
+
     // Fetch live data from backend
     await loadPublicData();
   }
 
   async function loadPublicData() {
     try {
+      const activeId = window.Judgely.state.activeEventId;
       const [eventRes, tracksRes, projectsRes] = await Promise.allSettled([
-        api.getEvent(),
+        api.getEvent(activeId),
         api.getTracks(),
-        api.getProjects()
+        api.getProjects(activeId)
       ]);
 
       if (eventRes.status === 'fulfilled') {
@@ -285,6 +336,11 @@
       } else {
         statusContainer.innerHTML = '<span class="badge badge-primary">Submissions Open</span>';
       }
+    }
+
+    const scheduleDeadline = document.getElementById('schedule-deadline-text');
+    if (scheduleDeadline && event.submissions_close) {
+      scheduleDeadline.textContent = new Date(event.submissions_close).toUTCString();
     }
   }
 
