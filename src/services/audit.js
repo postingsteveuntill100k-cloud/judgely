@@ -1,3 +1,4 @@
+const crypto = require('node:crypto');
 const { getDb } = require('../db/database');
 
 function recordAuditLog({
@@ -11,7 +12,7 @@ function recordAuditLog({
 }) {
   const db = getDb();
   const targetEventId = eventId || db.prepare('SELECT id FROM events ORDER BY created_at ASC LIMIT 1').get()?.id || 'evt_default';
-  const id = `aud_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`;
+  const id = `aud_${crypto.randomUUID()}`;
   const timestamp = new Date().toISOString();
 
   try {

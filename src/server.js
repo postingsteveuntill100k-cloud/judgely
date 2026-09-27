@@ -20,9 +20,6 @@ const PORT = process.env.PORT || 8080;
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Serve static frontend assets
-app.use(express.static(path.join(__dirname, '../public')));
-
 // Authentication middleware
 app.use(authMiddleware);
 
@@ -34,6 +31,9 @@ app.use(judgeRoutes);
 app.use(organizerRoutes);
 app.use(exportRoutes);
 app.use(resultsRoutes);
+
+// Serve static frontend assets (css, js, assets)
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Root route redirects to gallery or serves SPA
 app.get('/', (req, res) => {

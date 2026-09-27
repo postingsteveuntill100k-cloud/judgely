@@ -1,0 +1,27 @@
+{
+  "project": {
+    "id": "prj_19",
+    "event_id": "evt_01",
+    "team_id": "tm_19",
+    "track_id": "trk_06",
+    "title": "Small Relay",
+    "summary": "One line of what it does.",
+    "tech_stack": "Node.js, SQLite, TypeScript",
+    "repo_url": "https://example.org/repo/19",
+    "demo_url": "",
+    "status": "submitted",
+    "submitted_at": "2026-02-27T09:30:00Z",
+    "track_name": "Health",
+    "team_name": "PaperAnchor",
+    "members": [
+      {
+        "name": "Participant",
+        "role": "lead"
+      },
+      {
+        "name": "Participant",
+        "role": "member"
+      }
+    ]
+  }
+}

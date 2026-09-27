@@ -1,0 +1,23 @@
+{
+  "project": {
+    "id": "prj_30",
+    "event_id": "evt_01",
+    "team_id": "tm_30",
+    "track_id": "trk_07",
+    "title": "Paper Harbour",
+    "summary": "One line of what it does.",
+    "tech_stack": "Node.js, SQLite, TypeScript",
+    "repo_url": "https://example.org/repo/30",
+    "demo_url": "",
+    "status": "submitted",
+    "submitted_at": "2026-03-01T13:45:00Z",
+    "track_name": "Education",
+    "team_name": "StillTrail",
+    "members": [
+      {
+        "name": "Participant",
+        "role": "lead"
+      }
+    ]
+  }
+}

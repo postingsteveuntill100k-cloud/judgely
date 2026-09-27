@@ -1,0 +1,27 @@
+{
+  "project": {
+    "id": "prj_31",
+    "event_id": "evt_01",
+    "team_id": "tm_31",
+    "track_id": "trk_01",
+    "title": "Salt Ferry",
+    "summary": "One line of what it does.",
+    "tech_stack": "Node.js, SQLite, TypeScript",
+    "repo_url": "https://example.org/repo/31",
+    "demo_url": "",
+    "status": "submitted",
+    "submitted_at": "2026-03-01T05:43:00Z",
+    "track_name": "Developer tools",
+    "team_name": "GreenBeacon",
+    "members": [
+      {
+        "name": "Participant",
+        "role": "member"
+      },
+      {
+        "name": "Participant",
+        "role": "lead"
+      }
+    ]
+  }
+}

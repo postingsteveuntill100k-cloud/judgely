@@ -1,0 +1,27 @@
+{
+  "project": {
+    "id": "prj_13",
+    "event_id": "evt_01",
+    "team_id": "tm_13",
+    "track_id": "trk_05",
+    "title": "Quiet Anchor",
+    "summary": "One line of what it does.",
+    "tech_stack": "Node.js, SQLite, TypeScript",
+    "repo_url": "https://example.org/repo/13",
+    "demo_url": "",
+    "status": "submitted",
+    "submitted_at": "2026-03-01T14:20:00Z",
+    "track_name": "Climate",
+    "team_name": "HollowHours",
+    "members": [
+      {
+        "name": "Participant",
+        "role": "lead"
+      },
+      {
+        "name": "Participant",
+        "role": "member"
+      }
+    ]
+  }
+}

@@ -1,18 +1,70 @@
 {
   "hosting": {
     "public": "public",
+    "cleanUrls": true,
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ],
+    "headers": [
+      {
+        "source": "/api/**",
+        "headers": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          },
+          {
+            "key": "Access-Control-Allow-Origin",
+            "value": "*"
+          },
+          {
+            "key": "Cache-Control",
+            "value": "public, max-age=300"
+          }
+        ]
+      }
+    ],
     "rewrites": [
+      {
+        "source": "/api/auth/config",
+        "destination": "/api/auth/config.json"
+      },
+      {
+        "source": "/api/auth/me",
+        "destination": "/api/auth/me.json"
+      },
+      {
+        "source": "/api/event",
+        "destination": "/api/event.json"
+      },
+      {
+        "source": "/api/tracks",
+        "destination": "/api/tracks.json"
+      },
+      {
+        "source": "/api/projects",
+        "destination": "/api/projects.json"
+      },
+      {
+        "source": "/api/projects/:id",
+        "destination": "/api/project_details/:id.json"
+      },
+      {
+        "source": "/api/results",
+        "destination": "/api/results.json"
+      },
       {
         "source": "/projects",
         "destination": "/index.html"
       },
       {
-        "source": "**",
+        "source": "/login",
+        "destination": "/index.html"
+      },
+      {
+        "source": "!/api/**",
         "destination": "/index.html"
       }
     ]

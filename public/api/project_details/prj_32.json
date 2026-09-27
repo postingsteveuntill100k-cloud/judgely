@@ -1,0 +1,31 @@
+{
+  "project": {
+    "id": "prj_32",
+    "event_id": "evt_01",
+    "team_id": "tm_32",
+    "track_id": "trk_01",
+    "title": "Loud Ledger",
+    "summary": "One line of what it does.",
+    "tech_stack": "Node.js, SQLite, TypeScript",
+    "repo_url": "https://example.org/repo/32",
+    "demo_url": "",
+    "status": "submitted",
+    "submitted_at": "2026-03-01T14:58:00Z",
+    "track_name": "Developer tools",
+    "team_name": "DeepMeadow",
+    "members": [
+      {
+        "name": "Participant",
+        "role": "member"
+      },
+      {
+        "name": "Participant",
+        "role": "member"
+      },
+      {
+        "name": "Participant",
+        "role": "lead"
+      }
+    ]
+  }
+}

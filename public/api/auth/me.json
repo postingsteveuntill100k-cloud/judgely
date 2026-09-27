@@ -1,0 +1,7 @@
+{
+  "user": {
+    "id": "usr_guest",
+    "name": "Guest Explorer",
+    "role": "visitor"
+  }
+}

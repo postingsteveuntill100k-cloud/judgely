@@ -1,0 +1,44 @@
+{
+  "tracks": [
+    {
+      "id": "trk_01",
+      "name": "Developer tools",
+      "description": "Projects advancing the frontier of developer tools."
+    },
+    {
+      "id": "trk_02",
+      "name": "Data and analytics",
+      "description": "Projects advancing the frontier of data and analytics."
+    },
+    {
+      "id": "trk_03",
+      "name": "Accessibility",
+      "description": "Projects advancing the frontier of accessibility."
+    },
+    {
+      "id": "trk_04",
+      "name": "Security",
+      "description": "Projects advancing the frontier of security."
+    },
+    {
+      "id": "trk_05",
+      "name": "Climate",
+      "description": "Projects advancing the frontier of climate."
+    },
+    {
+      "id": "trk_06",
+      "name": "Health",
+      "description": "Projects advancing the frontier of health."
+    },
+    {
+      "id": "trk_07",
+      "name": "Education",
+      "description": "Projects advancing the frontier of education."
+    },
+    {
+      "id": "trk_08",
+      "name": "Open hardware",
+      "description": "Projects advancing the frontier of open hardware."
+    }
+  ]
+}

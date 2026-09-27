@@ -1,0 +1,23 @@
+{
+  "project": {
+    "id": "prj_33",
+    "event_id": "evt_01",
+    "team_id": "tm_33",
+    "track_id": "trk_01",
+    "title": "Slow Trail",
+    "summary": "One line of what it does.",
+    "tech_stack": "Node.js, SQLite, TypeScript",
+    "repo_url": "https://example.org/repo/33",
+    "demo_url": "",
+    "status": "submitted",
+    "submitted_at": "2026-02-27T20:51:00Z",
+    "track_name": "Developer tools",
+    "team_name": "WarmTrail",
+    "members": [
+      {
+        "name": "Participant",
+        "role": "lead"
+      }
+    ]
+  }
+}

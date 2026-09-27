@@ -16,7 +16,8 @@ CREATE TABLE IF NOT EXISTS tracks (
     id TEXT PRIMARY KEY,
     event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
-    description TEXT DEFAULT ''
+    description TEXT DEFAULT '',
+    UNIQUE(id, event_id)
 );
 
 CREATE TABLE IF NOT EXISTS rubric_criteria (
@@ -62,7 +63,8 @@ CREATE TABLE IF NOT EXISTS judges (
     event_id TEXT REFERENCES events(id) ON DELETE CASCADE,
     user_id TEXT REFERENCES users(id) ON DELETE SET NULL,
     name TEXT NOT NULL,
-    email TEXT NOT NULL
+    email TEXT NOT NULL,
+    UNIQUE(id, event_id)
 );
 
 CREATE TABLE IF NOT EXISTS judge_tracks (
@@ -76,7 +78,8 @@ CREATE TABLE IF NOT EXISTS teams (
     event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
     name TEXT NOT NULL,
     created_by TEXT REFERENCES users(id) ON DELETE SET NULL,
-    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(id, event_id)
 );
 
 CREATE TABLE IF NOT EXISTS team_members (
@@ -90,8 +93,8 @@ CREATE TABLE IF NOT EXISTS team_members (
 CREATE TABLE IF NOT EXISTS projects (
     id TEXT PRIMARY KEY,
     event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-    team_id TEXT NOT NULL REFERENCES teams(id) ON DELETE CASCADE,
-    track_id TEXT NOT NULL REFERENCES tracks(id) ON DELETE RESTRICT,
+    team_id TEXT NOT NULL,
+    track_id TEXT NOT NULL,
     title TEXT NOT NULL,
     summary TEXT,
     tech_stack TEXT DEFAULT '',
@@ -99,28 +102,35 @@ CREATE TABLE IF NOT EXISTS projects (
     demo_url TEXT,
     submitted_at TEXT NOT NULL,
     updated_at TEXT,
-    status TEXT NOT NULL DEFAULT 'submitted' CHECK(status IN ('draft', 'submitted', 'withdrawn', 'disqualified'))
+    status TEXT NOT NULL DEFAULT 'submitted' CHECK(status IN ('draft', 'submitted', 'withdrawn', 'disqualified')),
+    FOREIGN KEY (team_id, event_id) REFERENCES teams(id, event_id) ON DELETE CASCADE,
+    FOREIGN KEY (track_id, event_id) REFERENCES tracks(id, event_id) ON DELETE RESTRICT,
+    UNIQUE(id, event_id)
 );
 
 CREATE TABLE IF NOT EXISTS judge_assignments (
     id TEXT PRIMARY KEY,
     event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-    judge_id TEXT NOT NULL REFERENCES judges(id) ON DELETE CASCADE,
+    project_id TEXT NOT NULL,
+    judge_id TEXT NOT NULL,
     status TEXT NOT NULL DEFAULT 'assigned' CHECK(status IN ('assigned', 'completed', 'conflict', 'reassigned')),
     assigned_at TEXT NOT NULL,
+    FOREIGN KEY (project_id, event_id) REFERENCES projects(id, event_id) ON DELETE CASCADE,
+    FOREIGN KEY (judge_id, event_id) REFERENCES judges(id, event_id) ON DELETE CASCADE,
     UNIQUE(project_id, judge_id)
 );
 
 CREATE TABLE IF NOT EXISTS reviews (
     id TEXT PRIMARY KEY,
     event_id TEXT NOT NULL REFERENCES events(id) ON DELETE CASCADE,
-    project_id TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
-    judge_id TEXT NOT NULL REFERENCES judges(id) ON DELETE CASCADE,
+    project_id TEXT NOT NULL,
+    judge_id TEXT NOT NULL,
     comment TEXT DEFAULT '',
     total_weighted_score REAL DEFAULT 0,
     status TEXT NOT NULL DEFAULT 'submitted' CHECK(status IN ('draft', 'submitted')),
     submitted_at TEXT NOT NULL,
+    FOREIGN KEY (project_id, event_id) REFERENCES projects(id, event_id) ON DELETE CASCADE,
+    FOREIGN KEY (judge_id, event_id) REFERENCES judges(id, event_id) ON DELETE CASCADE,
     UNIQUE(project_id, judge_id)
 );
 

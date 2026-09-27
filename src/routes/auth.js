@@ -4,6 +4,9 @@ const crypto = require('node:crypto');
 const { getDb } = require('../db/database');
 const { verifyPassword } = require('../services/passwords');
 
+const { verifyGoogleIdentity, resolveIdentityMembership } = require('../services/authProviders');
+const { recordAuditLog } = require('../services/audit');
+
 const DEMO_USERS = {
   organizer: 'usr_organizer',
   judge_a: 'usr_jdg_01',
@@ -16,7 +19,7 @@ function createSession(userId, res) {
   const token = `sess_${crypto.randomBytes(24).toString('hex')}`;
   const now = new Date();
   const expiresAt = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000); // 7 days
-  const sessionId = `sid_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
+  const sessionId = `sid_${crypto.randomUUID()}`;
 
   db.prepare(`
     INSERT INTO sessions (id, user_id, token, created_at, expires_at)
@@ -38,10 +41,83 @@ function createSession(userId, res) {
   return token;
 }
 
-// GET /api/auth/config - Expose runtime capabilities (e.g. demo mode status)
+// GET /api/auth/config - Expose runtime capabilities (demo mode, Google auth availability)
 router.get('/api/auth/config', (req, res) => {
   res.json({
-    demo_mode: process.env.DEMO_MODE === 'true'
+    demo_mode: process.env.DEMO_MODE === 'true',
+    google_auth: Boolean(process.env.GOOGLE_CLIENT_ID || process.env.ENABLE_GOOGLE_AUTH === 'true'),
+    google_client_id: process.env.GOOGLE_CLIENT_ID || '',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
+
+// POST /api/auth/google - Provider boundary for Google authentication
+router.post('/api/auth/google', async (req, res) => {
+  const { credential, event_id } = req.body || {};
+  if (!credential || typeof credential !== 'string') {
+    return res.status(400).json({ error: 'Missing or invalid Google credential/token' });
+  }
+
+  try {
+    const identity = await verifyGoogleIdentity(credential);
+    const targetEventId = event_id || req.headers['x-event-id'];
+    const resolution = resolveIdentityMembership(identity, targetEventId);
+
+    if (resolution.error) {
+      return res.status(400).json({ error: resolution.error });
+    }
+
+    // Enforce Rule 7: If Google account has no event membership, refuse role elevation
+    if (!resolution.registered) {
+      return res.status(403).json({
+        error: 'Forbidden',
+        message: resolution.message || `You are authenticated as ${identity.email}, but you are not registered for this event.`,
+        authenticated_email: identity.email,
+        registered: false
+      });
+    }
+
+    createSession(resolution.user.id, res);
+
+    recordAuditLog({
+      eventId: resolution.eventId,
+      userId: resolution.user.id,
+      role: resolution.role,
+      action: 'auth.google_login',
+      resourceType: 'session',
+      details: { email: resolution.user.email, provider: 'google' }
+    });
+
+    res.json({
+      message: 'Authenticated via Google',
+      user: {
+        id: resolution.user.id,
+        email: resolution.user.email,
+        name: resolution.user.name,
+        role: resolution.role
+      },
+      role: resolution.role,
+      event_id: resolution.eventId
+    });
+  } catch (err) {
+    res.status(401).json({
+      error: 'Unauthorized',
+      message: err.message || 'Google authentication failed'
+    });
+  }
+});
+
+// POST /api/auth/guest - Intentional unauthenticated browsing
+router.post('/api/auth/guest', (req, res) => {
+  res.setHeader('Set-Cookie', 'session=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT');
+  res.json({
+    message: 'Browsing as Guest',
+    user: {
+      id: 'usr_guest',
+      name: 'Guest Explorer',
+      role: 'visitor'
+    },
+    role: 'visitor'
   });
 });
 

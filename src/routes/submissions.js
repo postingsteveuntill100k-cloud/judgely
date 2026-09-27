@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const crypto = require('node:crypto');
 const { getDb } = require('../db/database');
 const { requireRole, requireEventMembership } = require('../middleware/rbac');
 const { eventMiddleware } = require('../middleware/event');
@@ -125,7 +126,7 @@ function handleSubmission(req, res) {
       resolvedTeamId = existingMembership.id;
     } else {
       // Create new team owned by participant
-      resolvedTeamId = `tm_${Date.now()}`;
+      resolvedTeamId = `tm_${crypto.randomUUID()}`;
       const safeTeamName = (team_name && typeof team_name === 'string' && team_name.trim())
         ? team_name.trim()
         : `${req.user.name}'s Team`;
@@ -156,7 +157,7 @@ function handleSubmission(req, res) {
     });
   }
 
-  const projectId = `prj_${Date.now()}`;
+  const projectId = `prj_${crypto.randomUUID()}`;
   db.prepare(`
     INSERT INTO projects (id, event_id, team_id, track_id, title, summary, tech_stack, repo_url, demo_url, submitted_at, updated_at, status)
     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'submitted')
@@ -398,7 +399,7 @@ router.post('/api/teams', requireRole('participant'), requireEventMembership, (r
     return res.status(400).json({ error: 'Team name is required (minimum 2 characters)' });
   }
 
-  const teamId = `tm_${Date.now()}`;
+  const teamId = `tm_${crypto.randomUUID()}`;
   const now = new Date().toISOString();
 
   db.prepare(`

@@ -1,0 +1,31 @@
+{
+  "project": {
+    "id": "prj_38",
+    "event_id": "evt_01",
+    "team_id": "tm_38",
+    "track_id": "trk_02",
+    "title": "Deep Beacon",
+    "summary": "One line of what it does.",
+    "tech_stack": "Node.js, SQLite, TypeScript",
+    "repo_url": "https://example.org/repo/38",
+    "demo_url": "",
+    "status": "submitted",
+    "submitted_at": "2026-02-27T03:39:00Z",
+    "track_name": "Data and analytics",
+    "team_name": "GreenLedger",
+    "members": [
+      {
+        "name": "Participant",
+        "role": "lead"
+      },
+      {
+        "name": "Participant",
+        "role": "member"
+      },
+      {
+        "name": "Participant",
+        "role": "member"
+      }
+    ]
+  }
+}

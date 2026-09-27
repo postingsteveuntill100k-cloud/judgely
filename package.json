@@ -7,8 +7,10 @@
   "scripts": {
     "start": "node src/server.js",
     "seed": "node src/db/seeder.js",
+    "export:api": "node scripts/export_static_api.js",
     "test": "node --test --test-concurrency=1 tests/*.test.js",
-    "check": "python3 run.py .dogfood.toml"
+    "check": "python3 run.py .dogfood.toml",
+    "deploy:firebase": "npm run export:api && firebase deploy --only hosting --project nexuslabs-b7b5e"
   },
   "keywords": [
     "hackathon",

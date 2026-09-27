@@ -1,0 +1,31 @@
+{
+  "project": {
+    "id": "prj_08",
+    "event_id": "evt_01",
+    "team_id": "tm_08",
+    "track_id": "trk_04",
+    "title": "North Drift",
+    "summary": "One line of what it does.",
+    "tech_stack": "Node.js, SQLite, TypeScript",
+    "repo_url": "https://example.org/repo/08",
+    "demo_url": "",
+    "status": "submitted",
+    "submitted_at": "2026-03-01T01:09:00Z",
+    "track_name": "Security",
+    "team_name": "GreenHours",
+    "members": [
+      {
+        "name": "Participant",
+        "role": "lead"
+      },
+      {
+        "name": "Participant",
+        "role": "member"
+      },
+      {
+        "name": "Participant",
+        "role": "member"
+      }
+    ]
+  }
+}

@@ -1,0 +1,27 @@
+{
+  "project": {
+    "id": "prj_35",
+    "event_id": "evt_01",
+    "team_id": "tm_35",
+    "track_id": "trk_05",
+    "title": "Warm Beacon",
+    "summary": "One line of what it does.",
+    "tech_stack": "Node.js, SQLite, TypeScript",
+    "repo_url": "https://example.org/repo/35",
+    "demo_url": "",
+    "status": "submitted",
+    "submitted_at": "2026-02-27T09:33:00Z",
+    "track_name": "Climate",
+    "team_name": "GlassDrift",
+    "members": [
+      {
+        "name": "Participant",
+        "role": "member"
+      },
+      {
+        "name": "Participant",
+        "role": "lead"
+      }
+    ]
+  }
+}
