@@ -89,11 +89,16 @@
     // Organizer endpoints
     getOrganizerOverview: () => request('/api/organizer/overview'),
     getOrganizerProjects: () => request('/api/organizer/projects'),
+    getOrganizerTeams: () => request('/api/organizer/teams'),
     getOrganizerJudges: () => request('/api/organizer/judges'),
     getOrganizerAssignments: () => request('/api/organizer/assignments'),
     getOrganizerHealth: () => request('/api/organizer/health'),
     getOrganizerAudit: () => request('/api/organizer/audit'),
+    getOrganizerRubric: () => request('/api/organizer/rubric'),
     assignJudge: (payload) => request('/api/organizer/assignments', { method: 'POST', body: payload }),
+    deleteAssignment: (projectId, judgeId) => request('/api/organizer/assignments', { method: 'DELETE', body: { project_id: projectId, judge_id: judgeId } }),
+    updateDeadline: (submissionsClose) => request('/api/organizer/settings/deadline', { method: 'POST', body: { submissions_close: submissionsClose } }),
+    toggleResultsVisibility: (released) => request('/api/organizer/settings/results-visibility', { method: 'POST', body: { results_released: released } }),
     releaseResults: () => request('/api/organizer/results/release', { method: 'POST' })
   };
 

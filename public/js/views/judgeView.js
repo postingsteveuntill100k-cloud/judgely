@@ -208,12 +208,28 @@
         </div>
 
         <form id="judge-rubric-form">
-          <h4 class="font-bold mb-3">Objective Rubric Criteria</h4>
+          <div class="flex justify-between items-center mb-3">
+            <h4 class="font-bold">Objective Rubric Criteria</h4>
+            <span class="text-xs text-muted">Range: 0.0 to Max Score</span>
+          </div>
           ${criteriaInputs}
 
+          <!-- Live Weighted Score Indicator -->
+          <div class="card p-3 mb-4 flex justify-between items-center" style="background-color: var(--accent-subtle); border: 1px solid var(--accent-border);">
+            <div>
+              <div class="font-semibold text-sm text-main">Calculated Total Weighted Score:</div>
+              <div class="text-xs text-muted">Normalized across criteria weights</div>
+            </div>
+            <div class="text-xl font-bold text-accent mono" id="live-total-weighted-score">0.00 / 5.00</div>
+          </div>
+
           <div class="form-group mb-4">
-            <label class="form-label font-semibold" for="judge-comments">Confidential Evaluator Feedback (Required)</label>
-            <textarea id="judge-comments" class="form-textarea" rows="3" required placeholder="Provide clear technical rationale for your scores...">${escapeHtml(assignment.comment || '')}</textarea>
+            <div class="flex justify-between items-center mb-1">
+              <label class="form-label font-semibold" for="judge-comments">Confidential Evaluator Feedback (Required)</label>
+              <span class="text-xs text-muted" id="comments-char-count">0 characters</span>
+            </div>
+            <textarea id="judge-comments" class="form-textarea" rows="3" required placeholder="Explain technical strengths, architecture, and areas for improvement...">${escapeHtml(assignment.comment || '')}</textarea>
+            <span class="text-xs text-muted mt-1">Feedback is strictly isolated and never shown to peer judges.</span>
           </div>
 
           <div class="flex justify-end gap-3 border-t pt-4">
@@ -225,15 +241,50 @@
       </div>
     `;
 
+    // Calculate live weighted score
+    function updateLiveScore() {
+      let totalWeight = 0;
+      let weightedSum = 0;
+      (rubricCriteria || []).forEach(c => {
+        const input = document.getElementById(`num-${c.name}`);
+        const val = input ? parseFloat(input.value) || 0 : 0;
+        const w = c.weight || 1.0;
+        weightedSum += val * w;
+        totalWeight += w;
+      });
+      const scoreEl = document.getElementById('live-total-weighted-score');
+      if (scoreEl) {
+        const avg = totalWeight > 0 ? (weightedSum / totalWeight) : 0;
+        scoreEl.textContent = `${avg.toFixed(2)} / 5.00`;
+      }
+    }
+
     // Sync range and number inputs
     (rubricCriteria || []).forEach(c => {
       const range = document.getElementById(`range-${c.name}`);
       const num = document.getElementById(`num-${c.name}`);
       if (range && num) {
-        range.addEventListener('input', () => { num.value = range.value; });
-        num.addEventListener('input', () => { range.value = num.value; });
+        range.addEventListener('input', () => { 
+          num.value = range.value; 
+          updateLiveScore();
+        });
+        num.addEventListener('input', () => { 
+          range.value = num.value; 
+          updateLiveScore();
+        });
       }
     });
+
+    const commentsArea = document.getElementById('judge-comments');
+    const charCountEl = document.getElementById('comments-char-count');
+    if (commentsArea && charCountEl) {
+      charCountEl.textContent = `${commentsArea.value.length} characters`;
+      commentsArea.addEventListener('input', () => {
+        charCountEl.textContent = `${commentsArea.value.length} characters`;
+      });
+    }
+
+    updateLiveScore();
 
     const form = document.getElementById('judge-rubric-form');
     if (form) {

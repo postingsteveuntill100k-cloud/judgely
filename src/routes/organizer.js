@@ -23,6 +23,92 @@ router.get('/api/organizer/overview', (req, res) => {
   });
 });
 
+// GET /api/organizer/projects
+router.get('/api/organizer/projects', (req, res) => {
+  const db = getDb();
+  const projects = db.prepare(`
+    SELECT 
+      p.id, p.event_id, p.team_id, p.track_id, p.title, p.summary,
+      p.tech_stack, p.repo_url, p.demo_url, p.status, p.submitted_at,
+      t.name AS track_name,
+      tm.name AS team_name,
+      COUNT(DISTINCT a.id) AS assignments_count,
+      COUNT(DISTINCT r.id) AS reviews_count
+    FROM projects p
+    LEFT JOIN tracks t ON p.track_id = t.id
+    LEFT JOIN teams tm ON p.team_id = tm.id
+    LEFT JOIN judge_assignments a ON a.project_id = p.id
+    LEFT JOIN reviews r ON r.project_id = p.id
+    WHERE p.event_id = ?
+    GROUP BY p.id
+    ORDER BY p.submitted_at DESC
+  `).all(req.eventId);
+  res.json({ projects });
+});
+
+// GET /api/organizer/teams
+router.get('/api/organizer/teams', (req, res) => {
+  const db = getDb();
+  const teams = db.prepare(`
+    SELECT 
+      t.id, t.name, t.created_at,
+      u.name AS lead_name,
+      u.email AS lead_email,
+      COUNT(DISTINCT tm.email) AS member_count,
+      p.id AS project_id,
+      p.title AS project_title,
+      p.status AS project_status
+    FROM teams t
+    LEFT JOIN users u ON t.created_by = u.id
+    LEFT JOIN team_members tm ON tm.team_id = t.id
+    LEFT JOIN projects p ON p.team_id = t.id AND p.status != 'withdrawn'
+    WHERE t.event_id = ?
+    GROUP BY t.id
+    ORDER BY t.name ASC
+  `).all(req.eventId);
+  res.json({ teams });
+});
+
+// GET /api/organizer/judges
+router.get('/api/organizer/judges', (req, res) => {
+  const db = getDb();
+  const judges = db.prepare(`
+    SELECT 
+      j.id, j.name, j.email, j.user_id,
+      COUNT(DISTINCT a.id) AS assignments_count,
+      COUNT(DISTINCT r.id) AS completed_reviews
+    FROM judges j
+    LEFT JOIN judge_assignments a ON a.judge_id = j.id AND a.event_id = j.event_id
+    LEFT JOIN reviews r ON r.judge_id = j.id AND r.event_id = j.event_id
+    WHERE j.event_id = ?
+    GROUP BY j.id
+    ORDER BY j.name ASC
+  `).all(req.eventId).map(j => {
+    const tracks = db.prepare(`
+      SELECT t.id, t.name FROM judge_tracks jt
+      JOIN tracks t ON jt.track_id = t.id
+      WHERE jt.judge_id = ?
+    `).all(j.id);
+    return {
+      ...j,
+      tracks
+    };
+  });
+  res.json({ judges });
+});
+
+// GET /api/organizer/rubric
+router.get('/api/organizer/rubric', (req, res) => {
+  const db = getDb();
+  const criteria = db.prepare(`
+    SELECT id, name, description, weight, max_score
+    FROM rubric_criteria
+    WHERE event_id = ?
+    ORDER BY weight DESC, name ASC
+  `).all(req.eventId);
+  res.json({ criteria });
+});
+
 // GET /api/organizer/assignments
 router.get('/api/organizer/assignments', (req, res) => {
   const db = getDb();

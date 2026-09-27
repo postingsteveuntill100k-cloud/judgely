@@ -414,34 +414,43 @@
           ${normalizedResultBadge}
           <div class="flex justify-between items-center mb-2">
             <span class="badge badge-primary">${escapeHtml(project.track_name || project.track_id || 'Track')}</span>
-            <span class="mono text-muted text-xs">${escapeHtml(project.id)}</span>
+            <div class="flex items-center gap-2">
+              <span class="badge badge-success capitalize">${escapeHtml(project.status || 'Submitted')}</span>
+              <span class="mono text-muted text-xs">${escapeHtml(project.id)}</span>
+            </div>
           </div>
-          <h2 class="font-bold mb-1">${escapeHtml(project.title)}</h2>
-          <p class="text-muted text-sm mb-4">Submitted by <strong>${escapeHtml(project.team_name || 'Team')}</strong></p>
+          <h2 class="font-bold text-xl mb-1">${escapeHtml(project.title)}</h2>
+          <div class="flex justify-between items-center flex-wrap gap-2 text-xs text-muted mb-4">
+            <span>Submitted by <strong>${escapeHtml(project.team_name || 'Team')}</strong></span>
+            <span>${project.submitted_at ? new Date(project.submitted_at).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : ''}</span>
+          </div>
+
+          <!-- Quick Action Buttons at Top -->
+          ${(safeRepo || safeDemo) ? `
+            <div class="flex gap-2 mb-4 pb-3 border-b">
+              ${safeRepo ? `<a href="${escapeHtml(safeRepo)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">GitHub Repository &nearr;</a>` : ''}
+              ${safeDemo ? `<a href="${escapeHtml(safeDemo)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">Live Demo &nearr;</a>` : ''}
+            </div>
+          ` : ''}
 
           <div class="mb-4">
-            <h4 class="font-semibold mb-1">Project Summary</h4>
-            <p class="text-sm leading-relaxed">${escapeHtml(project.summary || 'No description provided.')}</p>
+            <h4 class="font-semibold text-sm mb-1 text-muted uppercase">Project Overview</h4>
+            <p class="text-sm leading-relaxed text-body">${escapeHtml(project.summary || 'No description provided.')}</p>
           </div>
 
           ${project.tech_stack ? `
             <div class="mb-4">
-              <h4 class="font-semibold mb-1">Technologies Used</h4>
+              <h4 class="font-semibold text-sm mb-1 text-muted uppercase">Technologies</h4>
               <p class="mono text-xs p-2 rounded" style="background: var(--bg-subtle);">${escapeHtml(project.tech_stack)}</p>
             </div>
           ` : ''}
 
           ${memberItems ? `
             <div class="mb-4">
-              <h4 class="font-semibold mb-1">Team Contributors</h4>
+              <h4 class="font-semibold text-sm mb-1 text-muted uppercase">Contributors</h4>
               <ul class="text-sm text-muted pl-4">${memberItems}</ul>
             </div>
           ` : ''}
-
-          <div class="flex gap-3 border-t pt-4 mt-6">
-            ${safeRepo ? `<a href="${escapeHtml(safeRepo)}" target="_blank" rel="noopener noreferrer" class="btn btn-secondary btn-sm">GitHub Repository &nearr;</a>` : ''}
-            ${safeDemo ? `<a href="${escapeHtml(safeDemo)}" target="_blank" rel="noopener noreferrer" class="btn btn-primary btn-sm">Live Demo &nearr;</a>` : ''}
-          </div>
         </div>
       `;
 

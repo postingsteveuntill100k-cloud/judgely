@@ -105,15 +105,27 @@
     const area = document.getElementById('participant-content-area');
     if (!area) return;
 
-    try {
-      // Refresh session me to get latest team & project
-      const meRes = await api.getMe();
+      const [meRes, tracksRes, eventRes] = await Promise.all([
+        api.getMe(),
+        api.getTracks(),
+        api.getEvent()
+      ]);
       const user = meRes.user;
       window.Judgely.setState({ user });
 
-      // Fetch event tracks for submission dropdown
-      const tracksRes = await api.getTracks();
       const tracks = tracksRes.tracks || tracksRes || [];
+
+      // Update sidebar deadline text
+      const deadlineText = document.getElementById('sidebar-deadline-text');
+      if (deadlineText && eventRes && eventRes.submissions_close) {
+        const d = new Date(eventRes.submissions_close);
+        deadlineText.innerHTML = `
+          <div class="mono font-semibold text-main mb-1">${d.toUTCString()}</div>
+          <span class="badge ${eventRes.is_closed ? 'badge-warning' : 'badge-success'}">
+            ${eventRes.is_closed ? 'Submissions Closed' : 'Submissions Open'}
+          </span>
+        `;
+      }
 
       // Fetch user's project if project_id exists
       let project = null;
@@ -126,13 +138,13 @@
         }
       }
 
-      renderParticipantState(area, user, project, tracks);
+      renderParticipantState(area, user, project, tracks, eventRes);
     } catch (err) {
       area.innerHTML = `<div class="error-banner-box"><p class="text-danger font-semibold">${escapeHtml(err.message)}</p></div>`;
     }
   }
 
-  function renderParticipantState(container, user, project, tracks) {
+  function renderParticipantState(container, user, project, tracks, event) {
     const hasTeam = Boolean(user.team_id);
     const hasProject = Boolean(project && project.status !== 'withdrawn');
 
@@ -193,11 +205,11 @@
             <button class="btn btn-secondary btn-sm text-danger" id="btn-withdraw-submission">Withdraw Project</button>
           </div>
         ` : `
-          <h3 class="font-bold mb-2">No Active Submission</h3>
+          <h3 class="font-bold mb-2">${event && event.is_closed ? 'Submissions Closed' : 'No Active Submission'}</h3>
           <p class="text-muted text-sm mb-4">
-            ${hasTeam ? 'Your team has not yet submitted a project for evaluation.' : 'Please create or join a team before submitting a project.'}
+            ${event && event.is_closed ? 'The deadline for this hackathon has passed. New submissions are no longer accepted.' : (hasTeam ? 'Your team has not yet submitted a project for evaluation.' : 'Please create or join a team before submitting a project.')}
           </p>
-          ${hasTeam ? `
+          ${hasTeam && (!event || !event.is_closed) ? `
             <button class="btn btn-primary" id="btn-open-submit-modal">Submit Project</button>
           ` : ''}
         `}
