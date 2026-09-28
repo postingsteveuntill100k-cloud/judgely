@@ -541,7 +541,6 @@
 
       if (tracksRes.status === 'fulfilled') {
         publicTracks = tracksRes.value.tracks || tracksRes.value || [];
-        renderTracks(publicTracks);
       }
 
       if (projectsRes.status === 'fulfilled') {
@@ -565,6 +564,9 @@
           `;
         }
       }
+
+      // Render tracks after publicProjects is populated so track counts are accurate
+      renderTracks(publicTracks);
 
     } catch (err) {
       console.error('Failed to load public data:', err);
