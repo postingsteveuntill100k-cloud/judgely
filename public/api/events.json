@@ -1,6 +1,66 @@
 {
   "events": [
     {
+      "id": "evt_collab_hackathon_957aec",
+      "name": "Collab Hackathon 2026",
+      "description": "A premier open hackathon on Judgely.",
+      "submissions_close": "2026-10-02T20:30:18.646Z",
+      "results_released": false,
+      "created_at": "2026-09-27T20:30:18.650Z",
+      "status": "SUBMISSIONS_OPEN",
+      "stats": {
+        "projects_count": 1,
+        "teams_count": 1,
+        "tracks_count": 3,
+        "judges_count": 0
+      }
+    },
+    {
+      "id": "evt_autonomous_syste_ee1af1",
+      "name": "Autonomous Systems Hackathon 2026",
+      "description": "Building verifiable agentic protocols and decentralized infrastructure",
+      "submissions_close": "2026-10-07T20:30:18.600Z",
+      "results_released": false,
+      "created_at": "2026-09-27T20:30:18.604Z",
+      "status": "SUBMISSIONS_OPEN",
+      "stats": {
+        "projects_count": 0,
+        "teams_count": 0,
+        "tracks_count": 2,
+        "judges_count": 0
+      }
+    },
+    {
+      "id": "evt_collab_hackathon_edb394",
+      "name": "Collab Hackathon 2026",
+      "description": "A premier open hackathon on Judgely.",
+      "submissions_close": "2026-10-02T20:29:05.923Z",
+      "results_released": false,
+      "created_at": "2026-09-27T20:29:05.927Z",
+      "status": "SUBMISSIONS_OPEN",
+      "stats": {
+        "projects_count": 1,
+        "teams_count": 1,
+        "tracks_count": 3,
+        "judges_count": 0
+      }
+    },
+    {
+      "id": "evt_autonomous_syste_26053e",
+      "name": "Autonomous Systems Hackathon 2026",
+      "description": "Building verifiable agentic protocols and decentralized infrastructure",
+      "submissions_close": "2026-10-07T20:29:05.879Z",
+      "results_released": false,
+      "created_at": "2026-09-27T20:29:05.883Z",
+      "status": "SUBMISSIONS_OPEN",
+      "stats": {
+        "projects_count": 0,
+        "teams_count": 0,
+        "tracks_count": 2,
+        "judges_count": 0
+      }
+    },
+    {
       "id": "evt_collab_hackathon_ac7930",
       "name": "Collab Hackathon 2026",
       "description": "A premier open hackathon on Judgely.",

@@ -1,4 +1,4 @@
-// Hackerly 3D Universe — Interactive Hackathon Constellation & Network
+// Hackerly Spatial Network — Subtle Architectural Constellation for Light Canvas
 (function(window) {
   'use strict';
 
@@ -19,7 +19,6 @@
 
     // Graceful degradation checks
     if (!window.THREE) {
-      console.info('Three.js not loaded, falling back to CSS background.');
       return;
     }
 
@@ -29,7 +28,6 @@
     try {
       const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
       if (!gl) {
-        console.info('WebGL not supported, falling back to CSS.');
         return;
       }
     } catch (e) {
@@ -41,12 +39,12 @@
 
     const parent = canvas.parentElement;
     const width = parent ? parent.clientWidth : window.innerWidth;
-    const height = parent ? Math.max(parent.clientHeight, 380) : 460;
+    const height = parent ? Math.max(parent.clientHeight, 360) : 420;
 
     // Scene & Camera
     scene = new THREE.Scene();
-    camera = new THREE.PerspectiveCamera(50, width / height, 1, 1000);
-    camera.position.z = 180;
+    camera = new THREE.PerspectiveCamera(45, width / height, 1, 1000);
+    camera.position.z = 190;
 
     // Renderer
     try {
@@ -59,32 +57,33 @@
       renderer.setSize(width, height);
       renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     } catch (e) {
-      console.warn('Could not initialize WebGLRenderer:', e);
       return;
     }
 
-    // Constellation Geometry: 65 nodes representing builders, hackathons, and projects
-    const nodeCount = 65;
+    // Constellation Geometry: 55 nodes representing builders, hackathons, and teams
+    const nodeCount = 55;
     const coords = [];
     const colors = [];
     const nodePositions = [];
 
-    // Curated palette: Indigo, Cyan, Emerald, Warm White
+    // Curated light-canvas palette: subtle slate, soft neutral gray, restrained indigo accent
     const palette = [
-      new THREE.Color(0x818cf8), // Soft indigo
-      new THREE.Color(0x38bdf8), // Cyan
-      new THREE.Color(0x34d399), // Emerald
-      new THREE.Color(0xf8fafc)  // Warm white
+      new THREE.Color(0x64748b), // Slate
+      new THREE.Color(0x94a3b8), // Soft gray
+      new THREE.Color(0x4f46e5), // Restrained Hackerly Indigo
+      new THREE.Color(0x0f766e)  // Subdued teal
     ];
 
     for (let i = 0; i < nodeCount; i++) {
-      const x = (Math.random() - 0.5) * 220;
+      const x = (Math.random() - 0.5) * 240;
       const y = (Math.random() - 0.5) * 110;
-      const z = (Math.random() - 0.5) * 120;
+      const z = (Math.random() - 0.5) * 100;
       coords.push(x, y, z);
       nodePositions.push(new THREE.Vector3(x, y, z));
 
-      const color = palette[Math.floor(Math.random() * palette.length)];
+      // 80% slate/neutral, 20% restrained indigo/teal
+      const isAccent = Math.random() < 0.25;
+      const color = isAccent ? palette[Math.random() < 0.7 ? 2 : 3] : palette[Math.random() < 0.5 ? 0 : 1];
       colors.push(color.r, color.g, color.b);
     }
 
@@ -93,37 +92,38 @@
     pointsGeometry.setAttribute('position', new THREE.Float32BufferAttribute(coords, 3));
     pointsGeometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
 
-    // Custom circular soft texture for points
+    // Custom circular soft texture for light-canvas points
     const canvasTexture = document.createElement('canvas');
     canvasTexture.width = 32;
     canvasTexture.height = 32;
     const ctx = canvasTexture.getContext('2d');
-    const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
-    grad.addColorStop(0, 'rgba(255, 255, 255, 1)');
-    grad.addColorStop(0.4, 'rgba(129, 140, 248, 0.8)');
-    grad.addColorStop(1, 'rgba(10, 14, 23, 0)');
+    const grad = ctx.createRadialGradient(16, 16, 0, 16, 16, 15);
+    grad.addColorStop(0, 'rgba(30, 41, 59, 0.9)');
+    grad.addColorStop(0.5, 'rgba(79, 70, 229, 0.5)');
+    grad.addColorStop(1, 'rgba(255, 255, 255, 0)');
     ctx.fillStyle = grad;
     ctx.beginPath();
-    ctx.arc(16, 16, 16, 0, Math.PI * 2);
+    ctx.arc(16, 16, 15, 0, Math.PI * 2);
     ctx.fill();
 
     const pTexture = new THREE.CanvasTexture(canvasTexture);
 
     const pointsMaterial = new THREE.PointsMaterial({
-      size: 5,
+      size: 4,
       map: pTexture,
       transparent: true,
       vertexColors: true,
-      blending: THREE.AdditiveBlending,
+      opacity: 0.65,
+      blending: THREE.NormalBlending,
       depthWrite: false
     });
 
     const pointCloud = new THREE.Points(pointsGeometry, pointsMaterial);
     scene.add(pointCloud);
 
-    // Dynamic Connection Lines (links between proximate nodes)
+    // Dynamic Connection Lines (thin, elegant, low-contrast)
     const lineIndices = [];
-    const maxDistance = 46;
+    const maxDistance = 44;
 
     for (let i = 0; i < nodeCount; i++) {
       for (let j = i + 1; j < nodeCount; j++) {
@@ -139,23 +139,23 @@
     linesGeometry.setIndex(lineIndices);
 
     const linesMaterial = new THREE.LineBasicMaterial({
-      color: 0x6366f1,
+      color: 0x94a3b8,
       transparent: true,
-      opacity: 0.18,
-      blending: THREE.AdditiveBlending
+      opacity: 0.32,
+      blending: THREE.NormalBlending
     });
 
     const networkLines = new THREE.LineSegments(linesGeometry, linesMaterial);
     scene.add(networkLines);
 
-    // Subtle interactive pointer listener
+    // Subtle pointer parallax
     function onPointerMove(e) {
       const halfX = window.innerWidth / 2;
       const halfY = window.innerHeight / 2;
       mouseX = (e.clientX - halfX) / halfX;
       mouseY = (e.clientY - halfY) / halfY;
-      targetRotationY = mouseX * 0.35;
-      targetRotationX = mouseY * 0.2;
+      targetRotationY = mouseX * 0.18;
+      targetRotationX = mouseY * 0.12;
     }
 
     window.addEventListener('pointermove', onPointerMove, { passive: true });
@@ -165,7 +165,7 @@
       if (!renderer || !camera || !canvas) return;
       const currentParent = canvas.parentElement;
       const w = currentParent ? currentParent.clientWidth : window.innerWidth;
-      const h = currentParent ? Math.max(currentParent.clientHeight, 380) : 460;
+      const h = currentParent ? Math.max(currentParent.clientHeight, 360) : 420;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       renderer.setSize(w, h);
@@ -183,24 +183,24 @@
       observer.observe(canvas);
     }
 
-    // Animation Loop
+    // Animation Loop (Slow, graceful, minimal CPU)
     function animate() {
       if (prefersReducedMotion) {
         renderer.render(scene, camera);
-        return; // Render static frame only
+        return;
       }
 
       animationFrameId = requestAnimationFrame(animate);
 
-      if (!isVisible) return; // Save CPU/GPU cycles when offscreen
+      if (!isVisible) return;
 
-      // Gentle continuous rotation
-      scene.rotation.y += 0.0012;
-      scene.rotation.x += 0.0004;
+      // Slow, subtle continuous drift
+      scene.rotation.y += 0.0006;
+      scene.rotation.x += 0.0002;
 
-      // Smooth dampening towards mouse pointer
-      scene.rotation.y += (targetRotationY - scene.rotation.y) * 0.03;
-      scene.rotation.x += (targetRotationX - scene.rotation.x) * 0.03;
+      // Smooth dampening towards cursor
+      scene.rotation.y += (targetRotationY - scene.rotation.y) * 0.02;
+      scene.rotation.x += (targetRotationX - scene.rotation.x) * 0.02;
 
       renderer.render(scene, camera);
     }

@@ -299,8 +299,8 @@
       }
     } else {
       nav.innerHTML = `
+        <a href="#hackathons-directory" class="nav-link public-anchor" data-target="hackathons-directory">Explore Hackathons</a>
         <a href="#projects-showcase" class="nav-link public-anchor" data-target="projects-showcase">Projects</a>
-        <a href="#tracks-section" class="nav-link public-anchor" data-target="tracks-section">Tracks</a>
         <a href="#how-judging-works" class="nav-link public-anchor" data-target="how-judging-works">How Judging Works</a>
         <a href="#integrity-section" class="nav-link public-anchor" data-target="integrity-section">Integrity</a>
       `;

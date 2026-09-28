@@ -1,6 +1,36 @@
 {
   "projects": [
     {
+      "id": "prj_1f4246c1-e327-4a11-852f-ec6b69dad5c4",
+      "event_id": "evt_collab_hackathon_957aec",
+      "team_id": "tm_94de7e4d-3351-48a6-9e0a-273f7075bef4",
+      "track_id": "evt_collab_hackathon_957aec_trk_evt_collab_hackathon_957aec_1",
+      "title": "Hyperdrive Protocol",
+      "summary": "Production-ready autonomous compute engine",
+      "tech_stack": "",
+      "repo_url": "https://github.com/hyperdrive/engine",
+      "demo_url": "https://hyperdrive.example.org",
+      "status": "submitted",
+      "submitted_at": "2026-09-27T20:30:18.739Z",
+      "track_name": "Autonomous Systems & AI",
+      "team_name": "Team Hyperdrive"
+    },
+    {
+      "id": "prj_37deb08d-7dd7-4ea4-b2cf-26514a4d9dc5",
+      "event_id": "evt_collab_hackathon_edb394",
+      "team_id": "tm_c96ce6b9-e46e-4264-8f92-cf3dc7ebe5d6",
+      "track_id": "evt_collab_hackathon_edb394_trk_evt_collab_hackathon_edb394_1",
+      "title": "Hyperdrive Protocol",
+      "summary": "Production-ready autonomous compute engine",
+      "tech_stack": "",
+      "repo_url": "https://github.com/hyperdrive/engine",
+      "demo_url": "https://hyperdrive.example.org",
+      "status": "submitted",
+      "submitted_at": "2026-09-27T20:29:06.026Z",
+      "track_name": "Autonomous Systems & AI",
+      "team_name": "Team Hyperdrive"
+    },
+    {
       "id": "prj_7496525b-833c-41d2-9b21-d520bafea1df",
       "event_id": "evt_collab_hackathon_ac7930",
       "team_id": "tm_1882f400-7dad-438e-ae11-f0cd3102b40a",
