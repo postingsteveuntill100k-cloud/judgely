@@ -518,9 +518,6 @@
       if (eventRes.status === 'fulfilled') {
         publicEvent = eventRes.value;
         updateEventHeader(publicEvent);
-      } else {
-        const heroTitle = document.getElementById('hero-event-title');
-        if (heroTitle) heroTitle.textContent = 'Event Details Temporarily Unavailable';
       }
 
       if (tracksRes.status === 'fulfilled') {

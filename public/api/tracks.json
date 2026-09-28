@@ -61,6 +61,16 @@
       "description": "Compilers and debuggers"
     },
     {
+      "id": "evt_autonomous_syste_80864c_trk_agents",
+      "name": "Agents",
+      "description": "Autonomous agents"
+    },
+    {
+      "id": "evt_autonomous_syste_80864c_trk_tools",
+      "name": "Developer Tools",
+      "description": "Compilers and debuggers"
+    },
+    {
       "id": "evt_autonomous_syste_927e6c_trk_agents",
       "name": "Agents",
       "description": "Autonomous agents"
@@ -247,6 +257,21 @@
     },
     {
       "id": "evt_collab_hackathon_edb394_trk_evt_collab_hackathon_edb394_3",
+      "name": "Open Innovation",
+      "description": "Moonshot applications pushing creative boundaries."
+    },
+    {
+      "id": "evt_collab_hackathon_fef537_trk_evt_collab_hackathon_fef537_1",
+      "name": "Autonomous Systems & AI",
+      "description": "Agentic workflows, self-improving loops, and cognitive architecture."
+    },
+    {
+      "id": "evt_collab_hackathon_fef537_trk_evt_collab_hackathon_fef537_2",
+      "name": "Developer Tools & Infra",
+      "description": "Core compilers, debugging harnesses, and open protocols."
+    },
+    {
+      "id": "evt_collab_hackathon_fef537_trk_evt_collab_hackathon_fef537_3",
       "name": "Open Innovation",
       "description": "Moonshot applications pushing creative boundaries."
     },
