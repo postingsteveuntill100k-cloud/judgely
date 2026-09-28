@@ -1,363 +1,99 @@
 {
   "events": [
     {
-      "id": "evt_collab_hackathon_fef537",
-      "name": "Collab Hackathon 2026",
-      "description": "A premier open hackathon on Judgely.",
-      "submissions_close": "2026-10-03T17:20:43.960Z",
-      "results_released": false,
-      "created_at": "2026-09-28T17:20:43.965Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 1,
-        "teams_count": 1,
-        "tracks_count": 3,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_autonomous_syste_80864c",
-      "name": "Autonomous Systems Hackathon 2026",
-      "description": "Building verifiable agentic protocols and decentralized infrastructure",
-      "submissions_close": "2026-10-08T17:20:43.910Z",
-      "results_released": false,
-      "created_at": "2026-09-28T17:20:43.914Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 0,
-        "teams_count": 0,
-        "tracks_count": 2,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_collab_hackathon_957aec",
-      "name": "Collab Hackathon 2026",
-      "description": "A premier open hackathon on Judgely.",
-      "submissions_close": "2026-10-02T20:30:18.646Z",
-      "results_released": false,
-      "created_at": "2026-09-27T20:30:18.650Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 1,
-        "teams_count": 1,
-        "tracks_count": 3,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_autonomous_syste_ee1af1",
-      "name": "Autonomous Systems Hackathon 2026",
-      "description": "Building verifiable agentic protocols and decentralized infrastructure",
-      "submissions_close": "2026-10-07T20:30:18.600Z",
-      "results_released": false,
-      "created_at": "2026-09-27T20:30:18.604Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 0,
-        "teams_count": 0,
-        "tracks_count": 2,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_collab_hackathon_edb394",
-      "name": "Collab Hackathon 2026",
-      "description": "A premier open hackathon on Judgely.",
-      "submissions_close": "2026-10-02T20:29:05.923Z",
-      "results_released": false,
-      "created_at": "2026-09-27T20:29:05.927Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 1,
-        "teams_count": 1,
-        "tracks_count": 3,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_autonomous_syste_26053e",
-      "name": "Autonomous Systems Hackathon 2026",
-      "description": "Building verifiable agentic protocols and decentralized infrastructure",
-      "submissions_close": "2026-10-07T20:29:05.879Z",
-      "results_released": false,
-      "created_at": "2026-09-27T20:29:05.883Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 0,
-        "teams_count": 0,
-        "tracks_count": 2,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_collab_hackathon_ac7930",
-      "name": "Collab Hackathon 2026",
-      "description": "A premier open hackathon on Judgely.",
-      "submissions_close": "2026-10-02T20:24:32.064Z",
-      "results_released": false,
-      "created_at": "2026-09-27T20:24:32.069Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 1,
-        "teams_count": 1,
-        "tracks_count": 3,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_autonomous_syste_09a489",
-      "name": "Autonomous Systems Hackathon 2026",
-      "description": "Building verifiable agentic protocols and decentralized infrastructure",
-      "submissions_close": "2026-10-07T20:24:32.020Z",
-      "results_released": false,
-      "created_at": "2026-09-27T20:24:32.025Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 0,
-        "teams_count": 0,
-        "tracks_count": 2,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_collab_hackathon_475e4a",
-      "name": "Collab Hackathon 2026",
-      "description": "A premier open hackathon on Judgely.",
-      "submissions_close": "2026-10-02T18:33:09.305Z",
-      "results_released": false,
-      "created_at": "2026-09-27T18:33:09.309Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 1,
-        "teams_count": 1,
-        "tracks_count": 3,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_autonomous_syste_42121d",
-      "name": "Autonomous Systems Hackathon 2026",
-      "description": "Building verifiable agentic protocols and decentralized infrastructure",
-      "submissions_close": "2026-10-07T18:33:09.264Z",
-      "results_released": false,
-      "created_at": "2026-09-27T18:33:09.271Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 0,
-        "teams_count": 0,
-        "tracks_count": 2,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_collab_hackathon_cce993",
-      "name": "Collab Hackathon 2026",
-      "description": "A premier open hackathon on Judgely.",
-      "submissions_close": "2026-10-02T18:31:18.743Z",
-      "results_released": false,
-      "created_at": "2026-09-27T18:31:18.748Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 1,
-        "teams_count": 1,
-        "tracks_count": 3,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_autonomous_syste_c99c44",
-      "name": "Autonomous Systems Hackathon 2026",
-      "description": "Building verifiable agentic protocols and decentralized infrastructure",
-      "submissions_close": "2026-10-07T18:31:18.699Z",
-      "results_released": false,
-      "created_at": "2026-09-27T18:31:18.703Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 0,
-        "teams_count": 0,
-        "tracks_count": 2,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_collab_hackathon_d7eb05",
-      "name": "Collab Hackathon 2026",
-      "description": "A premier open hackathon on Judgely.",
-      "submissions_close": "2026-10-02T18:06:21.853Z",
-      "results_released": false,
-      "created_at": "2026-09-27T18:06:21.857Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 1,
-        "teams_count": 1,
-        "tracks_count": 3,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_autonomous_syste_3ba1c5",
-      "name": "Autonomous Systems Hackathon 2026",
-      "description": "Building verifiable agentic protocols and decentralized infrastructure",
-      "submissions_close": "2026-10-07T18:06:21.800Z",
-      "results_released": false,
-      "created_at": "2026-09-27T18:06:21.805Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 0,
-        "teams_count": 0,
-        "tracks_count": 2,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_collab_hackathon_8771b7",
-      "name": "Collab Hackathon 2026",
-      "description": "A premier open hackathon on Judgely.",
-      "submissions_close": "2026-10-02T18:01:58.611Z",
-      "results_released": false,
-      "created_at": "2026-09-27T18:01:58.616Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 1,
-        "teams_count": 1,
-        "tracks_count": 3,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_autonomous_syste_6da042",
-      "name": "Autonomous Systems Hackathon 2026",
-      "description": "Building verifiable agentic protocols and decentralized infrastructure",
-      "submissions_close": "2026-10-07T18:01:58.566Z",
-      "results_released": false,
-      "created_at": "2026-09-27T18:01:58.569Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 0,
-        "teams_count": 0,
-        "tracks_count": 2,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_collab_hackathon_ade1b3",
-      "name": "Collab Hackathon 2026",
-      "description": "A premier open hackathon on Judgely.",
-      "submissions_close": "2026-10-02T17:59:03.595Z",
-      "results_released": false,
-      "created_at": "2026-09-27T17:59:03.602Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 1,
-        "teams_count": 1,
-        "tracks_count": 3,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_autonomous_syste_9a877b",
-      "name": "Autonomous Systems Hackathon 2026",
-      "description": "Building verifiable agentic protocols and decentralized infrastructure",
-      "submissions_close": "2026-10-07T17:59:03.544Z",
-      "results_released": false,
-      "created_at": "2026-09-27T17:59:03.549Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 0,
-        "teams_count": 0,
-        "tracks_count": 2,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_collab_hackathon_bd8635",
-      "name": "Collab Hackathon 2026",
-      "description": "A premier open hackathon on Judgely.",
-      "submissions_close": "2026-10-02T17:52:52.436Z",
-      "results_released": false,
-      "created_at": "2026-09-27T17:52:52.443Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 1,
-        "teams_count": 1,
-        "tracks_count": 3,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_autonomous_syste_6f59a9",
-      "name": "Autonomous Systems Hackathon 2026",
-      "description": "Building verifiable agentic protocols and decentralized infrastructure",
-      "submissions_close": "2026-10-07T17:52:52.379Z",
-      "results_released": false,
-      "created_at": "2026-09-27T17:52:52.385Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 0,
-        "teams_count": 0,
-        "tracks_count": 2,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_open_agents_hack_ad6b1d",
-      "name": "Open Agents Hackathon 2026",
-      "description": "A premier open hackathon on Judgely.",
-      "submissions_close": "2026-10-11T17:45:52.575Z",
-      "results_released": false,
-      "created_at": "2026-09-27T17:45:52.575Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 0,
-        "teams_count": 0,
-        "tracks_count": 3,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_collab_hackathon_7355d5",
-      "name": "Collab Hackathon 2026",
-      "description": "A premier open hackathon on Judgely.",
-      "submissions_close": "2026-10-02T17:44:59.418Z",
-      "results_released": false,
-      "created_at": "2026-09-27T17:44:59.424Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 1,
-        "teams_count": 1,
-        "tracks_count": 3,
-        "judges_count": 0
-      }
-    },
-    {
-      "id": "evt_autonomous_syste_927e6c",
-      "name": "Autonomous Systems Hackathon 2026",
-      "description": "Building verifiable agentic protocols and decentralized infrastructure",
-      "submissions_close": "2026-10-07T17:44:59.377Z",
-      "results_released": false,
-      "created_at": "2026-09-27T17:44:59.382Z",
-      "status": "SUBMISSIONS_OPEN",
-      "stats": {
-        "projects_count": 0,
-        "teams_count": 0,
-        "tracks_count": 2,
-        "judges_count": 0
-      }
-    },
-    {
       "id": "evt_01",
       "name": "Sample Hack 2026",
       "description": "The premier open-source engineering hackathon for developer infrastructure and autonomous systems.",
-      "submissions_close": "2026-03-01T18:00:00Z",
+      "submissions_close": "2026-11-01T18:00:00Z",
       "results_released": false,
       "created_at": "2026-09-27T17:44:15.411Z",
       "status": "JUDGING",
+      "organizer_name": "Hackerly Foundation",
       "stats": {
         "projects_count": 41,
         "teams_count": 40,
         "tracks_count": 8,
-        "judges_count": 30
+        "judges_count": 18
+      }
+    },
+    {
+      "id": "evt_autonomous_systems_2026",
+      "name": "Autonomous Systems & Agents Hackathon 2026",
+      "description": "Building verifiable agentic protocols, decentralized coordination swarms, and sovereign execution layers.",
+      "submissions_close": "2026-11-20T23:59:59Z",
+      "results_released": false,
+      "created_at": "2026-09-28T12:00:00.000Z",
+      "status": "SUBMISSIONS_OPEN",
+      "organizer_name": "Autonomous Compute Guild",
+      "stats": {
+        "projects_count": 18,
+        "teams_count": 24,
+        "tracks_count": 4,
+        "judges_count": 8
+      }
+    },
+    {
+      "id": "evt_devtools_compilers_2026",
+      "name": "Developer Tooling & Compilers Sprint",
+      "description": "Next-generation debugging harnesses, compiler frontends, AST visualizers, and deterministic build tooling.",
+      "submissions_close": "2026-11-15T23:59:59Z",
+      "results_released": false,
+      "created_at": "2026-09-28T10:00:00.000Z",
+      "status": "SUBMISSIONS_OPEN",
+      "organizer_name": "Systems & Tooling Labs",
+      "stats": {
+        "projects_count": 26,
+        "teams_count": 32,
+        "tracks_count": 3,
+        "judges_count": 10
+      }
+    },
+    {
+      "id": "evt_verifiable_ai_2026",
+      "name": "Verifiable AI & Cryptographic Inference Summit",
+      "description": "Zero-knowledge machine learning proofs, verifiable model weights, and confidential inference architectures.",
+      "submissions_close": "2026-12-05T23:59:59Z",
+      "results_released": false,
+      "created_at": "2026-09-27T14:00:00.000Z",
+      "status": "SUBMISSIONS_OPEN",
+      "organizer_name": "Zero-Knowledge Foundation",
+      "stats": {
+        "projects_count": 14,
+        "teams_count": 19,
+        "tracks_count": 3,
+        "judges_count": 6
+      }
+    },
+    {
+      "id": "evt_spatial_ui_2026",
+      "name": "Next-Gen UI & Spatial Computing Challenge",
+      "description": "Pushing creative boundaries in browser graphics, real-time spatial physics, WebGPU, and accessibility canvas.",
+      "submissions_close": "2026-12-12T23:59:59Z",
+      "results_released": false,
+      "created_at": "2026-09-26T18:00:00.000Z",
+      "status": "SUBMISSIONS_OPEN",
+      "organizer_name": "Design Engineering Collective",
+      "stats": {
+        "projects_count": 12,
+        "teams_count": 16,
+        "tracks_count": 2,
+        "judges_count": 5
+      }
+    },
+    {
+      "id": "evt_open_infra_2025",
+      "name": "Global Cloud & Decentralized Infra 2025",
+      "description": "High-performance networking, distributed consensus, and resilient bare-metal orchestrators.",
+      "submissions_close": "2026-09-15T18:00:00Z",
+      "results_released": true,
+      "created_at": "2026-08-01T12:00:00.000Z",
+      "status": "RESULTS_RELEASED",
+      "organizer_name": "Cloud Native Consortium",
+      "stats": {
+        "projects_count": 54,
+        "teams_count": 72,
+        "tracks_count": 5,
+        "judges_count": 22
       }
     }
   ]

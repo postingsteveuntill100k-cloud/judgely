@@ -427,7 +427,16 @@
     const container = document.getElementById('hackathons-container');
     if (!container) return;
 
-    if (!events || events.length === 0) {
+    // Deduplicate hackathons defensively
+    const seen = new Set();
+    const uniqueEvents = (events || []).filter(e => {
+      const key = (e.id || e.name || '').trim().toLowerCase();
+      if (!key || seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+
+    if (uniqueEvents.length === 0) {
       container.innerHTML = `
         <div class="empty-state-box text-center p-6 bg-surface rounded border col-span-full">
           <p class="text-muted">No hackathons currently matching your search and filter criteria.</p>
@@ -436,7 +445,7 @@
       return;
     }
 
-    container.innerHTML = events.map(evt => {
+    container.innerHTML = uniqueEvents.map(evt => {
       const isCurrent = evt.id === window.Judgely.state.activeEventId;
       const statusBadge = evt.status === 'RESULTS_RELEASED'
         ? '<span class="badge badge-success">● Results Released</span>'
@@ -511,12 +520,22 @@
       ]);
 
       if (eventsRes.status === 'fulfilled' && eventsRes.value && eventsRes.value.events) {
-        cachedEvents = eventsRes.value.events;
+        const seenEvtIds = new Set();
+        cachedEvents = eventsRes.value.events.filter(e => {
+          const key = (e.id || e.name || '').toLowerCase();
+          if (!key || seenEvtIds.has(key)) return false;
+          seenEvtIds.add(key);
+          return true;
+        });
         filterAndRenderHackathons();
       }
 
-      if (eventRes.status === 'fulfilled') {
+      if (eventRes.status === 'fulfilled' && eventRes.value) {
         publicEvent = eventRes.value;
+      } else if (cachedEvents.length > 0) {
+        publicEvent = cachedEvents.find(e => e.id === activeId) || cachedEvents[0];
+      }
+      if (publicEvent) {
         updateEventHeader(publicEvent);
       }
 
@@ -526,7 +545,13 @@
       }
 
       if (projectsRes.status === 'fulfilled') {
-        publicProjects = projectsRes.value.projects || projectsRes.value || [];
+        const raw = projectsRes.value.projects || projectsRes.value || [];
+        const seenProjIds = new Set();
+        publicProjects = raw.filter(p => {
+          if (!p.id || seenProjIds.has(p.id)) return false;
+          seenProjIds.add(p.id);
+          return true;
+        });
         renderFilteredProjects();
       } else {
         const grid = document.getElementById('projects-grid-container');
@@ -617,7 +642,7 @@
       const pillsHtml = `
         <button class="pill ${activeTrack === 'all' ? 'active' : ''}" data-track="all">All Tracks (${publicProjects.length})</button>
         ${uniqueTracks.map(t => {
-          const count = publicProjects.filter(p => p.track_id === t.id || (p.track_name && p.track_name.toLowerCase() === t.name.toLowerCase())).length;
+          const count = publicProjects.filter(p => (p.track_id === t.id) || (p.track === t.id) || (p.track_name && p.track_name.toLowerCase() === t.name.toLowerCase())).length;
           return `<button class="pill ${activeTrack === t.id ? 'active' : ''}" data-track="${escapeHtml(t.id)}">${escapeHtml(t.name)} (${count})</button>`;
         }).join('')}
       `;
@@ -642,7 +667,7 @@
       }
 
       tracksGrid.innerHTML = uniqueTracks.map(t => {
-        const count = publicProjects.filter(p => p.track_id === t.id || (p.track_name && p.track_name.toLowerCase() === t.name.toLowerCase())).length;
+        const count = publicProjects.filter(p => (p.track_id === t.id) || (p.track === t.id) || (p.track_name && p.track_name.toLowerCase() === t.name.toLowerCase())).length;
         return `
           <div class="track-card">
             <div>
@@ -667,7 +692,13 @@
 
     // Filter by track
     if (activeTrack !== 'all') {
-      filtered = filtered.filter(p => p.track_id === activeTrack);
+      const selectedTrackObj = publicTracks.find(t => t.id === activeTrack);
+      const selectedTrackName = selectedTrackObj ? selectedTrackObj.name.toLowerCase() : null;
+      filtered = filtered.filter(p => 
+        p.track_id === activeTrack || 
+        p.track === activeTrack ||
+        (selectedTrackName && p.track_name && p.track_name.toLowerCase() === selectedTrackName)
+      );
     }
 
     // Filter by search query
