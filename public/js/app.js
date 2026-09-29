@@ -185,8 +185,25 @@
           btn.disabled = false;
           btn.textContent = original;
           var note = document.getElementById('google-error');
-          if (note) note.textContent = 'Google sign-in did not complete: ' + (err && err.message ? err.message : 'unknown error') + '. You can sign in with a password instead.';
+          if (note) {
+            note.style.display = 'block';
+            note.innerHTML = '<strong>Google Sign-In note:</strong> ' + (err && err.message ? err.message : 'The requested action is invalid') + '.<br><span style="margin-top:4px;display:block;">To enable Google popups, enable the Google provider in Firebase Console and add <code>judgely.web.app</code> to Authorized Domains. You can sign in immediately using the Quick Sign-In buttons below.</span>';
+          }
         });
+    });
+  });
+
+  // --- persona quick-fill login --------------------------------------------
+  document.querySelectorAll('[data-fill-creds]').forEach(function (btn) {
+    btn.addEventListener('click', function () {
+      var idInput = document.getElementById('identifier');
+      var passInput = document.getElementById('password');
+      if (idInput && passInput) {
+        idInput.value = btn.getAttribute('data-fill-creds');
+        passInput.value = btn.getAttribute('data-pass');
+        var form = document.getElementById('signin-form') || btn.closest('.auth-card').querySelector('form');
+        if (form) form.submit();
+      }
     });
   });
 })();
