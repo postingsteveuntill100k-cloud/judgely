@@ -1,0 +1,227 @@
+<%
+  const dt = (v) => { if (!v) return ''; const d = new Date(v); if (isNaN(d)) return ''; return d.toISOString().slice(0,16); };
+%>
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Step <%= stepIndex + 1 %> of <%= stepCount %></p>
+        <h1 style="font-size:1.6rem">Judging</h1>
+        <p class="small muted" style="margin:8px 0 0;max-width:62ch">
+          The rubric is what judges score against. Weights must total 100, or all be zero for equal
+          weighting. A score outside a criterion’s range is rejected by the server.
+        </p>
+      </div>
+      <% if (req.query.saved) { %><span class="tag tag--ok">Saved</span><% } %>
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <div class="card__head">
+            <h2 class="card__title">Your rubric</h2>
+            <% if (rubric) { %>
+              <span class="tag"><%= rubric.name %> · v<%= rubric.version %></span>
+            <% } %>
+          </div>
+
+          <% if (!rubric) { %>
+            <div class="notice notice--warn" style="margin-bottom:18px">
+              <strong class="notice__title">No rubric yet</strong>
+              You cannot publish a hackathon without one, because judges would have nothing to score against.
+            </div>
+            <form method="post" action="/host/events/<%= event.slug %>/rubric">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <p class="small muted" style="margin-bottom:14px">Starting from the preset. Adjust names, weights and descriptions to match your event.</p>
+              <% preset.forEach((c, i) => { %>
+                <div class="repeat-row" style="background:var(--white)">
+                  <div class="grid grid-2" style="gap:0 16px">
+                    <div class="field">
+                      <label class="field__label">Criterion <%= i + 1 %></label>
+                      <input class="input" name="criteria_name[]" value="<%= c.name %>" required maxlength="80">
+                    </div>
+                    <div class="field">
+                      <label class="field__label">Weight</label>
+                      <input class="input" name="criteria_weight[]" type="number" min="0" max="100" value="<%= c.weight %>" data-weight-input>
+                    </div>
+                  </div>
+                  <div class="field" style="margin:0">
+                    <label class="field__label">What this measures</label>
+                    <input class="input" name="criteria_description[]" value="<%= c.description %>" maxlength="400">
+                  </div>
+                  <input type="hidden" name="criteria_max[]" value="<%= c.maxScore %>">
+                </div>
+              <% }) %>
+              <div class="row" style="margin-top:6px">
+                <span class="tag tag--outline" data-weight-total>—</span>
+              </div>
+              <div class="form-actions">
+                <button class="btn btn--primary" type="submit">Create rubric v1</button>
+              </div>
+            </form>
+          <% } else { %>
+            <% if (weightProblems.length) { %>
+              <div class="notice notice--danger" style="margin-bottom:16px">
+                <strong class="notice__title">Weights are not valid</strong>
+                <% weightProblems.forEach(p => { %><div><%= p %></div><% }) %>
+              </div>
+            <% } %>
+
+            <form method="post" action="/host/events/<%= event.slug %>/rubric">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <% criteria.forEach((c, i) => { %>
+                <div class="repeat-row" style="background:var(--white)">
+                  <div class="repeat-row__head">
+                    <span class="repeat-row__title">Criterion <%= i + 1 %></span>
+                  </div>
+                  <div class="grid grid-2" style="gap:0 16px">
+                    <div class="field">
+                      <label class="field__label">Name</label>
+                      <input class="input" name="criteria_name[]" value="<%= c.name %>" required maxlength="80">
+                    </div>
+                    <div class="field">
+                      <label class="field__label">Weight</label>
+                      <input class="input" name="criteria_weight[]" type="number" min="0" max="100" value="<%= c.weight %>" data-weight-input>
+                    </div>
+                  </div>
+                  <div class="field" style="margin:0">
+                    <label class="field__label">What this measures</label>
+                    <input class="input" name="criteria_description[]" value="<%= c.description %>" maxlength="400">
+                  </div>
+                  <div class="grid grid-2" style="gap:0 16px">
+                    <div class="field" style="margin:0">
+                      <label class="field__label">Maximum score</label>
+                      <input class="input" name="criteria_max[]" type="number" min="1" max="100" value="<%= c.max_score %>">
+                    </div>
+                    <div class="field" style="margin:0;display:flex;align-items:flex-end">
+                      <label class="check">
+                        <input type="checkbox" name="criteria_required[]" <%= c.required ? 'checked' : '' %>>
+                        <span class="check__text">Required</span>
+                      </label>
+                    </div>
+                  </div>
+                  <input type="hidden" name="criterion_id[]" value="<%= c.id %>">
+                </div>
+              <% }) %>
+              <div class="row row-wrap" style="margin-top:6px">
+                <span class="tag tag--outline" data-weight-total>—</span>
+                <button class="btn btn--primary btn--sm" type="submit">Save as a new rubric version</button>
+              </div>
+              <p class="tiny muted" style="margin-top:10px">
+                Saving creates a new version and keeps the old one, so reviews already submitted stay
+                attached to the criteria that were live at the time.
+              </p>
+            </form>
+          <% } %>
+        </div>
+
+        <div class="card" style="margin-top:20px">
+          <div class="card__head">
+            <h2 class="card__title">Add a criterion</h2>
+            <% if (!rubric) { %><span class="tag tag--warn">Needs a rubric first</span><% } %>
+          </div>
+          <% if (rubric) { %>
+            <form method="post" action="/host/events/<%= event.slug %>/rubric/criteria">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <div class="grid grid-2" style="gap:0 16px">
+                <div class="field">
+                  <label class="field__label" for="cname">Name</label>
+                  <input class="input" id="cname" name="name" required maxlength="80" placeholder="Accessibility">
+                </div>
+                <div class="field">
+                  <label class="field__label" for="cweight">Weight</label>
+                  <input class="input" id="cweight" name="weight" type="number" min="0" max="100" value="0">
+                </div>
+              </div>
+              <div class="grid grid-2" style="gap:0 16px">
+                <div class="field">
+                  <label class="field__label" for="cdesc">What this measures</label>
+                  <input class="input" id="cdesc" name="description" maxlength="400">
+                </div>
+                <div class="field">
+                  <label class="field__label" for="cmax">Maximum score</label>
+                  <input class="input" id="cmax" name="max_score" type="number" min="1" max="100" value="10">
+                </div>
+              </div>
+              <div class="field">
+                <label class="check">
+                  <input type="checkbox" name="required" value="1" checked>
+                  <span class="check__text">Required — judges cannot submit without scoring it</span>
+                </label>
+              </div>
+              <button class="btn btn--ghost" type="submit">Add criterion</button>
+            </form>
+          <% } else { %>
+            <p class="small muted">Create the rubric above first, then add criteria to it.</p>
+          <% } %>
+        </div>
+
+        <div class="card" style="margin-top:20px">
+          <h2 class="card__title" style="margin-bottom:14px">Aggregation method</h2>
+          <form method="post" action="/host/events/<%= event.slug %>/judging-mode">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field">
+              <div class="segmented">
+                <input type="radio" id="jm-raw" name="judging_mode" value="raw" <%= event.judging_mode === 'raw' ? 'checked' : '' %>>
+                <label for="jm-raw">Plain mean of the reviews</label>
+                <input type="radio" id="jm-norm" name="judging_mode" value="normalized" <%= event.judging_mode === 'normalized' ? 'checked' : '' %>>
+                <label for="jm-norm">Normalized</label>
+              </div>
+              <p class="field__hint">
+                Normalized removes part of each judge&rsquo;s systematic harshness and scales scores inside each track.
+                It is optional and documented in <span class="mono">JUDGING.md</span>, including its limits.
+              </p>
+            </div>
+            <div class="field" style="margin-top:12px">
+              <label class="field__label" for="normalize_lambda">λ — how much judge harshness to remove</label>
+              <input class="input" id="normalize_lambda" name="normalize_lambda" type="number" min="0" max="1" step="0.1" value="<%= event.normalize_lambda %>">
+              <p class="field__hint">0 removes nothing. 1 removes the full panel-difficulty effect. Only used in normalized mode.</p>
+            </div>
+            <button class="btn btn--ghost" type="submit">Save the method</button>
+          </form>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Judging period</h2>
+          <form method="post" action="/host/events/<%= event.slug %>/judging-dates">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field">
+              <label class="field__label" for="judging_starts_at">Judging opens</label>
+              <input class="input" id="judging_starts_at" type="datetime-local" name="judging_starts_at" value="<%= dt(event.judging_starts_at) %>">
+            </div>
+            <div class="field">
+              <label class="field__label" for="judging_ends_at">Judging closes</label>
+              <input class="input" id="judging_ends_at" type="datetime-local" name="judging_ends_at" value="<%= dt(event.judging_ends_at) %>">
+            </div>
+            <input type="hidden" name="judging_mode" value="<%= event.judging_mode %>">
+            <button class="btn btn--ghost btn--sm" type="submit">Save dates</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Current panel load</h2>
+          <% if (!progress.perJudge.length) { %>
+            <p class="small muted">No judges invited yet.</p>
+            <a class="btn btn--ghost btn--sm btn--block" style="margin-top:10px" href="/host/events/<%= event.slug %>/judges">Invite judges</a>
+          <% } else { %>
+            <ul class="list-rows">
+              <% progress.perJudge.forEach(j => { %>
+                <li class="list-rows__item">
+                  <div class="grow">
+                    <span class="list-rows__title"><%= j.name %></span>
+                    <span class="list-rows__meta"><%= j.done %>/<%= j.assigned %></span>
+                  </div>
+                  <span class="tag <%= j.status === 'active' ? 'tag--ok' : 'tag--warn' %>"><%= j.status %></span>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,49 @@
+<%
+  const active = nav;
+  const items = [
+    ['overview', `/host/events/${event.slug}`, 'Overview', null],
+    ['setup', `/host/events/${event.slug}/setup/basics`, 'Setup', null],
+    ['participants', `/host/events/${event.slug}/participants`, 'People', null],
+    ['teams', `/host/events/${event.slug}/teams`, 'Teams', counts ? counts.teams : null],
+    ['projects', `/host/events/${event.slug}/projects`, 'Projects', counts ? counts.projects : null],
+    ['judges', `/host/events/${event.slug}/judges`, 'Judges', counts ? counts.judges : null],
+    ['assignments', `/host/events/${event.slug}/assignments`, 'Assignments', counts ? counts.assignments : null],
+    ['judging', `/host/events/${event.slug}/judging`, 'Judging', null],
+    ['results', `/host/events/${event.slug}/results`, 'Results', null],
+    ['audit', `/host/events/${event.slug}/audit`, 'Audit', counts ? counts.audit : null],
+    ['export', `/host/events/${event.slug}/export`, 'Export', null],
+    ['settings', `/host/events/${event.slug}/settings`, 'Settings', null],
+  ];
+%>
+<header class="host-head">
+  <div class="wrap">
+    <div class="host-head__top">
+      <div class="grow">
+        <div class="host-head__title"><%= event.name %></div>
+        <div class="host-head__meta">
+          <span class="tag <%= h.statusTone(event.status) %>"><%= h.statusLabel(event.status) %></span>
+          <span class="tag"><%= event.mode %></span>
+          <span class="tag"><%= h.formatLabel(event.format) %></span>
+          <% if (event.status !== 'draft') { %>
+            <a class="tiny" href="/hackathons/<%= event.slug %>" target="_blank" rel="noopener">View public page ↗</a>
+          <% } %>
+        </div>
+      </div>
+      <div class="row row-wrap">
+        <a class="btn btn--ghost btn--sm" href="/host/events">All events</a>
+        <% if (event.status === 'draft') { %>
+          <a class="btn btn--primary btn--sm" href="/host/events/<%= event.slug %>/setup/publish">Finish setup</a>
+        <% } else { %>
+          <a class="btn btn--ghost btn--sm" href="/hackathons/<%= event.slug %>/results" target="_blank" rel="noopener">Public results</a>
+        <% } %>
+      </div>
+    </div>
+    <nav class="host-nav" aria-label="Hackathon sections">
+      <% items.forEach(([key, href, label, n]) => { %>
+        <a href="<%= href %>"<%= active === key ? ' aria-current="page"' : '' %>>
+          <%= label %><% if (n !== null && n !== undefined && n > 0) { %><span class="n"><%= n %></span><% } %>
+        </a>
+      <% }) %>
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,117 @@
+<%
+  const dt = (v) => { if (!v) return ''; const d = new Date(v); if (isNaN(d)) return ''; return d.toISOString().slice(0,16); };
+%>
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Step <%= stepIndex + 1 %> of <%= stepCount %></p>
+        <h1 style="font-size:1.6rem">Rules and schedule</h1>
+        <p class="small muted" style="margin:8px 0 0;max-width:62ch">
+          Rules accept a small, safe subset of markdown. Anything that is not one of those is
+          escaped, so an organizer cannot inject markup into the public page.
+        </p>
+      </div>
+      <% if (req.query.saved) { %><span class="tag tag--ok">Saved</span><% } %>
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <form method="post" action="/host/events/<%= event.slug %>/setup/rules">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+            <div class="field">
+              <label class="field__label" for="rules_md">Event rules</label>
+              <textarea class="textarea" id="rules_md" name="rules_md" maxlength="20000" style="min-height:260px" placeholder="- Teams of 1-4 people.&#10;- Everything must be built during the event window.&#10;- One submission per team."><%= event.rules_md %></textarea>
+              <p class="field__hint">
+                <code>- bullet</code>, <code>1. numbered</code>, <code>**bold**</code>,
+                <code>*italic*</code>, <code>`code`</code>, <code>&gt; quote</code>,
+                <code>## heading</code>. Blank lines separate paragraphs.
+              </p>
+            </div>
+
+            <div class="repeat-row" style="background:var(--white);margin-top:20px">
+              <div class="repeat-row__head">
+                <span class="repeat-row__title">Schedule</span>
+              </div>
+              <div data-repeat-list="schedule">
+                <% milestones.forEach((m, i) => { %>
+                  <div data-repeat-row class="repeat-row" style="background:var(--paper-2)">
+                    <div class="repeat-row__head">
+                      <span class="repeat-row__title">Milestone <%= i + 1 %></span>
+                      <button class="btn btn--quiet btn--sm" type="button" data-repeat-remove>Remove</button>
+                    </div>
+                    <div class="grid grid-2" style="gap:0 16px">
+                      <div class="field">
+                        <label class="field__label">What happens</label>
+                        <input class="input" name="milestone_label[]" value="<%= m.label %>" maxlength="120" placeholder="Submissions close">
+                      </div>
+                      <div class="field">
+                        <label class="field__label">When (UTC)</label>
+                        <input class="input" type="datetime-local" name="milestone_at[]" value="<%= dt(m.at) %>">
+                      </div>
+                    </div>
+                    <div class="field" style="margin:0">
+                      <label class="field__label">Note</label>
+                      <input class="input" name="milestone_detail[]" value="<%= m.detail || '' %>" maxlength="300" placeholder="The server refuses anything later.">
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+              <template data-repeat-template>
+                <div data-repeat-row class="repeat-row" style="background:var(--paper-2)">
+                  <div class="repeat-row__head">
+                    <span class="repeat-row__title">New milestone</span>
+                    <button class="btn btn--quiet btn--sm" type="button" data-repeat-remove>Remove</button>
+                  </div>
+                  <div class="grid grid-2" style="gap:0 16px">
+                    <div class="field">
+                      <label class="field__label">What happens</label>
+                      <input class="input" name="milestone_label[]" maxlength="120">
+                    </div>
+                    <div class="field">
+                      <label class="field__label">When (UTC)</label>
+                      <input class="input" type="datetime-local" name="milestone_at[]">
+                    </div>
+                  </div>
+                  <div class="field" style="margin:0">
+                    <label class="field__label">Note</label>
+                    <input class="input" name="milestone_detail[]" maxlength="300">
+                  </div>
+                </div>
+              </template>
+              <button class="btn btn--ghost btn--sm" type="button" data-repeat-add="schedule">Add a milestone</button>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn--ghost" type="submit" name="_action" value="save">Save and stay</button>
+              <button class="btn btn--primary" type="submit" name="_action" value="next">Save and continue</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Preview</h2>
+          <% if (event.rules_md) { %>
+            <div class="prose" style="font-size:.9rem"><%- h.renderRichText(event.rules_md) %></div>
+          <% } else { %>
+            <p class="small muted">Nothing yet. The Rules section is hidden on the public page when this is empty.</p>
+          <% } %>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Rules that are enforced</h2>
+          <p class="small muted">
+            Write down anything you will actually enforce. The deadline, team size, the rubric and
+            result visibility are enforced by the server whatever the rules say. A rule you cannot
+            enforce should not be a rule.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

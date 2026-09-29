@@ -1,0 +1,71 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Step <%= stepIndex + 1 %> of <%= stepCount %></p>
+        <h1 style="font-size:1.6rem">Basics</h1>
+      </div>
+      <% if (req.query.saved) { %><span class="tag tag--ok">Saved</span><% } %>
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <form method="post" action="/host/events/<%= event.slug %>/setup/basics">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field">
+              <label class="field__label" for="name">Hackathon name<span class="field__req">*</span></label>
+              <input class="input" id="name" name="name" value="<%= input.name %>" required maxlength="90" data-slug-source>
+              <p class="field__hint">Public URL: <span class="mono" data-slug-target></span>/hackathons/…</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="tagline">Tagline</label>
+              <input class="input" id="tagline" name="tagline" value="<%= input.tagline %>" maxlength="160" placeholder="Build. Break. Ship.">
+              <p class="field__hint">One line, under the title on the event page. Say what kind of hackathon this is.</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="description">Description<span class="field__req">*</span></label>
+              <textarea class="textarea" id="description" name="description" required maxlength="4000" style="min-height:200px" placeholder="What is this hackathon for? Who is it for? What should somebody build?"><%= input.description %></textarea>
+              <p class="field__hint">At least 40 characters. This is the part a stranger reads before registering — write it for them.</p>
+            </div>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="organizer_name">Organizer name<span class="field__req">*</span></label>
+                <input class="input" id="organizer_name" name="organizer_name" value="<%= input.organizerName %>" required maxlength="80">
+              </div>
+              <div class="field">
+                <label class="field__label" for="contact_email">Contact email</label>
+                <input class="input" id="contact_email" type="email" name="contact_email" value="<%= input.contactEmail %>" maxlength="120" placeholder="hello@hackathon.dev">
+                <p class="field__hint">Shown publicly unless you turn contact visibility off in settings.</p>
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn--ghost" type="submit" name="_action" value="save">Save and stay</button>
+              <button class="btn btn--primary" type="submit" name="_action" value="next">Save and continue</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">What a good description does</h2>
+          <ul class="check-list check-list--sm">
+            <li>Says who the event is for in the first sentence</li>
+            <li>Names the kind of thing worth building</li>
+            <li>States the dates and the prize, even if briefly</li>
+            <li>Says what happens after submissions close</li>
+            <li>Does not pretend to be an AI platform</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Where this shows up</h2>
+          <p class="small muted">The event page, the discovery cards, the search index and the public API all read the same fields.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

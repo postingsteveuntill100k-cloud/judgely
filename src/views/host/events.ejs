@@ -1,0 +1,64 @@
+<section class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Organize</p>
+    <h1>Your hackathons</h1>
+    <p class="lede" style="margin-top:12px">
+      <% if (events.length) { %>
+        <%= events.length %> <%= h.fmt.plural(events.length, 'event') %> on this install. Pick one to manage, or start another.
+      <% } else { %>
+        You are not running anything yet. Creating a hackathon takes ten steps and about five minutes.
+      <% } %>
+    </p>
+    <div class="row row-wrap" style="margin-top:20px">
+      <a class="btn btn--accent" href="/host/events/new">Create a hackathon</a>
+      <a class="btn btn--ghost" href="/host/start">Read the setup guide</a>
+    </div>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <% if (!events.length) { %>
+      <div class="empty">
+        <div class="empty__title">No hackathons yet</div>
+        <p class="empty__body">
+          Decide whether you are running a local event (self-contained, works offline) or a global one
+          (public discovery, larger participation). Hackerly changes how it operates based on that.
+        </p>
+        <a class="btn btn--accent" href="/host/events/new">Create your first hackathon</a>
+      </div>
+    <% } else { %>
+      <div class="grid grid-auto-lg">
+        <% events.forEach(e => { %>
+          <article class="card">
+            <div class="row row-between" style="align-items:flex-start;gap:12px">
+              <div class="grow">
+                <h2 class="card__title" style="font-size:1.08rem"><%= e.name %></h2>
+                <p class="tiny muted" style="margin:2px 0 0"><%= e.tagline || h.fmt.truncate(e.description, 80) %></p>
+              </div>
+              <span class="tag <%= h.statusTone(e.status) %>"><%= h.statusLabel(e.status) %></span>
+            </div>
+            <div class="row row-wrap" style="gap:6px;margin-top:12px">
+              <span class="tag"><%= e.mode %></span>
+              <span class="tag"><%= h.formatLabel(e.format) %></span>
+              <span class="tag"><%= e.state.headline %></span>
+            </div>
+            <dl class="kv" style="margin-top:14px">
+              <div><dt>Dates</dt><dd><%= h.fmt.range(e.starts_at, e.ends_at) %></dd></div>
+              <div><dt>Submissions close</dt><dd><%= h.fmt.date(e.submission_deadline) %></dd></div>
+              <div><dt>Registration</dt><dd><%= e.state.registration %></dd></div>
+            </dl>
+            <div class="row row-wrap" style="margin-top:16px">
+              <a class="btn btn--primary btn--sm" href="/host/events/<%= e.slug %>">
+                <%= e.status === 'draft' ? 'Continue setup' : 'Manage' %>
+              </a>
+              <% if (e.status !== 'draft') { %>
+                <a class="btn btn--ghost btn--sm" href="/hackathons/<%= e.slug %>" target="_blank" rel="noopener">Public page</a>
+              <% } %>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>

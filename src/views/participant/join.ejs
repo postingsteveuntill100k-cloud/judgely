@@ -1,0 +1,49 @@
+<section class="page-head">
+  <div class="wrap wrap-narrow">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/teams">Your teams</a> <span aria-hidden="true">/</span>
+      <span class="muted">Join a team</span>
+    </nav>
+    <p class="eyebrow" style="margin-top:22px">Team up</p>
+    <h1>Join an existing team</h1>
+    <p class="lede" style="margin-top:12px">
+      Most teams are listed on the event page. If somebody sent you a join link, it already
+      has the hackathon and team filled in — just press Join.
+    </p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap wrap-narrow">
+    <div class="card">
+      <form method="post" action="/join">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="field">
+          <label class="field__label" for="event">Hackathon<span class="field__req">*</span></label>
+          <select class="select" id="event" name="event" required>
+            <option value="">Choose a hackathon</option>
+            <% events.forEach(e => { %>
+              <option value="<%= e.slug %>"><%= e.name %><%= e.state ? '' : '' %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div class="field">
+          <label class="field__label" for="team">Team name<span class="field__req">*</span></label>
+          <input class="input" id="team" name="team" required placeholder="Northlight">
+          <p class="field__hint">Exactly as the team wrote it. Ask them if you are not sure.</p>
+        </div>
+        <button class="btn btn--accent" type="submit">Join team</button>
+      </form>
+    </div>
+
+    <% if (mine.length) { %>
+      <h2 style="font-size:1.05rem;margin:32px 0 14px">You are already registered for</h2>
+      <div class="row row-wrap" style="gap:8px">
+        <% mine.forEach(e => { %>
+          <a class="tag" href="/hackathons/<%= e.slug %>"><%= e.name %></a>
+        <% }) %>
+      </div>
+      <p class="small muted" style="margin-top:12px">You can only be on one team per hackathon.</p>
+    <% } %>
+  </div>
+</section>

@@ -1,0 +1,139 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Judging panel</p>
+        <h1 style="font-size:1.6rem"><%= judges.length %> <%= h.fmt.plural(judges.length, 'judge') %> invited</h1>
+        <p class="small muted" style="margin:8px 0 0">
+          <%= progress.activeJudges %> accepted · <%= progress.assignments %> assignments · <%= progress.submittedReviews %> reviews submitted
+        </p>
+      </div>
+      <a class="btn btn--primary btn--sm" href="/host/events/<%= event.slug %>/assignments">Assign projects</a>
+    </div>
+
+    <% if (req.query.invited) { %>
+      <div class="notice notice--ok" style="margin-bottom:18px">
+        <strong class="notice__title"><%= req.query.invited %> <%= h.fmt.plural(Number(req.query.invited), 'invitation') %> created</strong>
+        <% if (mailMode !== 'smtp') { %>
+          No mail provider is configured, so the invitation link is shown below and written to
+          <span class="mono">data/outbox</span>. Nothing was sent by email — copy the link to the judge instead.
+        <% } %>
+      </div>
+    <% } %>
+    <% if (req.query.resent) { %><div class="notice notice--ok" style="margin-bottom:18px">Invitation regenerated.</div><% } %>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card" style="padding:0;overflow:hidden">
+          <% if (!judges.length) { %>
+            <div class="empty" style="border:0">
+              <div class="empty__title">No judges yet</div>
+              <p class="empty__body">Invite judges before submissions close so they can start as soon as the deadline passes. An invitation creates a real judge record and a single-use link.</p>
+            </div>
+          <% } else { %>
+            <div class="table-wrap" style="border:0">
+              <table class="data">
+                <thead>
+                  <tr><th>Judge</th><th>Status</th><th class="num">Assigned</th><th class="num">Submitted</th><th></th></tr>
+                </thead>
+                <tbody>
+                  <% judges.forEach(j => { %>
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:<%= h.avatarColor(j.avatar_seed || j.email) %>"><%= h.initials(j.display_name || j.email) %></span>
+                          <span>
+                            <span class="person__name"><%= j.display_name || j.email %></span>
+                            <span class="person__meta mono"><%= j.email %><%= j.username ? ' · @' + j.username : '' %></span>
+                          </span>
+                        </div>
+                      </td>
+                      <td>
+                        <span class="tag <%= j.status === 'active' ? 'tag--ok' : (j.status === 'invited' ? 'tag--warn' : 'tag') %>"><%= j.status %></span>
+                        <% if (j.accepted_at) { %><div class="tiny muted"><%= h.fmt.ago(j.accepted_at) %></div><% } %>
+                      </td>
+                      <td class="num"><%= (j.assigned_count || 0) %></td>
+                      <td class="num"><%= (j.submitted_count || 0) %></td>
+                      <td class="nowrap">
+                        <% if (j.status === 'invited') { %>
+                          <button class="btn btn--ghost btn--sm" type="button" data-copy="<%= baseUrl %>/invite/<%= (invitations.find(i => i.email_lower === String(j.email).toLowerCase()) || {}).token || '' %>" data-label="Copy">Copy link</button>
+                          <form method="post" action="/host/events/<%= event.slug %>/judges/<%= j.id %>/resend" style="display:inline">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <button class="btn btn--quiet btn--sm" type="submit">New link</button>
+                          </form>
+                        <% } %>
+                        <form method="post" action="/host/events/<%= event.slug %>/judges/<%= j.id %>/remove" data-confirm="Remove <%= j.email %> from the panel?" style="display:inline">
+                          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                          <button class="btn btn--quiet btn--sm" type="submit">Remove</button>
+                        </form>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+
+        <% if (invitations.length) { %>
+          <div class="card" style="margin-top:20px">
+            <div class="card__head">
+              <h2 class="card__title">Invitation links</h2>
+              <span class="tag tag--<%= mailMode === 'smtp' ? 'ok' : 'warn' %>"><%= mailMode === 'smtp' ? 'email configured' : 'outbox only' %></span>
+            </div>
+            <ul class="list-rows">
+              <% invitations.slice(0, 10).forEach(i => { %>
+                <li class="list-rows__item">
+                  <div class="grow">
+                    <span class="list-rows__title mono" style="font-size:.78rem"><%= i.email %></span>
+                    <span class="list-rows__meta"><%= i.status %> · <%= i.delivery %> · <%= h.fmt.ago(i.created_at) %></span>
+                  </div>
+                  <button class="btn btn--ghost btn--sm" type="button" data-copy="<%= baseUrl %>/invite/<%= i.token %>" data-label="Copy">Copy link</button>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Invite a judge</h2>
+          <form method="post" action="/host/events/<%= event.slug %>/judges/invite">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field">
+              <label class="field__label" for="jemail">Email<span class="field__req">*</span></label>
+              <input class="input" id="jemail" type="email" name="email" required placeholder="judge@example.org">
+            </div>
+            <div class="field">
+              <label class="field__label" for="jbulk">Or paste many</label>
+              <textarea class="textarea" id="jbulk" name="bulk" style="min-height:90px" placeholder="one per line&#10;judge@example.org&#10;another@example.org"></textarea>
+              <p class="field__hint">One address per line, or separated by commas. Each gets its own single-use link.</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="jmsg">Message</label>
+              <textarea class="textarea" id="jmsg" name="message" style="min-height:70px" placeholder="Optional note included in the invitation."></textarea>
+            </div>
+            <button class="btn btn--accent btn--sm" type="submit">Send invitation</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">How invitations work</h2>
+          <p class="small muted">
+            The link creates a real user bound to your panel when they accept. It only works once, and
+            only for the address it was sent to. If a judge already has a Hackerly account, the
+            invitation attaches to it rather than creating a duplicate.
+          </p>
+          <p class="tiny muted" style="margin-top:10px">
+            Mail mode: <span class="mono"><%= mailMode %></span>. Without SMTP, invitations are written
+            to <span class="mono">data/outbox/</span> and shown here. The interface says which it is
+            rather than claiming an email went out.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

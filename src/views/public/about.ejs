@@ -1,0 +1,100 @@
+<section class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">About</p>
+    <h1>Hackerly</h1>
+    <p class="lede" style="margin-top:14px">
+      A hackathon platform: discovery and participation for hackers, operations for organizers,
+      a focused review workspace for judges. One identity system, one database, one set of rules —
+      three different ways of using it.
+    </p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="doc" id="what">
+      <h2>What it does</h2>
+      <p>
+        A hacker can find a hackathon, read it, register, join or create a team, build a project and
+        submit it before a deadline the server enforces. An organizer can create a hackathon, brand
+        it, set dates and prizes, define tracks and submission fields, publish a weighted rubric,
+        invite judges, assign projects, watch judging progress, compute results and publish them. A
+        judge can sign in, see their assignments, open a project, score it against the rubric,
+        explain the score, submit, and move to the next one.
+      </p>
+
+      <h2 id="judging">How judging works</h2>
+      <p>
+        Each review is converted to a 0–100 score using the organizer&rsquo;s rubric weights. A
+        project&rsquo;s score is the mean of its submitted reviews. That is the whole default method,
+        and it is what <code>judging_mode = raw</code> means.
+      </p>
+      <p>
+        With <code>judging_mode = normalized</code>, two extra steps run. First, each judge&rsquo;s
+        mean deviation from the panel mean is measured, and a project&rsquo;s score is shifted by
+        <code>λ</code> times the average offset of the judges who reviewed it. λ = 0 removes nothing;
+        λ = 1 removes the full panel-difficulty effect. Second, the adjusted scores are min–max
+        scaled to 0–100 <em>inside each track</em>, because two tracks can have very different
+        score distributions and one should not dominate the other.
+      </p>
+      <p>
+        The method is deliberately conservative and fully deterministic. It is <strong>not</strong>
+        a claim of statistical superiority, and it is not validated against any external ground
+        truth. What it does guarantee: identical scores, a single reviewer, missing reviews, uneven
+        judge workloads, zero variance and exact ties all produce a defined, explainable output.
+        Ties share a rank and the next rank is skipped, and ties break deterministically on review
+        count then project title, so the same input always yields the same ordering.
+      </p>
+      <p>See <code>JUDGING.md</code> in the repository for the full specification and its limits.</p>
+
+      <h2 id="self-host">Self-hosting</h2>
+      <pre>git clone https://github.com/your-org/hackerly
+cd hackerly
+docker compose up --build</pre>
+      <p>
+        That brings up a working portal on port 8080 with the schema created, the DOGFOOD fixtures
+        loaded and a small demo set seeded. The database is a SQLite file in a volume, so nothing
+        depends on an external service and the core product keeps working with the network off.
+        Copy <code>.env.example</code> to <code>.env</code> to change anything.
+      </p>
+
+      <h2 id="architecture">Architecture in one paragraph</h2>
+      <p>
+        A single Node.js process serves the server-rendered UI and the JSON API. The browser never
+        writes to the database; every mutation goes through a service that checks the session, the
+        role, the event, the assignment and the deadline. Storage sits behind a driver interface with
+        two implementations: SQLite for self-hosted installs, Firestore for a deployment on Google
+        Cloud. Firebase Authentication is optional and only used to prove identity — Hackerly
+        issues its own server-side session, so authorization never depends on a client-side role.
+      </p>
+
+      <h2 id="api">API</h2>
+      <p>
+        There is a small REST surface under <code>/api/v1</code>: published events, an event&rsquo;s
+        tracks and projects, creating an event, creating a submission, reading your own review
+        scores, submitting a review, and organizer CSV export. It is documented in
+        <code>ARCHITECTURE.md</code>.
+      </p>
+
+      <h2 id="limits">Honest limits</h2>
+      <ul>
+        <li>Public voting and comments exist but have no moderation tooling beyond hiding a comment.</li>
+        <li>Normalization is optional and off by default. It is documented, not proven.</li>
+        <li>There is no email provider by default: judge invitations are written to <code>data/outbox</code> and shown in the organizer&rsquo;s judge list, and the UI says so rather than claiming a message was sent.</li>
+        <li>Avatars are generated from a deterministic seed or set to an external HTTPS URL. There is no binary upload pipeline.</li>
+        <li>Scale claims are backed only by the load tests in <code>scripts/loadtest.mjs</code>, and their measured numbers are recorded in the README.</li>
+      </ul>
+    </div>
+
+    <div class="card" style="margin-top:48px;max-width:520px">
+      <h2 class="card__title" style="margin-bottom:14px">This install</h2>
+      <dl class="kv">
+        <div><dt>Hackathons</dt><dd><%= counts.events %></dd></div>
+        <div><dt>Projects</dt><dd><%= counts.projects %></dd></div>
+        <div><dt>Submitted reviews</dt><dd><%= counts.reviews %></dd></div>
+        <div><dt>Accounts</dt><dd><%= counts.users %></dd></div>
+      </dl>
+      <p class="tiny muted" style="margin-top:14px"><a href="/api/v1">Browse the API index →</a> · <a href="/healthz">Service health →</a></p>
+    </div>
+  </div>
+</section>

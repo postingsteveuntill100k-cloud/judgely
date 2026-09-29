@@ -1,0 +1,62 @@
+<section class="page-head">
+  <div class="wrap">
+    <div class="profile-head">
+      <span class="avatar avatar--xl" style="background:<%= h.avatarColor(user.avatar_seed) %>"><%= h.initials(user.display_name) %></span>
+      <div>
+        <h1 style="font-size:clamp(1.7rem,4vw,2.4rem)"><%= user.display_name %></h1>
+        <p class="mono muted" style="margin:2px 0 0">@<%= user.username %></p>
+        <% if (user.headline) { %><p style="margin:10px 0 0;font-weight:520"><%= user.headline %></p><% } %>
+        <% if (user.location) { %><p class="small muted" style="margin:4px 0 0"><%= user.location %></p><% } %>
+        <div class="row row-wrap" style="gap:8px;margin-top:14px">
+          <% if (user.website_url) { %><a class="tag tag--outline" href="<%= user.website_url %>" rel="noopener nofollow" target="_blank">Website ↗</a><% } %>
+          <% if (user.github_url) { %><a class="tag tag--outline" href="<%= user.github_url %>" rel="noopener nofollow" target="_blank">GitHub ↗</a><% } %>
+          <% if (user.linkedin_url) { %><a class="tag tag--outline" href="<%= user.linkedin_url %>" rel="noopener nofollow" target="_blank">LinkedIn ↗</a><% } %>
+        </div>
+      </div>
+    </div>
+    <% if (user.bio) { %><p class="lede" style="margin-top:22px;max-width:62ch"><%= user.bio %></p><% } %>
+    <p class="small muted" style="margin-top:16px">
+      On Hackerly since <%= h.fmt.date(user.created_at) %>.
+      <%= projects.length %> public <%= h.fmt.plural(projects.length, 'project') %>,
+      <%= events.length %> <%= h.fmt.plural(events.length, 'hackathon') %> joined,
+      <% if (judges.length) { %><%= judges.length %> <%= h.fmt.plural(judges.length, 'event') %> judged.<% } else { %>not on a judging panel.<% } %>
+    </p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <h2 style="font-size:1.2rem;margin-bottom:16px">Projects</h2>
+    <% if (!projects.length) { %>
+      <div class="empty">
+        <div class="empty__title">No public projects yet</div>
+        <p class="empty__body">When this person submits to a hackathon and the organizer opens the showcase, their projects appear here.</p>
+      </div>
+    <% } else { %>
+      <div class="grid grid-auto">
+        <% projects.forEach(project => { %>
+          <%- include('../partials/project-card', { project }) %>
+        <% }) %>
+      </div>
+    <% } %>
+
+    <% if (events.length) { %>
+      <h2 style="font-size:1.2rem;margin:48px 0 16px">Hackathons</h2>
+      <div class="table-wrap">
+        <table class="data">
+          <thead><tr><th>Hackathon</th><th>Dates</th><th>Format</th><th>My role</th></tr></thead>
+          <tbody>
+            <% events.forEach(e => { %>
+              <tr>
+                <td><a href="/hackathons/<%= e.slug %>" style="font-weight:560"><%= e.name %></a></td>
+                <td class="small nowrap"><%= h.fmt.range(e.starts_at, e.ends_at) %></td>
+                <td><span class="tag"><%= h.formatLabel(e.format) %></span></td>
+                <td class="small muted"><%= e.member_role === 'participant' ? 'Participant' : h.fmt.truncate(e.member_role, 30) %></td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% } %>
+  </div>
+</section>

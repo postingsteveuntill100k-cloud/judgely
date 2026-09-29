@@ -1,0 +1,169 @@
+<%
+  const pct = (a, b) => (b ? Math.round((a / b) * 100) : 0);
+  const overallPct = pct(progress.submittedReviews, progress.assignments);
+%>
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Judging</p>
+        <h1 style="font-size:1.6rem">Progress</h1>
+        <p class="small muted" style="margin:8px 0 0">
+          Every number here comes from the database. Nothing is estimated and nothing is typed in by hand.
+        </p>
+      </div>
+      <% if (req.query.reopened) { %><span class="tag tag--warn">Review reopened</span><% } %>
+    </div>
+
+    <div class="stat-row">
+      <div class="stat <%= overallPct === 100 ? 'stat--ok' : 'stat--accent' %>">
+        <div class="stat__n"><%= overallPct %>%</div>
+        <div class="stat__l"><%= progress.submittedReviews %> of <%= progress.assignments %> reviews submitted</div>
+      </div>
+      <div class="stat <%= progress.coverage === 100 ? 'stat--ok' : 'stat--warn' %>">
+        <div class="stat__n"><%= progress.coverage %>%</div>
+        <div class="stat__l">of <%= progress.submittedProjects %> submitted projects have a judge</div>
+      </div>
+      <div class="stat">
+        <div class="stat__n"><%= progress.activeJudges %></div>
+        <div class="stat__l">active judges of <%= progress.judges %> invited</div>
+      </div>
+      <div class="stat">
+        <div class="stat__n"><%= progress.submittedProjects %></div>
+        <div class="stat__l">submitted projects of <%= progress.projects %></div>
+      </div>
+    </div>
+
+    <% if (progress.attention.length) { %>
+      <div class="attention">
+        <h3>Attention</h3>
+        <ul>
+          <% progress.attention.forEach(a => { %><li><%= a.message %></li><% }) %>
+        </ul>
+        <div class="row row-wrap" style="margin-top:12px">
+          <a class="btn btn--ghost btn--sm" href="/host/events/<%= event.slug %>/assignments">Fix assignments</a>
+          <a class="btn btn--ghost btn--sm" href="/host/events/<%= event.slug %>/judges">Chase invitations</a>
+        </div>
+      </div>
+    <% } else if (progress.assignments > 0) { %>
+      <div class="notice notice--ok" style="margin-bottom:20px">
+        <strong class="notice__title">Judging looks complete</strong>
+        Every assignment has a submitted review and every submitted project has a judge.
+        <a href="/host/events/<%= event.slug %>/results">Compute the results →</a>
+      </div>
+    <% } %>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:14px">Per judge</h2>
+          <% if (!progress.perJudge.length) { %>
+            <p class="small muted">No judges invited yet.</p>
+          <% } else { %>
+            <div class="table-wrap" style="border:0">
+              <table class="data">
+                <thead><tr><th>Judge</th><th>Status</th><th class="num">Done</th><th style="width:200px">Progress</th></tr></thead>
+                <tbody>
+                  <% progress.perJudge.forEach(j => { %>
+                    <tr>
+                      <td>
+                        <span style="font-weight:560"><%= j.name %></span>
+                        <div class="tiny muted mono"><%= j.email %></div>
+                      </td>
+                      <td><span class="tag <%= j.status === 'active' ? 'tag--ok' : 'tag--warn' %>"><%= j.status %></span></td>
+                      <td class="num"><%= j.done %> / <%= j.assigned %></td>
+                      <td>
+                        <div class="meter" role="img" aria-label="<%= pct(j.done, j.assigned) %>% complete">
+                          <div class="meter__fill <%= j.done === j.assigned && j.assigned > 0 ? 'meter__fill--ok' : 'meter__fill--accent' %>" style="width:<%= pct(j.done, j.assigned) %>%"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+
+        <div class="card" style="margin-top:20px;padding:0;overflow:hidden">
+          <div class="card__head" style="padding:20px 22px 14px;margin:0">
+            <h2 class="card__title">Assignments</h2>
+            <span class="tag"><%= assignments.length %></span>
+          </div>
+          <% if (!assignments.length) { %>
+            <div class="empty" style="border:0">
+              <div class="empty__title">No assignments</div>
+              <p class="empty__body">Create assignments so judges have a queue. A judge can only open what they are assigned.</p>
+              <a class="btn btn--accent btn--sm" href="/host/events/<%= event.slug %>/assignments">Assign projects</a>
+            </div>
+          <% } else { %>
+            <div class="table-wrap" style="border:0">
+              <table class="data">
+                <thead>
+                  <tr><th>Project</th><th>Track</th><th>Judge</th><th>Status</th><th>Submitted</th><th></th></tr>
+                </thead>
+                <tbody>
+                  <% assignments.forEach(a => { %>
+                    <tr>
+                      <td class="small"><a href="/host/events/<%= event.slug %>/projects/<%= a.project_id %>"><%= a.project_title %></a><div class="tiny muted"><%= a.team_name %></div></td>
+                      <td class="small"><%= a.track_name || '—' %></td>
+                      <td class="tiny mono"><%= a.judge_email %></td>
+                      <td><span class="tag <%= a.status === 'submitted' ? 'tag--ok' : 'tag--warn' %>"><%= a.status %></span></td>
+                      <td class="small nowrap"><%= a.review_submitted_at ? h.fmt.date(a.review_submitted_at) : '—' %></td>
+                      <td class="nowrap">
+                        <% if (a.review_id && a.status === 'submitted') { %>
+                          <form method="post" action="/host/events/<%= event.slug %>/reviews/<%= a.review_id %>/reopen" data-confirm="Reopen this review? The judge will have to submit it again.">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <button class="btn btn--quiet btn--sm" type="submit">Reopen</button>
+                          </form>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Rubric in force</h2>
+          <% if (!criteria.length) { %>
+            <p class="small muted">No rubric. Judges cannot score without one.</p>
+            <a class="btn btn--ghost btn--sm btn--block" style="margin-top:10px" href="/host/events/<%= event.slug %>/setup/judging">Create the rubric</a>
+          <% } else { %>
+            <ul class="req-list">
+              <% criteria.forEach(c => { %>
+                <li><span><%= c.name %></span><span class="tag"><%= c.weight %></span></li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Coverage by project</h2>
+          <% const thin = progress.perProject.filter(p => p.judges < 2); %>
+          <% if (!progress.perProject.length) { %>
+            <p class="small muted">No submitted projects yet.</p>
+          <% } else { %>
+            <p class="small muted">
+              <%= progress.perProject.filter(p => p.judges > 0).length %> of <%= progress.perProject.length %> have at least one judge.
+              <% if (thin.length) { %><%= thin.length %> have only one.<% } %>
+            </p>
+            <ul class="list-rows" style="margin-top:12px">
+              <% thin.slice(0, 8).forEach(p => { %>
+                <li class="list-rows__item">
+                  <div class="grow"><span class="list-rows__title"><%= p.title %></span><span class="list-rows__meta"><%= p.judges %> judge<%= p.judges === 1 ? '' : 's' %> · <%= p.reviews %> review<%= p.reviews === 1 ? '' : 's' %></span></div>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

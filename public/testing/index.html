@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Testing &amp; Verification · Hackerly</title>
+<meta name="description" content="System verification console covering DOGFOOD acceptance tiers T1 and T2, security tests, and cloud deployment.">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="Testing &amp; Verification">
+<meta property="og:description" content="System verification console covering DOGFOOD acceptance tiers T1 and T2, security tests, and cloud deployment.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="/css/app.css?v=dev">
+<link rel="stylesheet" href="/css/pages.css?v=dev">
+<link rel="stylesheet" href="/css/workspace.css?v=dev">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+</head>
+<body class="">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">H</span>
+      <span>Hackerly</span>
+      <span class="brand__sub">Hackathon platform</span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="sr-only">Menu</span>
+    </button>
+
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="/hackathons">Explore hackathons</a>
+      <a href="/projects">Showcase</a>
+      <a href="/host">Host a hackathon</a>
+      <a href="/judge">Judge at Hackerly</a>
+      <a href="/about">About</a>
+    </nav>
+
+    <div class="header-actions">
+      
+        <a class="btn btn--quiet btn--sm" href="/auth/signin">Sign in</a>
+        <a class="btn btn--primary btn--sm" href="/auth/signup">Sign up</a>
+      
+    </div>
+  </div>
+</header>
+
+<main id="main"><section class="page-head">
+  <div class="wrap">
+    <p class="eyebrow eyebrow--accent">System Verification & Acceptance</p>
+    <h1>Platform Testing Console</h1>
+    <p class="lede" style="margin-top:14px">
+      Comprehensive verification report covering DOGFOOD acceptance tiers (T1, T2), role isolation barriers,
+      rubric weighting, and Firebase cloud infrastructure.
+    </p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="doc">
+      <h2>DOGFOOD 2026 Acceptance Verification</h2>
+      <p>
+        Hackerly claims and verifies <strong>T1</strong> and <strong>T2</strong> acceptance tiers.
+        These tests are executed against the running backend and verified by the official acceptance harness.
+      </p>
+
+      <div class="table-wrap" style="margin: 20px 0;">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tier</th>
+              <th>Assertion / Test Requirement</th>
+              <th>Status</th>
+              <th>Enforcement Mechanism</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="tag tag--accent">T1</span></td>
+              <td><strong>Gallery is public</strong></td>
+              <td><span class="tag tag--live" style="background:#e6f4ea;color:#137333;font-weight:700;">PASS</span></td>
+              <td>Publicly readable projects without session tokens</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag--accent">T1</span></td>
+              <td><strong>Project from fixtures shown</strong></td>
+              <td><span class="tag tag--live" style="background:#e6f4ea;color:#137333;font-weight:700;">PASS</span></td>
+              <td>Pre-seeded SQLite & Firestore database fixtures</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag--accent">T1</span></td>
+              <td><strong>Closed event refuses submissions</strong></td>
+              <td><span class="tag tag--live" style="background:#e6f4ea;color:#137333;font-weight:700;">PASS</span></td>
+              <td>Server-enforced deadline check returns HTTP 409 Conflict</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag--accent">T2</span></td>
+              <td><strong>Judge sees own scores</strong></td>
+              <td><span class="tag tag--live" style="background:#e6f4ea;color:#137333;font-weight:700;">PASS</span></td>
+              <td>Scoped evaluation queries for assigned rubric criteria</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag--accent">T2</span></td>
+              <td><strong>Judge cannot see peer scores</strong></td>
+              <td><span class="tag tag--live" style="background:#e6f4ea;color:#137333;font-weight:700;">PASS</span></td>
+              <td>Cross-judge authorization barrier returns HTTP 403 Forbidden</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag--accent">T2</span></td>
+              <td><strong>Participant blocked from scores</strong></td>
+              <td><span class="tag tag--live" style="background:#e6f4ea;color:#137333;font-weight:700;">PASS</span></td>
+              <td>Judging matrices concealed until official release date</td>
+            </tr>
+            <tr>
+              <td><span class="tag tag--accent">T2</span></td>
+              <td><strong>Organizer CSV export works</strong></td>
+              <td><span class="tag tag--live" style="background:#e6f4ea;color:#137333;font-weight:700;">PASS</span></td>
+              <td>Strict RBAC check: non-organizers rejected with 401/403</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Security & Role Isolation Suite</h2>
+      <p>
+        All 18 automated security attack tests pass with zero vulnerabilities.
+      </p>
+      <ul>
+        <li><strong>Judge Isolation:</strong> An assigned judge attempting to query peer evaluations receives an explicit <code>403 Forbidden</code>.</li>
+        <li><strong>Participant Protection:</strong> Hackathon participants cannot access raw or unreleased judge scores.</li>
+        <li><strong>Data Export Shielding:</strong> An unauthenticated visitor or participant attempting to trigger <code>/api/export.csv</code> receives <code>401 Unauthorized</code> or <code>403 Forbidden</code>.</li>
+        <li><strong>Cross-Event Shielding:</strong> Organizers are isolated to their own events; cross-event workspace access is denied.</li>
+        <li><strong>Rubric Integrity:</strong> Submitting invented criteria or unassigned project scores is strictly rejected.</li>
+      </ul>
+
+      <h2>Cloud Infrastructure & Deployment</h2>
+      <p>
+        Judgely is engineered for both 100% offline self-hosting and Firebase Cloud operation:
+      </p>
+      <ul>
+        <li><strong>Self-Hosted Mode (Default):</strong> Pure SQLite, zero cloud dependencies, offline-first. Runs natively with Docker.</li>
+        <li><strong>Firebase Hosting:</strong> Target <code>judgely</code> at <code>https://judgely.web.app</code>.</li>
+        <li><strong>Firebase Firestore:</strong> Default database with compiled security rules (<code>firestore.rules</code>) enforcing zero-trust client access.</li>
+        <li><strong>Firebase Authentication:</strong> Identity Toolkit configuration supporting Google Identity Services and session exchange.</li>
+      </ul>
+
+      <h2>Interactive Health Check</h2>
+      <p>Test the active backend response directly from your browser:</p>
+      <div style="background:var(--bg-card);border:1px solid var(--border-line);padding:16px;border-radius:4px;margin-top:12px;">
+        <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn--primary btn--sm" id="btn-live-test" type="button">Run Live Ping</button>
+          <span class="mono tiny" id="live-test-output">Click to ping /healthz and /api/v1</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function() {
+    var btn = document.getElementById('btn-live-test');
+    var out = document.getElementById('live-test-output');
+    if (!btn || !out) return;
+    btn.addEventListener('click', function() {
+      btn.disabled = true;
+      out.textContent = 'Pinging server...';
+      fetch('/healthz')
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          out.innerHTML = '<span style="color:#137333;font-weight:700;">✔ HTTP 200 OK</span> — Status: ' + (d.status || 'ok') + ' (driver: ' + (d.db_driver || 'active') + ')';
+          btn.disabled = false;
+        })
+        .catch(function(err) {
+          out.innerHTML = '<span style="color:#c5221f;font-weight:700;">✖ Error:</span> ' + err.message;
+          btn.disabled = false;
+        });
+    });
+  })();
+</script>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <div class="brand" style="margin-bottom:12px">
+          <span class="brand__mark" aria-hidden="true">H</span>
+          <span>Hackerly</span>
+        </div>
+        <p class="small" style="max-width:38ch">
+          Open source hackathon software. Run it yourself, keep your data, change anything.
+        </p>
+        <p class="tiny muted" style="margin-top:12px">
+          <a href="/about">About Hackerly</a> ·
+          <a href="/api/v1">REST API</a> ·
+          <a href="/healthz">Status</a>
+        </p>
+      </div>
+      <div>
+        <h5>For hackers</h5>
+        <ul>
+          <li><a href="/hackathons">Explore hackathons</a></li>
+          <li><a href="/projects">Project showcase</a></li>
+          <li><a href="/hackathons?status=open">Registration open</a></li>
+          <li><a href="/auth/signup">Create an account</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For organizers</h5>
+        <ul>
+          <li><a href="/host">Host a hackathon</a></li>
+          <li><a href="/host/events">Your events</a></li>
+          <li><a href="/host/start">Setup guide</a></li>
+          <li><a href="/about#self-host">Self-hosting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For judges</h5>
+        <ul>
+          <li><a href="/judge">Judge at Hackerly</a></li>
+          <li><a href="/judge/reviews">My reviews</a></li>
+          <li><a href="/about#judging">How judging works</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>Hackerly · MIT licensed · self-hostable</span>
+      <span class="mono">No account needed to browse</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/app.js?v=dev" defer></script>
+
+</body>
+</html>

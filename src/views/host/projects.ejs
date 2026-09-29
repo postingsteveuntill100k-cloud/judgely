@@ -1,0 +1,63 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Submissions</p>
+        <h1 style="font-size:1.6rem"><%= total %> <%= h.fmt.plural(total, 'project') %></h1>
+        <p class="small muted" style="margin:8px 0 0">
+          <%= counts.submitted || 0 %> submitted · <%= counts.under_review || 0 %> under review ·
+          <%= counts.results_released || 0 %> results released · <%= counts.draft || 0 %> drafts (not visible to judges)
+        </p>
+      </div>
+      <form class="row row-wrap" method="get" action="/host/events/<%= event.slug %>/projects">
+        <input class="input" type="search" name="q" value="<%= filters.q %>" placeholder="Search projects" style="min-width:180px">
+        <select class="select" name="status" data-autosubmit style="min-width:150px">
+          <option value="">Any status</option>
+          <option value="draft" <%= filters.status === 'draft' ? 'selected' : '' %>>Draft</option>
+          <option value="submitted" <%= filters.status === 'submitted' ? 'selected' : '' %>>Submitted</option>
+          <option value="under_review" <%= filters.status === 'under_review' ? 'selected' : '' %>>Under review</option>
+          <option value="results_released" <%= filters.status === 'results_released' ? 'selected' : '' %>>Results released</option>
+        </select>
+        <button class="btn btn--ghost btn--sm" type="submit">Apply</button>
+      </form>
+    </div>
+
+    <% if (!projects.length) { %>
+      <div class="empty">
+        <div class="empty__title">No projects match</div>
+        <p class="empty__body">Submissions appear here the moment a team submits, and drafts are hidden from judges until they do.</p>
+      </div>
+    <% } else { %>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="table-wrap" style="border:0">
+          <table class="data">
+            <thead>
+              <tr><th>Project</th><th>Team</th><th>Track</th><th>Status</th><th>Submitted</th><th>Reviews</th><th></th></tr>
+            </thead>
+            <tbody>
+              <% projects.forEach(p => { %>
+                <tr>
+                  <td>
+                    <span style="font-weight:560"><%= p.title %></span>
+                    <% if (p.summary) { %><div class="tiny muted"><%= h.truncate(p.summary, 70) %></div><% } %>
+                  </td>
+                  <td class="small"><%= p.team_name %><div class="tiny muted"><%= p.members.length %> <%= h.fmt.plural(p.members.length, 'member') %></div></td>
+                  <td class="small"><%= p.track_name || '—' %></td>
+                  <td><span class="tag <%= h.projectStatusTone(p.status) %>"><%= h.projectStatusLabel(p.status) %></span></td>
+                  <td class="small nowrap"><%= p.submitted_at ? h.fmt.date(p.submitted_at) : '—' %></td>
+                  <td class="small"><%= (p.tech_stack || []).slice(0, 2).join(', ') %></td>
+                  <td class="nowrap">
+                    <a class="btn btn--ghost btn--sm" href="/host/events/<%= event.slug %>/projects/<%= p.id %>">Inspect</a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <%- include('../partials/pager', { page, pages, base: '/host/events/' + event.slug + '/projects?status=' + filters.status + '&q=' + encodeURIComponent(filters.q) }) %>
+    <% } %>
+  </div>
+</section>

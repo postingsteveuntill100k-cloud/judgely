@@ -1,0 +1,106 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Step <%= stepIndex + 1 %> of <%= stepCount %></p>
+        <h1 style="font-size:1.6rem">Branding</h1>
+        <p class="small muted" style="margin:8px 0 0;max-width:62ch">
+          Your event gets an identity inside the Hackerly frame. The accent comes from a fixed
+          palette so nothing becomes unreadable.
+        </p>
+      </div>
+      <% if (req.query.saved) { %><span class="tag tag--ok">Saved</span><% } %>
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <form method="post" action="/host/events/<%= event.slug %>/setup/branding">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field">
+              <label class="field__label" for="cover_url">Cover image URL</label>
+              <input class="input" id="cover_url" name="cover_url" value="<%= input.coverUrl %>" placeholder="https://…/banner.png">
+              <p class="field__hint">Optional. Leave empty and Hackerly generates a poster from the style you pick below.</p>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="cover_style">Generated cover style</label>
+              <select class="select" id="cover_style" name="cover_style">
+                <% h.coverStyles.forEach(s => { %>
+                  <option value="<%= s.value %>" <%= input.coverStyle === s.value ? 'selected' : '' %>><%= s.label %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="accent_color">Accent colour</label>
+              <select class="select" id="accent_color" name="accent_color">
+                <% h.accents.forEach(a => { %>
+                  <option value="<%= a.value %>" <%= input.accentColor === a.value ? 'selected' : '' %>><%= a.label %></option>
+                <% }) %>
+              </select>
+              <p class="field__hint">Used for the event&rsquo;s own highlights. Hackerly keeps its own mark and neutral palette so the platform stays recognisable.</p>
+            </div>
+
+            <div class="field">
+              <label class="field__label" for="format">Format</label>
+              <select class="select" id="format" name="format">
+                <% ['online','offline','hybrid'].forEach(f => { %>
+                  <option value="<%= f %>" <%= input.format === f ? 'selected' : '' %>><%= h.formatLabel(f) %></option>
+                <% }) %>
+              </select>
+            </div>
+
+            <div class="grid grid-3" style="gap:0 16px">
+              <div class="field">
+                <label class="field__label" for="venue">Venue</label>
+                <input class="input" id="venue" name="venue" value="<%= input.venue %>" maxlength="120" placeholder="Meridian Community Hall">
+              </div>
+              <div class="field">
+                <label class="field__label" for="city">City</label>
+                <input class="input" id="city" name="city" value="<%= input.city %>" maxlength="60">
+              </div>
+              <div class="field">
+                <label class="field__label" for="country">Country</label>
+                <input class="input" id="country" name="country" value="<%= input.country %>" maxlength="60">
+              </div>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn--ghost" type="submit" name="_action" value="save">Save and stay</button>
+              <button class="btn btn--primary" type="submit" name="_action" value="next">Save and continue</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Preview</h2>
+          <div style="border:1px solid var(--line);border-radius:var(--r);overflow:hidden;background:var(--white)">
+            <div style="aspect-ratio:16/8;background:var(--ink)">
+              <% if (input.coverUrl && h.fmt.safe(input.coverUrl)) { %>
+                <img src="<%= h.fmt.safe(input.coverUrl) %>" alt="" style="width:100%;height:100%;object-fit:cover">
+              <% } else { %>
+                <%- h.cover({ seed: event.slug, style: input.coverStyle, accent: input.accentColor }) %>
+              <% } %>
+            </div>
+            <div style="padding:12px 14px">
+              <div class="small" style="font-weight:600"><%= event.name %></div>
+              <div class="tiny muted"><%= event.tagline || 'Your tagline appears here' %></div>
+            </div>
+          </div>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">What you cannot change</h2>
+          <p class="small muted">
+            Arbitrary CSS, custom fonts and layout overrides. They are the fastest way to make an
+            event page unusable for the participants you are trying to attract.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

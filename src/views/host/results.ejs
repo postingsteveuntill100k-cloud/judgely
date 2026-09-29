@@ -1,0 +1,131 @@
+<%
+  const b = (r) => h.breakdownOf(r);
+%>
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Results</p>
+        <h1 style="font-size:1.6rem"><%= computed ? results.length + ' ranked projects' : 'Not computed yet' %></h1>
+        <p class="small muted" style="margin:8px 0 0">
+          <% if (req.query.saved === 'published') { %>Results are published on the public event page.<% } else if (req.query.saved === 'withdrawn') { %>Publication withdrawn. The ranking is private again.<% } else if (req.query.saved === 'computed') { %>Ranking computed and private.<% } else { %>Computing writes a private ranking. Publishing releases it.<% } %>
+        </p>
+      </div>
+      <div class="row row-wrap">
+        <form method="post" action="/host/events/<%= event.slug %>/results/compute">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn--ghost btn--sm" type="submit" <%= progress.assignments === 0 ? 'disabled aria-disabled="true"' : '' %>>
+            <%= computed ? 'Recompute' : 'Compute results' %>
+          </button>
+        </form>
+        <% if (computed) { %>
+          <form method="post" action="/host/events/<%= event.slug %>/results/<%= event.results_visibility === 'public' ? 'withdraw' : 'publish' %>" data-confirm="<%= event.results_visibility === 'public' ? 'Withdraw the published results? Participants will not see the ranking again.' : 'Publish the results publicly?' %>">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn <%= event.results_visibility === 'public' ? 'btn--danger' : 'btn--accent' %> btn--sm" type="submit">
+              <%= event.results_visibility === 'public' ? 'Withdraw publication' : 'Publish results' %>
+            </button>
+          </form>
+        <% } %>
+      </div>
+    </div>
+
+    <% if (progress.submittedReviews === 0) { %>
+      <div class="empty">
+        <div class="empty__title">No submitted reviews yet</div>
+        <p class="empty__body">Results are computed from reviews. Assign projects, wait for the panel, then come back.</p>
+        <a class="btn btn--ghost" href="/host/events/<%= event.slug %>/judging">Judging progress</a>
+      </div>
+    <% } else if (!computed) { %>
+      <div class="card" style="max-width:640px">
+        <h2 class="card__title" style="margin-bottom:10px">Ready to compute</h2>
+        <p class="small muted" style="margin-bottom:16px">
+          <%= progress.submittedReviews %> of <%= progress.assignments %> reviews are in. Computing
+          will rank <%= progress.submittedProjects %> projects and write the result to the database.
+          Nothing becomes public until you publish it.
+        </p>
+        <form method="post" action="/host/events/<%= event.slug %>/results/compute">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <button class="btn btn--accent" type="submit">Compute the ranking</button>
+        </form>
+      </div>
+    <% } else { %>
+      <div class="notice notice--<%= event.results_visibility === 'public' ? 'ok' : 'warn' %>" style="margin-bottom:20px">
+        <strong class="notice__title"><%= event.results_visibility === 'public' ? 'Published' : 'Private' %></strong>
+        <%= event.results_visibility === 'public'
+          ? 'The ranking is on the public event page. Individual judge scores remain private to the panel.'
+          : 'Only organizers can see this ranking. Publish it when you are ready.' %>
+      </div>
+
+      <div class="card" style="margin-bottom:20px">
+        <h2 class="card__title" style="margin-bottom:8px">Method</h2>
+        <p class="small muted" style="margin:0"><%= method %></p>
+        <p class="tiny muted" style="margin-top:10px">
+          Documented in <span class="mono">JUDGING.md</span>. It is a defensible, deterministic
+          aggregation, not a validated claim of statistical superiority.
+        </p>
+      </div>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="table-wrap" style="border:0">
+          <table class="data">
+            <thead>
+              <tr>
+                <th style="width:60px">Rank</th><th>Project</th><th>Track</th>
+                <th class="num">Reviews</th><th class="num">Raw</th><th class="num">Adjusted</th>
+                <th class="num">Final</th><th>State</th><th></th>
+              </tr>
+            </thead>
+            <tbody>
+              <% results.forEach(r => { %>
+                <tr>
+                  <td class="num"><strong><%= r.rank ? h.rankSuffix(r.rank) : '—' %></strong></td>
+                  <td>
+                    <span style="font-weight:560"><%= r.project_title %></span>
+                    <div class="tiny muted"><%= r.team_name %><%= (b(r).notes || []).length ? ' · ' + b(r).notes.join(' · ') : '' %></div>
+                  </td>
+                  <td class="small"><%= r.track_name %></td>
+                  <td class="num"><%= r.review_count %></td>
+                  <td class="num small"><%= r.raw_score != null ? Number(r.raw_score).toFixed(1) : '—' %></td>
+                  <td class="num small"><%= r.adjusted_score != null ? Number(r.adjusted_score).toFixed(1) : '—' %></td>
+                  <td class="num"><strong><%= r.final_score != null ? Number(r.final_score).toFixed(1) : '—' %></strong></td>
+                  <td><span class="tag <%= r.published_at ? 'tag--ok' : 'tag--warn' %>"><%= r.published_at ? 'published' : 'draft' %></span></td>
+                  <td class="nowrap">
+                    <a class="btn btn--ghost btn--sm" href="/host/events/<%= event.slug %>/projects/<%= r.project_id %>">Inspect</a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:20px">
+        <h2 class="card__title" style="margin-bottom:10px">Per-judge detail</h2>
+        <p class="small muted">
+          This is what the export contains and what you see as an organizer. It is never shown to
+          participants, and never to a judge for a peer.
+        </p>
+        <div class="table-wrap" style="margin-top:14px;border:0">
+          <table class="data">
+            <thead><tr><th>Project</th><th>Judges and scores</th></tr></thead>
+            <tbody>
+              <% results.forEach(r => { %>
+                <tr>
+                  <td class="small"><%= r.project_title %></td>
+                  <td class="small">
+                    <% (b(r).per_judge || []).forEach(pj => { %>
+                      <span class="tag tag--outline"><%= h.initials(pj.judge_email) %> <%= pj.score %></span>
+                    <% }) %>
+                    <% if (!(b(r).per_judge || []).length) { %><span class="muted">no reviews</span><% } %>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</section>

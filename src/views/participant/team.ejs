@@ -1,0 +1,151 @@
+<section class="page-head">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/teams">Your teams</a> <span aria-hidden="true">/</span>
+      <a href="/hackathons/<%= event.slug %>"><%= event.name %></a> <span aria-hidden="true">/</span>
+      <span class="muted"><%= team.name %></span>
+    </nav>
+    <div class="row row-wrap row-between" style="margin-top:18px;align-items:flex-start;gap:20px">
+      <div>
+        <h1><%= team.name %></h1>
+        <p class="small muted" style="margin-top:4px">
+          <%= event.name %> · you are the <%= role %> ·
+          submissions close <%= h.fmt.dateTime(event.submission_deadline) %>
+        </p>
+      </div>
+      <div class="row row-wrap">
+        <% if (project) { %>
+          <span class="tag <%= h.projectStatusTone(project.status) %>"><%= h.projectStatusLabel(project.status) %></span>
+          <a class="btn btn--primary" href="/teams/<%= team.id %>/project/<%= project.slug %>">
+            <%= project.status === 'draft' ? 'Continue the submission' : 'Edit submission' %>
+          </a>
+        <% } else if (state.canSubmit) { %>
+          <a class="btn btn--accent" href="/teams/<%= team.id %>/project/new">Start your project</a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <% if (saved) { %>
+      <div class="notice notice--ok" style="margin-bottom:20px"><%= saved === 'member-removed' ? 'Team member removed.' : 'Saved.' %></div>
+    <% } %>
+    <% if (submitted) { %>
+      <div class="notice notice--ok" style="margin-bottom:20px">
+        <strong class="notice__title">Submitted</strong>
+        The judges can see this project. You can still edit it until the deadline.
+      </div>
+    <% } %>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <div class="card__head">
+            <h2 class="card__title">Members</h2>
+            <span class="tag"><%= members.length %> / <%= event.max_team_size %></span>
+          </div>
+          <ul class="member-list">
+            <% members.forEach(m => { %>
+              <li class="person">
+                <span class="avatar avatar--sm" style="background:<%= h.avatarColor(m.avatar_seed) %>"><%= h.initials(m.display_name) %></span>
+                <span class="grow">
+                  <a class="person__name" href="/u/<%= m.username %>"><%= m.display_name %></a>
+                  <span class="person__meta">@<%= m.username %><%= m.team_role === 'owner' ? ' · team lead' : '' %></span>
+                </span>
+                <% if (m.team_role !== 'owner') { %>
+                  <form method="post" action="/teams/<%= team.id %>/remove-member" data-confirm="Remove <%= m.display_name %> from the team?">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <input type="hidden" name="user_id" value="<%= m.id %>">
+                    <button class="btn btn--quiet btn--sm" type="submit">Remove</button>
+                  </form>
+                <% } %>
+              </li>
+            <% }) %>
+          </ul>
+
+          <% if (members.length < event.max_team_size) { %>
+            <div class="invite-box">
+              <h3 class="invite-box__title">Invite somebody</h3>
+              <p class="small muted">Share this link. They need a Hackerly account, and the link only works for this hackathon.</p>
+              <div class="copy-row">
+                <input class="input mono" readonly value="<%= baseUrl %>/join?event=<%= event.slug %>&amp;team=<%= inviteCode %>" id="joinlink" aria-label="Team join link">
+                <button class="btn btn--ghost" type="button" data-copy="<%= baseUrl %>/join?event=<%= event.slug %>&amp;team=<%= inviteCode %>">Copy link</button>
+              </div>
+              <p class="tiny muted" style="margin-top:8px">Or tell them the team name: <strong><%= team.name %></strong></p>
+            </div>
+          <% } else { %>
+            <p class="small muted" style="margin-top:14px">This team is at the <%= event.max_team_size %> member limit for <%= event.name %>.</p>
+          <% } %>
+        </div>
+
+        <% if (project) { %>
+          <div class="card" style="margin-top:20px">
+            <div class="card__head">
+              <h2 class="card__title">Submission</h2>
+              <a class="btn btn--ghost btn--sm" href="/teams/<%= team.id %>/project/<%= project.slug %>">Open</a>
+            </div>
+            <dl class="kv">
+              <div><dt>Project</dt><dd><%= project.title %></dd></div>
+              <div><dt>Track</dt><dd><%= project.track_name || 'Not chosen' %></dd></div>
+              <div><dt>Status</dt><dd><%= h.projectStatusLabel(project.status) %></dd></div>
+              <% if (project.submitted_at) { %><div><dt>Submitted</dt><dd><%= h.fmt.dateTime(project.submitted_at) %></dd></div><% } %>
+            </dl>
+            <% if (issues.length) { %>
+              <div class="notice notice--warn" style="margin-top:16px">
+                <strong class="notice__title">Still missing</strong>
+                <ul style="margin:6px 0 0;padding-left:18px">
+                  <% issues.forEach(i => { %><li><%= i.message %></li><% }) %>
+                </ul>
+              </div>
+            <% } else if (project.status === 'draft') { %>
+              <div class="notice notice--ok" style="margin-top:16px">Everything required is filled in. Submit when you are ready.</div>
+            <% } %>
+          </div>
+        <% } %>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Team settings</h2>
+          <form method="post" action="/teams/<%= team.id %>">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field">
+              <label class="field__label" for="tname">Team name</label>
+              <input class="input" id="tname" name="name" value="<%= team.name %>" maxlength="60" required>
+            </div>
+            <div class="field">
+              <label class="field__label" for="tdesc">Description</label>
+              <textarea class="textarea" id="tdesc" name="description" maxlength="400" style="min-height:80px"><%= team.description %></textarea>
+            </div>
+            <button class="btn btn--primary btn--sm" type="submit">Save</button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Danger zone</h2>
+          <% if (role === 'owner') { %>
+            <% if (project && project.status !== 'draft') { %>
+              <p class="small muted">The team cannot be deleted because a project has been submitted. Ask the organizer if something needs to change.</p>
+            <% } else { %>
+              <p class="small muted">Deleting the team removes it for everybody. This cannot be undone.</p>
+              <form method="post" action="/teams/<%= team.id %>" data-confirm="Delete <%= team.name %> for everybody?">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <input type="hidden" name="action" value="delete">
+                <button class="btn btn--danger btn--sm" type="submit">Delete team</button>
+              </form>
+            <% } %>
+          <% } else { %>
+            <p class="small muted">Only the team lead can delete the team. You can leave it yourself.</p>
+            <form method="post" action="/teams/<%= team.id %>" data-confirm="Leave <%= team.name %>?">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="action" value="leave">
+              <button class="btn btn--ghost btn--sm" type="submit">Leave the team</button>
+            </form>
+          <% } %>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

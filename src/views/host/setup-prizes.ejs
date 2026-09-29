@@ -1,0 +1,63 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Step <%= stepIndex + 1 %> of <%= stepCount %></p>
+        <h1 style="font-size:1.6rem">Prizes and eligibility</h1>
+        <p class="small muted" style="margin:8px 0 0;max-width:60ch">Prize pools are shown on the discovery cards, so a specific number beats a vague promise.</p>
+      </div>
+      <% if (req.query.saved) { %><span class="tag tag--ok">Saved</span><% } %>
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <form method="post" action="/host/events/<%= event.slug %>/setup/prizes">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="prize_pool_cents">Prize pool</label>
+                <input class="input" id="prize_pool_cents" name="prize_pool_cents" value="<%= input.prizePoolCents || '' %>" inputmode="numeric" placeholder="50000000">
+                <p class="field__hint">In the smallest unit: 50000000 = ₹5,00,000. Or set a headline below.</p>
+              </div>
+              <div class="field">
+                <label class="field__label" for="prize_currency">Currency</label>
+                <select class="select" id="prize_currency" name="prize_currency">
+                  <% ['INR','USD','EUR','GBP','JPY'].forEach(c => { %>
+                    <option value="<%= c %>" <%= input.prizeCurrency === c ? 'selected' : '' %>><%= c %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="prize_headline">Prize headline</label>
+              <input class="input" id="prize_headline" name="prize_headline" value="<%= input.prizeHeadline %>" maxlength="60" placeholder="₹5,00,000 plus hardware">
+              <p class="field__hint">Overrides the number on cards. Use it when the pool includes things money cannot express.</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="eligibility">Who can take part</label>
+              <textarea class="textarea" id="eligibility" name="eligibility" maxlength="2000" style="min-height:120px" placeholder="Open to anyone with a Hackerly account. Participants must be 18 or over. One entry per person."><%= input.eligibility %></textarea>
+              <p class="field__hint">Shown on the event page. If you have age or region limits, this is where they belong.</p>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn--ghost" type="submit" name="_action" value="save">Save and stay</button>
+              <button class="btn btn--primary" type="submit" name="_action" value="next">Save and continue</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Preview</h2>
+          <p style="font-size:1.3rem;font-weight:640;letter-spacing:-.03em;margin:0 0 4px">
+            <%= input.prizeHeadline || (input.prizePoolCents ? h.fmt.money(input.prizePoolCents, input.prizeCurrency) : 'Prize pool to be announced') %>
+          </p>
+          <p class="tiny muted">This is what a discovery card will show.</p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,53 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Audit</p>
+        <h1 style="font-size:1.6rem">What happened, and who did it</h1>
+        <p class="small muted" style="margin:8px 0 0"><%= total %> recorded operations. This is the operational record, not a public feed.</p>
+      </div>
+      <a class="btn btn--ghost btn--sm" href="/host/events/<%= event.slug %>/export.csv?kind=audit">Export CSV</a>
+    </div>
+
+    <form class="filterbar" method="get" action="/host/events/<%= event.slug %>/audit" style="position:static;margin-bottom:20px">
+      <div class="filterbar__group">
+        <label class="sr-only" for="action">Action</label>
+        <select class="select" id="action" name="action" data-autosubmit>
+          <option value="">All operations</option>
+          <% actions.forEach(a => { %>
+            <option value="<%= a %>" <%= action === a ? 'selected' : '' %>><%= labels[a] || a %></option>
+          <% }) %>
+        </select>
+      </div>
+      <% if (action) { %><a class="btn btn--quiet" href="/host/events/<%= event.slug %>/audit">Clear</a><% } %>
+    </form>
+
+    <% if (!rows.length) { %>
+      <div class="empty">
+        <div class="empty__title">Nothing recorded yet</div>
+        <p class="empty__body">Configuration changes, judge invitations, assignments, submitted reviews and result publications all land here.</p>
+      </div>
+    <% } else { %>
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="table-wrap" style="border:0">
+          <table class="data">
+            <thead><tr><th>When</th><th>Who</th><th>Operation</th><th>Detail</th></tr></thead>
+            <tbody>
+              <% rows.forEach(a => { %>
+                <tr>
+                  <td class="small nowrap mono"><%= h.fmt.dateTime(a.created_at) %></td>
+                  <td class="small"><%= a.actor_label %></td>
+                  <td><span class="tag"><%= labels[a.action] || a.action %></span></td>
+                  <td class="small"><%= a.summary %><% if (a.ip) { %><div class="tiny muted mono"><%= a.ip %></div><% } %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <%- include('../partials/pager', { page, pages, base: '/host/events/' + event.slug + '/audit?action=' + encodeURIComponent(action) }) %>
+    <% } %>
+  </div>
+</section>

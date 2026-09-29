@@ -1,0 +1,63 @@
+<section class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Showcase</p>
+    <h1>Projects built at hackathons on Hackerly</h1>
+    <p class="lede" style="margin-top:14px">
+      <%= total %> <%= h.fmt.plural(total, 'project') %> from <%= events.length %> <%= h.fmt.plural(events.length, 'hackathon') %>.
+      Everything here was submitted through the platform and released by its organizers.
+    </p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <form class="filterbar" method="get" action="/projects">
+      <div class="filterbar__search">
+        <label class="sr-only" for="q">Search projects</label>
+        <input class="input" id="q" type="search" name="q" value="<%= filters.q %>" placeholder="Search project names and descriptions">
+      </div>
+      <div class="filterbar__group">
+        <label class="sr-only" for="event">Hackathon</label>
+        <select class="select" id="event" name="event">
+          <option value="">All hackathons</option>
+          <% events.forEach(e => { %>
+            <option value="<%= e.slug %>" <%= filters.event === e.slug ? 'selected' : '' %>><%= e.name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="filterbar__group">
+        <label class="sr-only" for="track">Track</label>
+        <select class="select" id="track" name="track">
+          <option value="">All tracks</option>
+          <% trackNames.forEach(([slug, name]) => { %>
+            <option value="<%= slug %>" <%= filters.track === slug ? 'selected' : '' %>><%= name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="filterbar__group">
+        <label class="sr-only" for="sort">Sort</label>
+        <select class="select" id="sort" name="sort">
+          <option value="recent" <%= filters.sort === 'recent' ? 'selected' : '' %>>Most recent</option>
+          <option value="oldest" <%= filters.sort === 'oldest' ? 'selected' : '' %>>Oldest first</option>
+        </select>
+      </div>
+      <button class="btn btn--primary" type="submit">Apply</button>
+      <% if (filters.q || filters.event || filters.track) { %><a class="btn btn--quiet" href="/projects">Reset</a><% } %>
+    </form>
+
+    <% if (!projects.length) { %>
+      <div class="empty" style="margin-top:28px">
+        <div class="empty__title">No projects match</div>
+        <p class="empty__body">Try clearing the filters, or browse the hackathons that are running now.</p>
+        <a class="btn btn--ghost" href="/projects">Show everything</a>
+      </div>
+    <% } else { %>
+      <div class="grid grid-auto" style="margin-top:26px">
+        <% projects.forEach(project => { %>
+          <%- include('../partials/project-card', { project }) %>
+        <% }) %>
+      </div>
+      <%- include('../partials/pager', { page, pages, base: '/projects?q=' + encodeURIComponent(filters.q) + '&event=' + filters.event + '&track=' + filters.track + '&sort=' + filters.sort }) %>
+    <% } %>
+  </div>
+</section>

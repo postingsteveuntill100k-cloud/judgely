@@ -1,0 +1,65 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Export</p>
+        <h1 style="font-size:1.6rem">Take the data with you</h1>
+        <p class="small muted" style="margin:8px 0 0;max-width:62ch">
+          CSV, generated from the database at the moment you click. Every download is written to the
+          audit log with your account and IP.
+        </p>
+      </div>
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card" style="padding:0;overflow:hidden">
+          <div class="table-wrap" style="border:0">
+            <table class="data">
+              <thead><tr><th>Export</th><th>What is in it</th><th class="num">Rows</th><th></th></tr></thead>
+              <tbody>
+                <% kinds.forEach(k => { %>
+                  <tr>
+                    <td><span style="font-weight:560"><%= k.label %></span><div class="tiny muted mono"><%= k.key %></div></td>
+                    <td class="small muted"><%= k.detail %></td>
+                    <td class="num"><%= counts[k.key] || 0 %></td>
+                    <td class="nowrap">
+                      <a class="btn btn--ghost btn--sm" href="/host/events/<%= event.slug %>/export.csv?kind=<%= k.key %>" <%= (counts[k.key] || 0) === 0 ? 'aria-disabled="true" tabindex="-1"' : '' %>>
+                        Download
+                      </a>
+                    </td>
+                  </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:20px">
+          <h2 class="card__title" style="margin-bottom:10px">Participants</h2>
+          <p class="small muted">Everyone registered or on a team, with their team and username.</p>
+          <a class="btn btn--ghost btn--sm" style="margin-top:12px" href="/api/events/<%= event.slug %>/participants.csv">Download participants.csv</a>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Who can export</h2>
+          <p class="small muted">
+            Only organizers of this hackathon. A participant or a judge asking for the same URL gets
+            a 403 from the backend, not a hidden button.
+          </p>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">The whole database</h2>
+          <p class="small muted">
+            On a self-hosted install the source of truth is the SQLite file in your data volume.
+            Copy it and you have everything, schema included.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

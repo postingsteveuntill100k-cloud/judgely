@@ -1,19 +1,65 @@
-version: '3.8'
+# Hackerly — one command, one volume, no cloud account.
+#
+#   docker compose up --build
+#
+# Brings up a working, seeded portal on http://localhost:8080 with the DOGFOOD
+# fixtures loaded and a small demo set seeded. The database is a file in the
+# `data` volume. Nothing here calls an external service.
 
 services:
-  judgely:
+  hackerly:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: judgely
-    ports:
-      - "8080:8080"
-    environment:
-      - PORT=8080
-      - NODE_ENV=production
-    volumes:
-      - judgely_data:/app/data
+    image: hackerly:1.0.0
+    container_name: hackerly
     restart: unless-stopped
+    ports:
+      - "${PORT:-8080}:8080"
+    environment:
+      NODE_ENV: production
+      PORT: "8080"
+      DATA_DIR: /data
+      SQLITE_FILE: /data/hackerly.db
+      FIXTURES_FILE: /app/fixtures.json
+      # Required in production. Change it for any real deployment.
+      SESSION_SECRET: ${SESSION_SECRET:-change-me-this-is-not-a-secret}
+      # Self-hosted defaults: no cloud calls, no analytics, no external auth.
+      SESSION_SECURE: ${SESSION_SECURE:-false}
+      TRUST_PROXY: ${TRUST_PROXY:-false}
+      CSRF_PROTECT: ${CSRF_PROTECT:-true}
+      RATE_LIMIT: ${RATE_LIMIT:-true}
+      LOG_JSON: ${LOG_JSON:-true}
+      LOG_LEVEL: ${LOG_LEVEL:-info}
+      SEED_ON_BOOT: ${SEED_ON_BOOT:-true}
+      SEED_DEMO: ${SEED_DEMO:-true}
+      SEED_FIXTURES: ${SEED_FIXTURES:-true}
+      # Acceptance accounts for the DOGFOOD checker. Off in production.
+      ACCEPTANCE_ACCOUNTS: ${ACCEPTANCE_ACCOUNTS:-false}
+      # Judge invitations are written to /data/outbox unless SMTP is configured.
+      MAIL_MODE: ${MAIL_MODE:-log}
+      # Optional Global mode on Google Cloud:
+      # DB_DRIVER: firestore
+      # FIREBASE_PROJECT_ID: your-project
+      # FIREBASE_CLIENT_EMAIL: firebase-adminsdk@your-project.iam.gserviceaccount.com
+      # FIREBASE_PRIVATE_KEY: |
+      #   -----BEGIN PRIVATE KEY-----
+      #   ...
+      #   -----END PRIVATE KEY-----
+    volumes:
+      - hackerly-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - "fetch('http://127.0.0.1:8080/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 25s
+    security_opt:
+      - no-new-privileges:true
 
 volumes:
-  judgely_data:
+  hackerly-data:

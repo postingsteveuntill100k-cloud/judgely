@@ -1,29 +1,48 @@
 {
-  "name": "judgely",
+  "name": "hackerly",
   "version": "1.0.0",
-  "description": "Judgely: open-source judging infrastructure for hackathons",
-  "main": "src/server.js",
-  "type": "commonjs",
-  "scripts": {
-    "start": "node src/server.js",
-    "seed": "node src/db/seeder.js",
-    "export:api": "node scripts/export_static_api.js",
-    "test": "node --test --test-concurrency=1 tests/*.test.js",
-    "check": "python3 run.py .dogfood.toml",
-    "deploy:firebase": "npm run export:api && firebase deploy --only hosting --project nexuslabs-b7b5e"
-  },
-  "keywords": [
-    "hackathon",
-    "judging",
-    "rubric",
-    "normalization",
-    "dogfood"
-  ],
-  "author": "Hackathon Raptors / Judgely Team",
+  "private": false,
+  "license": "MIT",
+  "description": "Hackerly — a self-hostable hackathon platform. Discovery for hackers, operations for hosts, focused review for judges.",
+  "type": "module",
   "engines": {
-    "node": ">=22.5.0"
+    "node": ">=20.11.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/server/index.js",
+    "dev": "node --watch dist/server/index.js",
+    "watch": "tsc -p tsconfig.json --watch",
+    "db:migrate": "node dist/server/db/cli.js migrate",
+    "db:seed": "node dist/server/db/cli.js seed",
+    "db:reset": "node dist/server/db/cli.js reset",
+    "acceptance:tokens": "node dist/server/db/cli.js tokens",
+    "test": "npm run build && node --test tests/*.test.js",
+    "loadtest": "node scripts/loadtest.mjs",
+    "deploy:firebase": "bash scripts/deploy-firebase.sh"
   },
   "dependencies": {
-    "express": "^4.21.2"
+    "better-sqlite3": "11.10.0",
+    "compression": "1.7.5",
+    "cookie-parser": "1.4.7",
+    "ejs": "3.1.10",
+    "express": "4.21.2",
+    "zod": "3.24.1"
+  },
+  "optionalDependencies": {
+    "firebase-admin": "13.0.2"
+  },
+  "devDependencies": {
+    "@types/better-sqlite3": "7.6.12",
+    "@types/compression": "1.7.5",
+    "@types/cookie-parser": "1.4.8",
+    "@types/ejs": "3.1.5",
+    "@types/express": "4.17.21",
+    "@types/node": "22.10.7",
+    "puppeteer-core": "^25.12.0",
+    "typescript": "5.7.3"
+  },
+  "allowScripts": {
+    "better-sqlite3@11.10.0": true
   }
 }

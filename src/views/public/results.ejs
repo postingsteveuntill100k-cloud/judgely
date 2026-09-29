@@ -1,0 +1,106 @@
+<%
+  const top = results.filter(r => r.rank && r.rank <= 3);
+  const rest = results.filter(r => !r.rank || r.rank > 3);
+%>
+<section class="results-hero">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/hackathons">Hackathons</a> <span aria-hidden="true">/</span>
+      <a href="/hackathons/<%= event.slug %>"><%= event.name %></a> <span aria-hidden="true">/</span>
+      <span class="muted">Results</span>
+    </nav>
+    <p class="eyebrow" style="margin-top:22px">Published results</p>
+    <h1><%= event.name %> — final ranking</h1>
+    <p class="lede" style="margin-top:12px">
+      <%= results.length %> <%= h.fmt.plural(results.length, 'project') %> ranked.
+      Released <%= h.fmt.dateTime(results[0] ? results[0].published_at : null) %>.
+      <% if (event.judging_mode === 'normalized') { %>
+        Scores are panel-difficulty adjusted with λ = <%= event.normalize_lambda %> and scaled inside each track.
+        <a href="/about#judging">Read the method</a>.
+      <% } else { %>
+        Scores are the mean of the assigned judges&rsquo; weighted rubric scores.
+        <a href="/about#judging">Read the method</a>.
+      <% } %>
+    </p>
+
+    <% if (top.length) { %>
+      <div class="results-podium">
+        <% top.forEach(r => { %>
+          <div class="podium podium--<%= r.rank %>">
+            <span class="podium__rank"><%= h.rankSuffix(r.rank) %></span>
+            <a class="podium__title" href="/hackathons/<%= event.slug %>/projects/<%= r.project_slug %>"><%= r.project_title %></a>
+            <span class="podium__team"><%= r.team_name %><% if (r.track_name) { %> · <%= r.track_name %><% } %></span>
+            <span class="podium__score"><%= r.final_score != null ? Number(r.final_score).toFixed(1) : '—' %></span>
+            <span class="podium__meta"><%= r.review_count %> <%= h.fmt.plural(r.review_count, 'review') %></span>
+          </div>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <% if (prizes.length) { %>
+      <div class="card" style="margin-bottom:28px">
+        <h2 class="card__title" style="margin-bottom:12px">Prizes</h2>
+        <div class="table-wrap" style="border:0">
+          <table class="data">
+            <thead><tr><th>Position</th><th>Project</th><th>Team</th><th class="num">Prize</th></tr></thead>
+            <tbody>
+              <% prizes.forEach(p => { %>
+                <tr>
+                  <td><%= p.rank_label || 'Winner' %></td>
+                  <td><a href="/hackathons/<%= event.slug %>/projects/<%= p.project_slug %>"><%= p.project_title %></a></td>
+                  <td class="muted small"><%= p.team_name %></td>
+                  <td class="num"><%= h.fmt.money(p.amount_cents, p.currency) %></td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% } %>
+
+    <h2 style="font-size:1.2rem;margin-bottom:14px">Full ranking</h2>
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr>
+            <th style="width:70px">Rank</th>
+            <th>Project</th>
+            <th>Team</th>
+            <th>Track</th>
+            <th class="num">Reviews</th>
+            <th class="num">Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% (rest.length ? rest : results).forEach(r => { %>
+            <tr>
+              <td class="num"><strong><%= r.rank ? h.rankSuffix(r.rank) : '—' %></strong></td>
+              <td>
+                <a href="/hackathons/<%= event.slug %>/projects/<%= r.project_slug %>" style="font-weight:560"><%= r.project_title %></a>
+                <% const b = h.breakdownOf(r); %>
+                <% if ((b.notes || []).length) { %>
+                  <div class="tiny muted"><%= b.notes.join(' · ') %></div>
+                <% } %>
+              </td>
+              <td class="small muted"><%= r.team_name %></td>
+              <td class="small"><%= r.track_name %></td>
+              <td class="num small"><%= r.review_count %></td>
+              <td class="num"><%= r.final_score != null ? Number(r.final_score).toFixed(1) : '—' %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="notice" style="margin-top:28px">
+      <strong class="notice__title">What is not shown here</strong>
+      Individual judges&rsquo; scores, comments and reviewer identities stay private to the panel and the organizers.
+      This page shows aggregated results only, exactly as configured by the organizer.
+      <% if (isOrganizer) { %> <a href="/host/events/<%= event.slug %>/results">Open the organizer results view</a>.<% } %>
+    </div>
+  </div>
+</section>

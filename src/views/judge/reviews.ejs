@@ -1,0 +1,64 @@
+<%- include('../partials/judge-head', { actor }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Queue</p>
+        <h1 style="font-size:1.6rem">My reviews</h1>
+        <p class="small muted" style="margin:8px 0 0">
+          <%= total %> assigned across <%= new Set(assignments.map(a => a.event_slug)).size %> <%= h.fmt.plural(new Set(assignments.map(a => a.event_slug)).size, 'hackathon') %>.
+          Only you and the organizers can see what you write.
+        </p>
+      </div>
+      <div class="tabs" style="border:0">
+        <a href="/judge/reviews" <%= filter === '' ? 'aria-current="page"' : '' %>>All</a>
+        <a href="/judge/reviews?status=open" <%= filter === 'open' ? 'aria-current="page"' : '' %>>To do</a>
+        <a href="/judge/reviews?status=done" <%= filter === 'done' ? 'aria-current="page"' : '' %>>Done</a>
+      </div>
+    </div>
+
+    <% if (!assignments.length) { %>
+      <div class="empty">
+        <div class="empty__title">Nothing assigned</div>
+        <p class="empty__body">When an organizer assigns you a project it appears here. You cannot open a project that is not in your queue.</p>
+        <a class="btn btn--ghost" href="/judge/events">My judging events</a>
+      </div>
+    <% } else { %>
+      <% if (nextUp) { %>
+        <div class="callout callout--accent">
+          <div>
+            <strong>Next up: <%= nextUp.project_title %></strong>
+            <p class="small" style="margin:4px 0 0"><%= nextUp.event_name %> · <%= nextUp.status %></p>
+          </div>
+          <a class="btn btn--primary" href="/judge/review/<%= nextUp.id %>">Start reviewing</a>
+        </div>
+      <% } %>
+
+      <div class="card" style="padding:0;overflow:hidden">
+        <div class="table-wrap" style="border:0">
+          <table class="data">
+            <thead><tr><th>Project</th><th>Hackathon</th><th>Status</th><th>Updated</th><th></th></tr></thead>
+            <tbody>
+              <% assignments.forEach(a => { %>
+                <tr>
+                  <td><span style="font-weight:560"><%= a.project_title %></span><div class="tiny muted"><%= a.team_name %><%= a.track_name ? ' · ' + a.track_name : '' %></div></td>
+                  <td class="small"><%= a.event_name %></td>
+                  <td>
+                    <span class="tag <%= a.status === 'submitted' ? 'tag--ok' : 'tag--warn' %>"><%= a.status %></span>
+                  </td>
+                  <td class="small nowrap"><%= a.review_submitted_at ? h.fmt.date(a.review_submitted_at) : h.fmt.ago(a.assigned_at) %></td>
+                  <td class="nowrap">
+                    <a class="btn <%= a.status === 'submitted' ? 'btn--ghost' : 'btn--primary' %> btn--sm" href="/judge/review/<%= a.id %>">
+                      <%= a.status === 'submitted' ? 'View review' : 'Review' %>
+                    </a>
+                  </td>
+                </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    <% } %>
+  </div>
+</section>

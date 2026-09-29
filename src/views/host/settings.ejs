@@ -1,0 +1,236 @@
+<%
+  const dt = (v) => { if (!v) return ''; const d = new Date(v); if (isNaN(d)) return ''; return d.toISOString().slice(0,16); };
+%>
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Settings</p>
+        <h1 style="font-size:1.6rem">Everything at once</h1>
+        <p class="small muted" style="margin:8px 0 0">The step-by-step wizard is friendlier. This page exists for when you already know the field you want.</p>
+      </div>
+      <% if (req.query.saved) { %><span class="tag tag--ok">Saved</span><% } %>
+    </div>
+
+    <form method="post" action="/host/events/<%= event.slug %>/settings">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+      <div class="ws">
+        <div class="ws__main">
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:16px">Identity</h2>
+            <div class="field">
+              <label class="field__label" for="name">Name<span class="field__req">*</span></label>
+              <input class="input" id="name" name="name" value="<%= event.name %>" required maxlength="90">
+            </div>
+            <div class="field">
+              <label class="field__label" for="tagline">Tagline</label>
+              <input class="input" id="tagline" name="tagline" value="<%= event.tagline %>" maxlength="160">
+            </div>
+            <div class="field">
+              <label class="field__label" for="description">Description<span class="field__req">*</span></label>
+              <textarea class="textarea" id="description" name="description" required maxlength="6000" style="min-height:180px"><%= event.description %></textarea>
+            </div>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="organizer_name">Organizer</label>
+                <input class="input" id="organizer_name" name="organizer_name" value="<%= event.organizer_name %>" maxlength="80">
+              </div>
+              <div class="field">
+                <label class="field__label" for="contact_email">Contact email</label>
+                <input class="input" id="contact_email" type="email" name="contact_email" value="<%= event.contact_email %>" maxlength="120">
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <h2 class="card__title" style="margin-bottom:16px">Dates</h2>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="registration_opens_at">Registration opens</label>
+                <input class="input" id="registration_opens_at" type="datetime-local" name="registration_opens_at" value="<%= dt(event.registration_opens_at) %>">
+              </div>
+              <div class="field">
+                <label class="field__label" for="registration_closes_at">Registration closes</label>
+                <input class="input" id="registration_closes_at" type="datetime-local" name="registration_closes_at" value="<%= dt(event.registration_closes_at) %>">
+              </div>
+              <div class="field">
+                <label class="field__label" for="starts_at">Event starts</label>
+                <input class="input" id="starts_at" type="datetime-local" name="starts_at" value="<%= dt(event.starts_at) %>">
+              </div>
+              <div class="field">
+                <label class="field__label" for="ends_at">Event ends</label>
+                <input class="input" id="ends_at" type="datetime-local" name="ends_at" value="<%= dt(event.ends_at) %>">
+              </div>
+              <div class="field">
+                <label class="field__label" for="submission_deadline">Submissions close<span class="field__req">*</span></label>
+                <input class="input" id="submission_deadline" type="datetime-local" name="submission_deadline" value="<%= dt(event.submission_deadline) %>" required>
+              </div>
+              <div class="field">
+                <label class="field__label" for="results_release_at">Results release</label>
+                <input class="input" id="results_release_at" type="datetime-local" name="results_release_at" value="<%= dt(event.results_release_at) %>">
+              </div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="timezone">Timezone label</label>
+              <input class="input" id="timezone" name="timezone" value="<%= event.timezone %>" maxlength="60">
+              <p class="field__hint">Display only. Everything is stored and compared in UTC.</p>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <h2 class="card__title" style="margin-bottom:16px">Rules</h2>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="min_team_size">Minimum team size</label>
+                <input class="input" id="min_team_size" type="number" name="min_team_size" min="1" max="20" value="<%= event.min_team_size %>">
+              </div>
+              <div class="field">
+                <label class="field__label" for="max_team_size">Maximum team size</label>
+                <input class="input" id="max_team_size" type="number" name="max_team_size" min="1" max="20" value="<%= event.max_team_size %>" required>
+              </div>
+              <div class="field">
+                <label class="field__label" for="allow_solo">Solo entries</label>
+                <select class="select" id="allow_solo" name="allow_solo">
+                  <option value="1" <%= event.allow_solo ? 'selected' : '' %>>Allowed</option>
+                  <option value="0" <%= event.allow_solo ? '' : 'selected' %>>Not allowed</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="format">Format</label>
+                <select class="select" id="format" name="format">
+                  <% ['online','offline','hybrid'].forEach(f => { %>
+                    <option value="<%= f %>" <%= event.format === f ? 'selected' : '' %>><%= h.formatLabel(f) %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <h2 class="card__title" style="margin-bottom:16px">Prizes</h2>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="prize_pool_cents">Prize pool</label>
+                <input class="input" id="prize_pool_cents" name="prize_pool_cents" value="<%= event.prize_pool_cents %>" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label class="field__label" for="prize_currency">Currency</label>
+                <select class="select" id="prize_currency" name="prize_currency">
+                  <% ['INR','USD','EUR','GBP','JPY'].forEach(c => { %>
+                    <option value="<%= c %>" <%= event.prize_currency === c ? 'selected' : '' %>><%= c %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="prize_headline">Prize headline</label>
+              <input class="input" id="prize_headline" name="prize_headline" value="<%= event.prize_headline %>" maxlength="60">
+            </div>
+            <div class="field">
+              <label class="field__label" for="eligibility">Eligibility</label>
+              <textarea class="textarea" id="eligibility" name="eligibility" maxlength="2000" style="min-height:100px"><%= event.eligibility %></textarea>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <h2 class="card__title" style="margin-bottom:16px">Visibility and judging</h2>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="public_listing">Discovery</label>
+                <select class="select" id="public_listing" name="public_listing">
+                  <option value="1" <%= event.public_listing ? 'selected' : '' %>>Listed publicly</option>
+                  <option value="0" <%= event.public_listing ? '' : 'selected' %>>Unlisted (URL only)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="showcase_visibility">Project showcase</label>
+                <select class="select" id="showcase_visibility" name="showcase_visibility">
+                  <option value="public" <%= event.showcase_visibility === 'public' ? 'selected' : '' %>>Public once submitted</option>
+                  <option value="hidden" <%= event.showcase_visibility === 'hidden' ? 'selected' : '' %>>Private</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="results_visibility">Results</label>
+                <select class="select" id="results_visibility" name="results_visibility">
+                  <option value="hidden" <%= event.results_visibility === 'hidden' ? 'selected' : '' %>>Private until published</option>
+                  <option value="public" <%= event.results_visibility === 'public' ? 'selected' : '' %>>Public once released</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="judging_mode">Aggregation</label>
+                <select class="select" id="judging_mode" name="judging_mode">
+                  <option value="raw" <%= event.judging_mode === 'raw' ? 'selected' : '' %>>Plain mean</option>
+                  <option value="normalized" <%= event.judging_mode === 'normalized' ? 'selected' : '' %>>Normalized</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="normalize_lambda">λ</label>
+                <input class="input" id="normalize_lambda" name="normalize_lambda" type="number" min="0" max="1" step="0.1" value="<%= event.normalize_lambda %>">
+              </div>
+              <div class="field">
+                <label class="field__label" for="require_approval">Registration approval</label>
+                <select class="select" id="require_approval" name="require_approval">
+                  <option value="0" <%= event.require_approval ? '' : 'selected' %>>Anyone can register</option>
+                  <option value="1" <%= event.require_approval ? 'selected' : '' %>>Record intent to review</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="cover_url">Cover image URL</label>
+              <input class="input" id="cover_url" name="cover_url" value="<%= event.cover_url %>">
+            </div>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="cover_style">Generated cover</label>
+                <select class="select" id="cover_style" name="cover_style">
+                  <% h.coverStyles.forEach(s => { %>
+                    <option value="<%= s.value %>" <%= event.cover_style === s.value ? 'selected' : '' %>><%= s.label %></option>
+                  <% }) %>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="accent_color">Accent</label>
+                <select class="select" id="accent_color" name="accent_color">
+                  <% h.accents.forEach(a => { %>
+                    <option value="<%= a.value %>" <%= event.accent_color === a.value ? 'selected' : '' %>><%= a.label %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn--primary" type="submit">Save all settings</button>
+          </div>
+        </div>
+
+        <aside class="ws__side">
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:10px">Organizers</h2>
+            <ul class="judge-list">
+              <% organizers.forEach(o => { %>
+                <li class="person">
+                  <span class="avatar avatar--sm" style="background:<%= h.avatarColor(o.avatar_seed) %>"><%= h.initials(o.display_name) %></span>
+                  <span class="grow">
+                    <span class="person__name"><%= o.display_name %></span>
+                    <span class="person__meta">@<%= o.username %> · <%= o.organizer_role %></span>
+                  </span>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:10px">Archive</h2>
+            <p class="small muted">Archiving removes the event from discovery and closes it permanently. The data stays.</p>
+            <form method="post" action="/host/events/<%= event.slug %>/archive" style="margin-top:12px" data-confirm="Archive <%= event.name %>? It leaves discovery and submissions close for good.">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn--danger btn--block" type="submit">Archive this hackathon</button>
+            </form>
+          </div>
+        </aside>
+      </div>
+    </form>
+  </div>
+</section>

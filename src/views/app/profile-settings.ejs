@@ -1,0 +1,102 @@
+<section class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Account</p>
+    <h1>Profile settings</h1>
+    <p class="lede" style="margin-top:12px">
+      This is what judges and other participants see. A username and a sentence about what you build is usually enough.
+    </p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <% if (req.query.welcome === '1') { %>
+      <div class="notice notice--ok" style="margin-bottom:22px">
+        <strong class="notice__title">Account created</strong>
+        Fill in a name and a username and you are ready to register for a hackathon.
+      </div>
+    <% } %>
+    <% if (saved) { %><div class="notice notice--ok" style="margin-bottom:22px">Profile saved.</div><% } %>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <form method="post" action="/settings/profile">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="display_name">Display name<span class="field__req">*</span></label>
+                <input class="input" id="display_name" name="display_name" value="<%= user.display_name %>" required maxlength="60">
+              </div>
+              <div class="field">
+                <label class="field__label" for="username">Username<span class="field__req">*</span></label>
+                <input class="input" id="username" name="username" value="<%= user.username %>" required maxlength="24" pattern="[a-zA-Z][a-zA-Z0-9_-]{2,23}" autocomplete="username">
+                <p class="field__hint">Your public handle: /u/<%= user.username %></p>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="headline">Headline</label>
+              <input class="input" id="headline" name="headline" value="<%= user.headline %>" maxlength="90" placeholder="Backend engineer, mostly Postgres">
+            </div>
+            <div class="field">
+              <label class="field__label" for="bio">About you</label>
+              <textarea class="textarea" id="bio" name="bio" maxlength="500" placeholder="What do you build, and what are you looking for in a team?"><%= user.bio %></textarea>
+            </div>
+            <div class="field">
+              <label class="field__label" for="location">Location</label>
+              <input class="input" id="location" name="location" value="<%= user.location %>" maxlength="60" placeholder="Bengaluru">
+            </div>
+            <div class="field">
+              <label class="field__label" for="avatar_url">Profile image URL</label>
+              <input class="input" id="avatar_url" name="avatar_url" value="<%= user.avatar_url %>" placeholder="https://…/me.png">
+              <p class="field__hint">Leave it empty and Hackerly generates an avatar from your name. Only https images are accepted.</p>
+            </div>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="website_url">Website</label>
+                <input class="input" id="website_url" name="website_url" value="<%= user.website_url %>" placeholder="https://example.com">
+              </div>
+              <div class="field">
+                <label class="field__label" for="github_url">GitHub</label>
+                <input class="input" id="github_url" name="github_url" value="<%= user.github_url %>" placeholder="https://github.com/you">
+              </div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="linkedin_url">LinkedIn</label>
+              <input class="input" id="linkedin_url" name="linkedin_url" value="<%= user.linkedin_url %>" placeholder="https://linkedin.com/in/you">
+            </div>
+            <button class="btn btn--primary" type="submit">Save profile</button>
+          </form>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:12px">Preview</h2>
+          <div class="person">
+            <span class="avatar avatar--lg" style="background:<%= h.avatarColor(user.avatar_seed) %>"><%= h.initials(user.display_name) %></span>
+            <span>
+              <span class="person__name" style="font-size:1rem"><%= user.display_name %></span>
+              <span class="person__meta mono">@<%= user.username %></span>
+            </span>
+          </div>
+          <p class="small" style="margin-top:12px"><%= user.headline || 'No headline yet.' %></p>
+          <p class="small muted"><%= user.bio || 'No bio yet.' %></p>
+          <a class="btn btn--ghost btn--block" style="margin-top:12px" href="/u/<%= user.username %>">View public profile</a>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Account</h2>
+          <dl class="kv">
+            <div><dt>Email</dt><dd><%= user.email %></dd></div>
+            <div><dt>Sign-in method</dt><dd><%= user.auth_provider === 'firebase' ? 'Google (Firebase)' : 'Email and password' %></dd></div>
+            <div><dt>Member since</dt><dd><%= h.fmt.date(user.created_at) %></dd></div>
+          </dl>
+          <p class="tiny muted" style="margin-top:12px">
+            Password changes and account deletion are handled by an operator on a self-hosted install, or through Firebase when Google sign-in is enabled.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

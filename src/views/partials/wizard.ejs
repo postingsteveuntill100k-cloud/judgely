@@ -1,0 +1,12 @@
+<%
+  const doneSteps = { basics: event.name && event.description.length >= 40, dates: Boolean(event.submission_deadline && event.starts_at), prizes: true, teams: true, tracks: counts ? true : false, submission: true, judging: false, rules: Boolean(event.rules_md), branding: true, publish: false };
+%>
+<div class="wizard-steps" role="navigation" aria-label="Setup steps">
+  <% steps.forEach((s, i) => { %>
+    <a href="/host/events/<%= event.slug %>/setup/<%= s.key %>"
+       <%= s.key === step ? 'aria-current="step"' : '' %>
+       class="<%= doneSteps[s.key] ? 'done' : '' %>">
+      <span class="n"><%= i + 1 %></span> <%= s.label %>
+    </a>
+  <% }) %>
+</div>

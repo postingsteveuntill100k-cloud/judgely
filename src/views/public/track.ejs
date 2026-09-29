@@ -1,0 +1,37 @@
+<section class="page-head">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/projects">Showcase</a> <span aria-hidden="true">/</span>
+      <a href="/hackathons/<%= event.slug %>"><%= event.name %></a> <span aria-hidden="true">/</span>
+      <span class="muted"><%= track.name %></span>
+    </nav>
+    <p class="eyebrow" style="margin-top:22px">Track</p>
+    <h1><%= track.name %></h1>
+    <% if (track.description) { %><p class="lede" style="margin-top:12px"><%= track.description %></p><% } %>
+    <% if (track.prize_text) { %><p style="margin-top:14px"><span class="tag tag--accent"><%= track.prize_text %></span></p><% } %>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="row row-wrap" style="gap:6px;margin-bottom:26px">
+      <a class="tag <%= !track ? 'tag--outline' : 'tag' %>" href="/hackathons/<%= event.slug %>/projects">All tracks</a>
+      <% tracks.forEach(t => { %>
+        <a class="tag <%= track && t.id === track.id ? 'tag--accent' : 'tag--outline' %>" href="/hackathons/<%= event.slug %>/tracks/<%= t.slug %>"><%= t.name %></a>
+      <% }) %>
+    </div>
+
+    <% if (!total) { %>
+      <div class="empty">
+        <div class="empty__title">No projects in this track yet</div>
+        <p class="empty__body">Nothing has been submitted to <%= track.name %>. Check back, or enter a different track.</p>
+      </div>
+    <% } else { %>
+      <div class="grid grid-auto">
+        <% projects.forEach(project => { %>
+          <%- include('../partials/project-card', { project }) %>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>

@@ -1,0 +1,69 @@
+<section class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Discovery</p>
+    <h1>Explore hackathons</h1>
+    <p class="lede" style="margin-top:14px">
+      <% if (openCount > 0) { %>
+        <%= openCount %> of these <%= total %> accept registration right now. Everything on this page is public — you only need an account to register or submit.
+      <% } else { %>
+        <%= total %> <%= h.fmt.plural(total, 'hackathon') %> on this install. Registration is closed on all of them at the moment.
+      <% } %>
+    </p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <form class="filterbar" method="get" action="/hackathons">
+      <div class="filterbar__search">
+        <label class="sr-only" for="q">Search</label>
+        <input class="input" id="q" type="search" name="q" value="<%= filters.q %>" placeholder="Search hackathons">
+      </div>
+      <div class="filterbar__group">
+        <label class="sr-only" for="status">Status</label>
+        <select class="select" id="status" name="status">
+          <option value="" <%= filters.status === '' ? 'selected' : '' %>>Any status</option>
+          <option value="open" <%= filters.status === 'open' ? 'selected' : '' %>>Registration open</option>
+          <option value="live" <%= filters.status === 'live' ? 'selected' : '' %>>Hacking now</option>
+          <option value="closed" <%= filters.status === 'closed' ? 'selected' : '' %>>Judging or results</option>
+        </select>
+      </div>
+      <div class="filterbar__group">
+        <label class="sr-only" for="format">Format</label>
+        <select class="select" id="format" name="format">
+          <option value="" <%= filters.format === '' ? 'selected' : '' %>>Any format</option>
+          <option value="online" <%= filters.format === 'online' ? 'selected' : '' %>>Online</option>
+          <option value="offline" <%= filters.format === 'offline' ? 'selected' : '' %>>In person</option>
+          <option value="hybrid" <%= filters.format === 'hybrid' ? 'selected' : '' %>>Hybrid</option>
+        </select>
+      </div>
+      <div class="filterbar__group">
+        <label class="sr-only" for="order">Sort</label>
+        <select class="select" id="order" name="order">
+          <option value="soon" <%= filters.order === 'soon' ? 'selected' : '' %>>Starting soonest</option>
+          <option value="prize" <%= filters.order === 'prize' ? 'selected' : '' %>>Biggest prize pool</option>
+          <option value="ending" <%= filters.order === 'ending' ? 'selected' : '' %>>Ending soonest</option>
+        </select>
+      </div>
+      <button class="btn btn--primary" type="submit">Apply</button>
+      <% if (filters.q || filters.status || filters.format || filters.order !== 'soon') { %>
+        <a class="btn btn--quiet" href="/hackathons">Reset</a>
+      <% } %>
+    </form>
+
+    <% if (!events.length) { %>
+      <div class="empty" style="margin-top:28px">
+        <div class="empty__title">Nothing matches those filters</div>
+        <p class="empty__body">Try clearing the search, or browse everything that is published.</p>
+        <a class="btn btn--ghost" href="/hackathons">Show all hackathons</a>
+      </div>
+    <% } else { %>
+      <div class="grid grid-auto-lg" style="margin-top:26px">
+        <% events.forEach(event => { %>
+          <%- include('../partials/event-card', { event, state: event.state, counts: counts ? counts[event.id] : null }) %>
+        <% }) %>
+      </div>
+      <%- include('../partials/pager', { page, pages, base: '/hackathons?q=' + encodeURIComponent(filters.q) + '&status=' + filters.status + '&format=' + filters.format + '&order=' + filters.order }) %>
+    <% } %>
+  </div>
+</section>

@@ -1,0 +1,71 @@
+<%
+  const dt = (v) => { if (!v) return ''; const d = new Date(v); if (isNaN(d)) return ''; return d.toISOString().slice(0,16); };
+  const f = (label, id, value, hint, required) => `
+    <div class="field">
+      <label class="field__label" for="${id}">${label}${required ? '<span class="field__req">*</span>' : ''}</label>
+      <input class="input" id="${id}" type="datetime-local" name="${id}" value="${dt(value)}"${required ? ' required' : ''}>
+      <p class="field__hint">${hint}</p>
+    </div>`;
+%>
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Step <%= stepIndex + 1 %> of <%= stepCount %></p>
+        <h1 style="font-size:1.6rem">Dates</h1>
+        <p class="small muted" style="margin:8px 0 0;max-width:60ch">
+          Everything is stored in UTC. Only the submission deadline is required, because the server
+          has to know when to refuse writes.
+        </p>
+      </div>
+      <% if (req.query.saved) { %><span class="tag tag--ok">Saved</span><% } %>
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <form method="post" action="/host/events/<%= event.slug %>/setup/dates">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="grid grid-2" style="gap:0 24px">
+              <%- f('Registration opens', 'registration_opens_at', input.registrationOpensAt, 'Before this, participants can read the page but not register.') %>
+              <%- f('Registration closes', 'registration_closes_at', input.registrationClosesAt, 'After this, new registrations are refused by the server.') %>
+              <%- f('Build window opens', 'starts_at', input.startsAt, 'When hacking starts. Shown as the event start date.') %>
+              <%- f('Build window closes', 'ends_at', input.endsAt, 'The event end date.') %>
+              <%- f('Submissions close', 'submission_deadline', input.submissionDeadline, 'The server refuses any submission or edit after this moment. This is the rule participants care about most.', true) %>
+              <%- f('Judging closes', 'judging_ends_at', input.judgingEndsAt, 'When you expect the panel to be finished.') %>
+              <%- f('Results published', 'results_release_at', input.resultsReleaseAt, 'Shown on the public page as the planned release date. Publishing earlier is always allowed.') %>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn--ghost" type="submit" name="_action" value="save">Save and stay</button>
+              <button class="btn btn--primary" type="submit" name="_action" value="next">Save and continue</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Current state</h2>
+          <dl class="kv">
+            <div><dt>Registration</dt><dd><%= state.registration %></dd></div>
+            <div><dt>Submissions</dt><dd><%= state.submissions %></dd></div>
+            <div><dt>Judging</dt><dd><%= state.judging %></dd></div>
+          </dl>
+          <% if (state.nextDeadline) { %>
+            <p class="small" style="margin-top:12px"><strong><%= state.nextDeadline.label %></strong><br><%= h.fmt.dateTime(state.nextDeadline.at) %></p>
+          <% } %>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">How the deadline works</h2>
+          <p class="small muted">
+            The server compares the current time with the submission deadline on every write. A
+            participant with an open tab at the deadline gets the same refusal as somebody posting
+            a raw request an hour later.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

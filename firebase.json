@@ -1,129 +1,63 @@
 {
+  "functions": {
+    "source": "functions",
+    "runtime": "nodejs22",
+    "predeploy": [
+      "npm --prefix \"$RESOURCE_DIR/..\" run build"
+    ],
+    "ignore": [
+      "node_modules",
+      ".git",
+      "**/*.local",
+      "acceptance-report.txt"
+    ]
+  },
   "hosting": {
+    "target": "judgely",
     "public": "public",
     "cleanUrls": true,
+    "trailingSlash": false,
     "ignore": [
       "firebase.json",
       "**/.*",
       "**/node_modules/**"
     ],
-    "headers": [
-      {
-        "source": "**",
-        "headers": [
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
-          }
-        ]
-      },
-      {
-        "source": "/api/**",
-        "headers": [
-          {
-            "key": "Content-Type",
-            "value": "application/json"
-          },
-          {
-            "key": "Access-Control-Allow-Origin",
-            "value": "*"
-          },
-          {
-            "key": "Cache-Control",
-            "value": "no-cache, no-store, must-revalidate"
-          }
-        ]
-      }
-    ],
     "rewrites": [
       {
-        "source": "/api/auth/config",
-        "destination": "/api/auth/config.json"
-      },
-      {
-        "source": "/api/auth/me",
-        "destination": "/api/auth/me.json"
-      },
-      {
-        "source": "/api/events",
-        "destination": "/api/events.json"
-      },
-      {
-        "source": "/api/events/:id",
-        "destination": "/api/event.json"
-      },
-      {
-        "source": "/api/event",
-        "destination": "/api/event.json"
-      },
-      {
-        "source": "/api/tracks",
-        "destination": "/api/tracks.json"
-      },
-      {
-        "source": "/api/projects",
-        "destination": "/api/projects.json"
-      },
-      {
-        "source": "/api/projects/:id",
-        "destination": "/api/project_details/:id.json"
-      },
-      {
-        "source": "/api/results",
-        "destination": "/api/results.json"
-      },
-      {
-        "source": "/api/organizer/overview",
-        "destination": "/api/organizer/overview.json"
-      },
-      {
-        "source": "/api/organizer/health",
-        "destination": "/api/organizer/health.json"
-      },
-      {
-        "source": "/api/organizer/projects",
-        "destination": "/api/organizer/projects.json"
-      },
-      {
-        "source": "/api/organizer/teams",
-        "destination": "/api/organizer/teams.json"
-      },
-      {
-        "source": "/api/organizer/judges",
-        "destination": "/api/organizer/judges.json"
-      },
-      {
-        "source": "/api/organizer/assignments",
-        "destination": "/api/organizer/assignments.json"
-      },
-      {
-        "source": "/api/organizer/rubric",
-        "destination": "/api/organizer/rubric.json"
-      },
-      {
-        "source": "/api/organizer/audit",
-        "destination": "/api/organizer/audit.json"
-      },
-      {
-        "source": "/api/judge/assignments",
-        "destination": "/api/judge/assignments.json"
-      },
-      {
-        "source": "/api/fixtures",
-        "destination": "/fixtures.json"
-      },
-      {
-        "source": "/projects",
-        "destination": "/index.html"
-      },
-      {
-        "source": "/login",
-        "destination": "/index.html"
-      },
-      {
-        "source": "!/api/**",
+        "source": "**",
         "destination": "/index.html"
       }
+    ],
+    "headers": [
+      {
+        "source": "/css/**",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=604800" }
+        ]
+      },
+      {
+        "source": "/js/**",
+        "headers": [
+          { "key": "Cache-Control", "value": "public, max-age=604800" }
+        ]
+      },
+      {
+        "source": "**/*.@(ejs|js|map)",
+        "headers": [
+          { "key": "Cache-Control", "value": "no-store" }
+        ]
+      }
     ]
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "emulators": {
+    "auth": { "port": 9099 },
+    "firestore": { "port": 8085 },
+    "hosting": { "port": 5005 },
+    "ui": { "enabled": true, "port": 4001 },
+    "singleProjectMode": true
   }
 }

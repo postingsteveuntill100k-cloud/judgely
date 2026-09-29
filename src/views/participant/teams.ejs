@@ -1,0 +1,91 @@
+<section class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Participating</p>
+    <h1>Your teams</h1>
+    <p class="lede" style="margin-top:12px">
+      <% if (teams.length) { %>
+        Every team you belong to, and where each one is with its submission.
+      <% } else if (canStart && canStart.length) { %>
+        You are registered for a hackathon but not on a team yet. Start one, or wait for an invitation.
+      <% } else { %>
+        You are not on a team yet. Register for a hackathon first, then create or join a team.
+      <% } %>
+    </p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <% if (!teams.length) { %>
+      <div class="empty">
+        <div class="empty__title">No teams yet</div>
+        <% if (canStart && canStart.length) { %>
+          <p class="empty__body">You are registered for these. Start a team, or wait for somebody to invite you.</p>
+          <div class="row row-wrap" style="justify-content:center;margin-top:16px">
+            <% canStart.forEach(c => { %>
+              <a class="btn btn--accent" href="/teams/new/<%= c.event.slug %>">Start a team for <%= c.event.name %></a>
+            <% }) %>
+            <a class="btn btn--ghost" href="/join">Join with an invite</a>
+          </div>
+        <% } else { %>
+          <p class="empty__body">Join a hackathon, then create a team or join one that already exists. Solo entries are allowed on most events.</p>
+          <div class="row row-wrap" style="justify-content:center">
+            <a class="btn btn--accent" href="/hackathons">Find a hackathon</a>
+            <a class="btn btn--ghost" href="/join">Join with an invite</a>
+          </div>
+        <% } %>
+      </div>
+    <% } else { %>
+      <div class="grid grid-2">
+        <% teams.forEach(t => { %>
+          <article class="card">
+            <div class="row row-between" style="align-items:flex-start">
+              <div>
+                <h2 class="card__title" style="font-size:1.1rem"><%= t.name %></h2>
+                <p class="small muted" style="margin:2px 0 0"><a href="/hackathons/<%= t.event_slug %>"><%= t.event_name %></a> · you are the <%= t.my_team_role %></p>
+              </div>
+              <% if (t.projects[0]) { %>
+                <span class="tag <%= h.projectStatusTone(t.projects[0].status) %>"><%= h.projectStatusLabel(t.projects[0].status) %></span>
+              <% } else { %>
+                <span class="tag tag--warn">No project</span>
+              <% } %>
+            </div>
+
+            <% if (t.description) { %><p class="small" style="margin-top:10px;color:var(--ink-2)"><%= t.description %></p><% } %>
+
+            <div class="row row-wrap" style="margin-top:14px;gap:6px">
+              <% t.members.forEach(m => { %>
+                <span class="person" style="gap:6px">
+                  <span class="avatar avatar--xs" style="background:<%= h.avatarColor(m.avatar_seed) %>"><%= h.initials(m.display_name) %></span>
+                  <span class="tiny"><%= m.display_name %></span>
+                </span>
+              <% }) %>
+            </div>
+
+            <% if (t.issues && t.issues.length && t.projects[0]) { %>
+              <div class="notice notice--warn" style="margin-top:14px">
+                <strong class="notice__title">Your submission is not complete</strong>
+                <ul style="margin:6px 0 0;padding-left:18px">
+                  <% t.issues.forEach(i => { %><li><%= i.message %></li><% }) %>
+                </ul>
+              </div>
+            <% } %>
+
+            <div class="row row-wrap" style="margin-top:16px">
+              <a class="btn btn--primary btn--sm" href="/teams/<%= t.id %>">Open team</a>
+              <% if (t.projects[0]) { %>
+                <a class="btn btn--ghost btn--sm" href="/teams/<%= t.id %>/project/<%= t.projects[0].slug %>">Edit submission</a>
+              <% } else if (t.state && t.state.canSubmit) { %>
+                <a class="btn btn--ghost btn--sm" href="/teams/<%= t.id %>/project/new">Start a project</a>
+              <% } %>
+              <% if (t.state && !t.state.canSubmit && !t.projects[0]) { %>
+                <span class="tiny muted">Submissions are closed for this hackathon.</span>
+              <% } %>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+      <p style="margin-top:28px"><a class="btn btn--ghost" href="/join">Join another team with an invite</a></p>
+    <% } %>
+  </div>
+</section>

@@ -1,0 +1,82 @@
+<section class="page-head">
+  <div class="wrap">
+    <p class="eyebrow eyebrow--accent">Host a hackathon</p>
+    <h1>Choose how you are running it</h1>
+    <p class="lede" style="margin-top:14px">
+      This is not a theme choice. It decides where the data lives, how participants find the
+      event, and what Hackerly has to be able to survive.
+    </p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <% if (locals.error) { %>
+      <div class="notice notice--danger" role="alert" style="margin-bottom:24px;max-width:640px">
+        <strong class="notice__title">Could not create hackathon</strong>
+        <%= error %>
+      </div>
+    <% } %>
+
+    <form method="post" action="/host/events/new" id="new-event">
+      <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+      <div class="grid grid-2" style="gap:20px">
+        <label class="mode-card mode-pick" data-mode="local">
+          <input type="radio" name="mode" value="local" class="sr-only" <%= (locals.values && values.mode === 'local') || req.query.mode === 'local' ? 'checked' : '' %>>
+          <div class="mode-card__head">
+            <span class="mode-card__tag">Local</span>
+          </div>
+          <h2>Local hackathon</h2>
+          <p>
+            For a physical event: a college fest, a company offsite, a community build night.
+            It runs on a machine you control, with a database file, and keeps working when the
+            venue wifi does not.
+          </p>
+          <ul class="check-list check-list--sm" style="margin-top:16px">
+            <li>One process, one SQLite file, no external service</li>
+            <li>Local accounts — no Google sign-in, no internet needed</li>
+            <li>Judge invitations printed from an outbox instead of emailed</li>
+            <li>Judging happens in the room, in the same interface</li>
+            <li>Export the database at the end and you own everything</li>
+          </ul>
+          <span class="mode-pick__cta">Create a local hackathon →</span>
+        </label>
+
+        <label class="mode-card mode-card--alt mode-pick" data-mode="global">
+          <input type="radio" name="mode" value="global" class="sr-only" <%= (locals.values && values.mode === 'global') || req.query.mode === 'global' || (!req.query.mode && !(locals.values && values.mode === 'local')) ? 'checked' : '' %>>
+          <div class="mode-card__head">
+            <span class="mode-card__tag">Global</span>
+          </div>
+          <h2>Global hackathon</h2>
+          <p>
+            For a public event on the open internet. Participants find it, register from anywhere,
+            teams work in parallel and a panel of judges works through the submissions together.
+          </p>
+          <ul class="check-list check-list--sm" style="margin-top:16px">
+            <li>Public discovery and a full event microsite per hackathon</li>
+            <li>Firestore-backed storage when deployed on Google Cloud</li>
+            <li>Paginated reads, caching and rate limiting on the public paths</li>
+            <li>Email judge invitations, with acceptance tracking</li>
+            <li>A public showcase and published results afterwards</li>
+          </ul>
+          <span class="mode-pick__cta">Create a global hackathon →</span>
+        </label>
+      </div>
+
+      <div class="card" style="margin-top:24px;max-width:640px">
+        <h2 class="card__title" style="margin-bottom:14px">Name it</h2>
+        <div class="field">
+          <label class="field__label" for="name">Hackathon name</label>
+          <input class="input" id="name" name="name" maxlength="90" placeholder="HACKTRON 2026" value="<%= (locals.values && values.name) || '' %>" data-slug-source required autofocus>
+          <p class="field__hint">You can change everything later. hackerly.local/hackathons/<span class="mono" data-slug-target>your-hackathon</span></p>
+        </div>
+        <div class="field">
+          <label class="field__label" for="tagline">Tagline</label>
+          <input class="input" id="tagline" name="tagline" maxlength="160" placeholder="Build. Break. Ship." value="<%= (locals.values && values.tagline) || '' %>">
+        </div>
+        <button class="btn btn--accent btn--lg" type="submit">Continue to setup</button>
+      </div>
+    </form>
+  </div>
+</section>

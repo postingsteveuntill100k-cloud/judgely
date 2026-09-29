@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= title %> · Hackerly</title>
+<link rel="stylesheet" href="/css/app.css">
+</head>
+<body>
+  <main style="min-height:100vh;display:grid;place-items:center;padding:24px">
+    <div style="max-width:52ch;width:100%">
+      <div class="brand" style="justify-content:center;margin-bottom:28px">
+        <span class="brand__mark" aria-hidden="true">H</span><span>Hackerly</span>
+      </div>
+      <p class="eyebrow">Error <%= status %><% if (code) { %> · <%= code %><% } %></p>
+      <h1 style="font-size:clamp(1.7rem,4.5vw,2.4rem);margin-bottom:14px"><%= message %></h1>
+      <% if (detail) { %><p class="lede" style="margin-bottom:22px"><%= detail %></p><% } %>
+      <% if (Array.isArray(issues) && issues.length) { %>
+        <ul style="margin:0 0 22px;padding-left:20px;color:var(--ink-2);font-size:.92rem">
+          <% issues.forEach(i => { %><li><%= i.message %></li><% }) %>
+        </ul>
+      <% } %>
+      <div class="row row-wrap" style="margin-top:26px">
+        <% if (backTo) { %><a class="btn btn--ghost" href="<%= backTo %>">Go back</a><% } %>
+        <a class="btn btn--primary" href="/dashboard">Go to my dashboard</a>
+        <a class="btn btn--ghost" href="/hackathons">Browse hackathons</a>
+      </div>
+      <% if (status >= 500) { %>
+        <p class="small muted" style="margin-top:26px">
+          This one is on us. The error has been written to the server log with a request id.
+        </p>
+      <% } %>
+    </div>
+  </main>
+</body>
+</html>

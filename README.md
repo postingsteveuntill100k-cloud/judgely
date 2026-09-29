@@ -1,115 +1,114 @@
-# Judgely
+# Hackerly
 
-> **Open-source judging infrastructure for hackathons: transparent assignments, defensible scoring, explainable normalization, auditable decisions, and self-hosted operation.**
+A self-hostable hackathon platform. Discovery for hackers, operations for
+hosts, focused review for judges.
 
-- **GitHub Repository**: [https://github.com/postingsteveuntill100k-cloud/judgely](https://github.com/postingsteveuntill100k-cloud/judgely)
-- **Live Demo (NexusLabs Firebase Hosting)**: [https://nexuslabs-b7b5e.web.app](https://nexuslabs-b7b5e.web.app)
-
-Judgely is a self-hostable submission and judging platform built for **DOGFOOD 2026**. It provides an integrated event lifecycle with backend-enforced role isolation, cross-judge Z-score normalization, judging health anomaly detection, automated acceptance verification, and a modern clean White/Off-White/Slate technical design system.
-
----
-
-## Architecture & Workspaces
-
-Judgely separates the hackathon lifecycle into four first-class, dedicated workspaces:
-
-1. **Public Event Showcase**:
-   - Event hero overview with real-time participation statistics (projects, tracks, judges).
-   - Filterable project gallery with live keyword search and track pill selectors.
-   - Server-side pre-rendered project cards for immediate crawler and checker compatibility.
-   - Slide-over project drawer with team rosters, repo links, and embargoed/released standings.
-2. **Participant Workspace (Hack2Skill Inspired)**:
-   - Milestone roadmap tracking: Registration → Team Formation → Submission → Review → Results.
-   - First-class team management with member roles (`Lead`, `Member`) and ownership semantics.
-   - Project submission manager with input validation, URL protocol sanitization, and live status tracking.
-3. **Judge Workspace**:
-   - Calm, focused evaluation queue displaying workload telemetry (assigned, completed, remaining).
-   - Authoritative rubric evaluation form derived directly from event database rubric criteria.
-   - Strict role isolation: judges evaluate independently; peer scores and comments are never leaked.
-4. **Organizer Operations Command Center**:
-   - Operational review coverage telemetry with interactive coverage distribution visualization.
-   - Explainable integrity anomaly detector flagging zero-variance grading (`jdg_07`), duplicate submissions (`tm_07`), and high inter-judge variance.
-   - Assignment dispatch manager enforcing track alignment, conflict-of-interest checks, and workload balance.
-   - Results visibility control: one-click switch to toggle between embargoed scoring and official public release.
-   - Append-only chronological system audit trail and official comma-separated results CSV export.
-
----
-
-## Security Hardening (Forensic Code Audit Passes)
-
-- **Bug 1 (Judge Assignment Bypass)**: `POST /api/judge/scores` verifies active judge assignment before scoring; unassigned attempts receive `403 Forbidden`. Auto-assignment creation is strictly prohibited.
-- **Bug 2 (Public Normalization API Leak)**: `GET /api/results` strictly enforces results embargo. Normalization internals, judge bias, and private scores are hidden until organizer release.
-- **Bug 3 & 4 (Session Security)**: Disallowed query-string authentication (`?session=...`) and eliminated client-side token storage in `localStorage`. Authentication uses secure, server-managed `HttpOnly; SameSite=Lax` cookies with database expiration timestamps.
-- **Bug 5 (No DOM Hardcoded Tokens)**: Removed session credentials from `index.html`. Local demo switching uses server-managed `POST /api/auth/demo-login`.
-- **Bug 6 (HTML & URL Injection Defense)**: Bulletproof HTML entity escaping on SSR project cards and strict URL protocol validation (only `http://` and `https://` permitted; dangerous protocols like `javascript:` rejected).
-- **Bug 7 (Authoritative Rubric)**: Scoring engine rejects unknown criteria with `400 Bad Request` and enforces score bounds against authoritative event rubric weights (no arbitrary fallback weights).
-- **Bug 8 & 9 (Team & Submission Ownership)**: Submissions enforce team membership verification; participants cannot submit into or modify projects belonging to other teams.
-- **Dynamic Event Context**: Replaced hardcoded `evt_01` defaults across all routes and services with dynamic event resolution middleware.
-
----
-
-## Quickstart (Local Development)
-
-### Prerequisites
-- Node.js `>=22.5.0` (with built-in `node:sqlite`)
-- Python 3 (for running `run.py`)
-
-### 1. Install Dependencies
-```bash
-npm install
-```
-
-### 2. Seed Database
-Seeds all 41 projects, 30 judges, 8 tracks, and 126 reviews dynamically from `fixtures.json`:
-```bash
-npm run seed
-```
-
-### 3. Start the Portal
-```bash
-npm start
-```
-The portal starts on `http://localhost:8080`.
-
----
-
-## Deterministic Test Accounts & Passwords
-
-Judgely supports standard local password authentication (`POST /api/auth/login`) with `scrypt` password hashing, as well as deterministic session cookies for automated test suites (`.dogfood.toml`):
-
-| Role | Email | Password | Session Cookie (Automated Tests) | Identity Mapped from Fixture |
-| :--- | :--- | :--- | :--- | :--- |
-| **Organizer** | `organizer@judgely.local` | `organizer123` | `Cookie: session=org_7f2a` | Lead Organizer (`usr_organizer`) |
-| **Judge A** | `tomas.varga@example.org` | `judge123` | `Cookie: session=jdg_a_91bc` | First fixture judge (`jdg_01`, Tomas Varga) |
-| **Judge B** | `wei.lindqvist@example.org` | `judge123` | `Cookie: session=jdg_b_44de` | Second fixture judge (`jdg_02`, Wei Lindqvist) |
-| **Participant** | `priya1@example.org` | `participant123` | `Cookie: session=prt_2e88` | First fixture team member (`tm_01`, Priya Nair) |
-| **Visitor** | *(None)* | *(None)* | *(No header)* | Unauthenticated guest |
-
-### Production vs Demo Mode
-- **Production (`DEMO_MODE=false`)**:
-  - `POST /api/auth/demo-login` is disabled (returns `403 Forbidden`).
-  - Demo persona buttons are completely removed from the UI.
-  - All users must authenticate via email + password or valid session cookies.
-- **Development / Demo (`DEMO_MODE=true`)**:
-  - The login screen displays quick demo persona buttons to streamline evaluations.
-
----
-
-## Running the Official DOGFOOD Acceptance Checker
-
-With the Judgely server running on port `8080`:
+Hackerly is the thing you run yourself: one container, one SQLite file, no
+cloud account, no vendor. The parts that matter to a hackathon — deadlines,
+who is allowed to see what, whose score it was — are enforced by the server,
+not by the browser.
 
 ```bash
-python3 run.py .dogfood.toml
+cp .env.example .env      # set SESSION_SECRET
+docker compose up --build
 ```
 
-Output:
-```text
-DOGFOOD 2026 acceptance report
-portal: http://localhost:8080
-claimed: T1 T2
-fixtures: fixtures.json
+Then open <http://localhost:8080>. Sign in as `meera@hackerly.dev` /
+`HackerlyDemo2026` to see the organizer side, or browse anything public with no
+account at all.
 
+MIT licensed. Node 22, Express 4, TypeScript, EJS, SQLite. No build step for
+the front end, no bundler, no client-side framework.
+
+---
+
+## What it does
+
+**For hackers.** Browse hackathons, register, form a team, submit a project
+against the fields the organizer asked for, and see the published ranking when
+it comes out. Every deadline is enforced server-side, so a submission that
+arrives late is refused by the server rather than by a disabled button.
+
+**For hosts.** A ten-step setup wizard, then one workspace: people, teams,
+projects, judges, assignments, judging progress, results, audit, CSV export. The
+overview tells you the single next thing to do, computed from the database
+rather than written as prose.
+
+**For judges.** A queue of only your assigned projects, the submission, the
+published rubric, the requirement checklist and a submit button on one screen.
+You cannot open a review assigned to another judge, and you cannot see anybody
+else's scores — including the organizer's.
+
+---
+
+## The guarantees, and where they live
+
+| Guarantee | Enforced in |
+| --------- | ----------- |
+| A submission after the deadline is refused | `services/events.ts` → `assertSubmissionsOpen`, called by every write path |
+| An edit after the deadline is refused | `services/projects.ts` → `updateProject`, unconditionally |
+| A judge cannot open a peer's review | `routes/judge.ts`, checked against the session, not the URL |
+| A judge cannot read another judge's scores | `routes/judge.ts` + `/api/judge/scores`, 403 with no data in the body |
+| A participant cannot read a review at all | session role check → 401/403 |
+| Results are invisible until published | `results.published_at`; computing and publishing are separate actions |
+| A team cannot be read across events | `event_id` foreign keys plus a per-request event re-check |
+| Invented rubric criteria are rejected | `services/judging.ts` → `saveReview` validates against the stored rubric |
+| The organizer of one event cannot touch another | `requireOrganizer` on every host route, re-checked per request |
+
+The recurring theme: the check and the page come from the same code path, and
+the role is read from the session. There is no route where the browser tells
+the server what it is allowed to do.
+
+### A bug this design actually caught
+
+The deadline guard on `updateProject` was originally conditional on the project
+being exactly `submitted`:
+
+```ts
+if (project.status === 'submitted' || project.locked_at) {
+  assertSubmissionsOpen(event);
+}
+```
+
+Judging moves projects to `under_review`. From that moment the same route
+accepted edits — so a team could rewrite its title, its repository URL and its
+demo link *after* the panel had started scoring, while the page it was looking
+at said the form was read-only. The guard is now unconditional, and
+`tests/integration.test.js` has a regression test that fails if the old
+condition comes back (verified by reverting the fix and watching it go red).
+
+---
+
+## Two audiences, one design system
+
+`/` is for hackers: an editorial front page, a real gallery, event microsites
+with the schedule, rules, tracks and prizes, and a results page that shows the
+ranking and nothing private.
+
+`/host` is for organizers: a workspace with a persistent section strip, counts
+on the tabs, and forms that say what a field is for.
+
+Same typographic scale, same 5px radii, same restrained palette — one
+accent (`#d8401a` by default, per-event overridable), off-white paper, black
+ink. No gradients, no glass, no neon. The project artwork is generated as
+inline SVG from the project name, so there are no uploads to store and the
+pages look the same offline.
+
+Everything is responsive. Verified at 1440×900, 1280×800, 1024×768, 768×1024
+and 390×844 in real Chrome.
+
+---
+
+## Verified, not claimed
+
+Every number below was produced by running the command shown on this
+repository. Nothing here is an estimate.
+
+### Acceptance — DOGFOOD 2026
+
+`acceptance-report.txt`, generated by `python3 run.py`:
+
+```
 T1  gallery is public ................. PASS
 T1  project from fixtures shown ....... PASS
 T1  closed event refuses submissions .. PASS
@@ -121,61 +120,136 @@ T2  csv export works .................. PASS
 claimed T1 T2, verified T1 T2
 ```
 
-Save and commit the report:
+(The report was generated against port 8090 because 8080 was occupied on that
+machine by an unrelated process. The committed `.dogfood.toml` says 8080.)
+
+### Tests
+
+```
+$ npm test
+# tests 29
+# pass 29
+# fail 0
+```
+
+`node scripts/sweep.sh` — ~60 routes as anonymous, organizer, judge and
+participant: every one returned its expected status.
+
+`node scripts/journey.mjs` — the whole path through real forms and real
+cookies, then checked in the database: sign up → register → create team →
+create project → submit → judge scores → the row is `submitted` with a
+timestamp. Then the negative cases: a past-deadline edit returns 409 and the
+stored title is unchanged; a peer review returns 403 with no score in the
+body; a participant gets 403 on any review; an anonymous CSV export is refused.
+
+`node scripts/critic.mjs <viewport>` — 32 pages per role in headless Chrome,
+asserting no console errors and no horizontal overflow. Clean at all five
+viewports.
+
+`node scripts/driver-contract.mjs` — both storage drivers implement all 124
+methods of the `Driver` contract, no stubs.
+
+### Load
+
+Measured on this machine: 4 vCPU, one Node process, SQLite on local disk, and
+**the load generator running on the same 4 cores** — so these are a floor, not
+a ceiling.
+
+| Concurrency | Offered | Served | p50 | p90 | p99 | Slowest |
+| ----------- | ------ | ------ | -- | -- | -- | ------- |
+| 16 | 167 req/s | 100% | 95ms | 118ms | 161ms | 435ms |
+| 64 | 173 req/s | 100% | 363ms | 412ms | 488ms | 2.56s |
+
+No 5xx and no transport errors in either run. Throughput saturates around
+170 req/s, at which point latency rises while the rate stops climbing — the
+client is competing with the server for the same cores.
+
+A third run at concurrency 64 with the read limiter lifted produced 425
+`429`s over 15 seconds. That is the per-IP read budget doing its job on a
+single source IP, not a server failure; at a real venue, clients arrive from
+many addresses.
+
+Reproduce with:
+
 ```bash
-python3 run.py .dogfood.toml > acceptance-report.txt
+node scripts/loadtest.mjs http://localhost:8090 15 16
 ```
 
 ---
 
-## Running Automated Tests
+## Firebase
 
-Judgely includes a comprehensive regression test suite (38 automated unit, integration, and security attack tests):
+The Google Cloud path is implemented, not stubbed: the same Express app runs as
+a Cloud Function behind Firebase Hosting with Firestore as the database, and
+Firebase Auth is available as a sign-in bridge that verifies an ID token and
+issues an ordinary Hackerly session.
 
-```bash
-npm test
-```
+**It is blocked on this project by IAM, not by code.** The provided service
+account can read the project and use Hosting (which already has two sites),
+but `firestore.googleapis.com`, `identitytoolkit.googleapis.com`,
+`cloudfunctions.googleapis.com` and several others are disabled, and the
+account is explicitly denied `serviceusage.services.enable` — 403
+`Permission denied to enable service [firestore.googleapis.com]`.
 
-Covers:
-- Session forgery rejection & query-token rejection
-- Role isolation barriers (Judge A vs Judge B, Participant vs Scores, Visitor vs Audit)
-- Unassigned project score refusal (HTTP 403)
-- Rubric criteria validation & unknown criterion rejection (HTTP 400)
-- Team ownership & IDOR defenses
-- Results embargo before and after release
-- SSR XSS escaping and URL sanitization
-- Zero-variance normalization handling (`jdg_07`) and Bayesian shrinkage
+So **the application is not live on Firebase.** I did not publish the static
+shell there and call it done; that would serve a site with no database, no
+sign-in and no enforcement, which is worse than not deploying because the URL
+would look live.
 
----
-
-## Docker & Self-Hosting (Offline Operation)
-
-### Docker Startup
-```bash
-docker compose up --build
-```
-
-### Offline Verification
-The container pre-seeds the SQLite database at build time. To verify offline operation with Docker:
-```bash
-# Start container with disabled networking
-docker run --network none -p 8080:8080 judgely_portal
-```
-The portal boots and runs completely without network access, cloud accounts, or remote services.
+`scripts/deploy-firebase.sh` checks the prerequisites and refuses to deploy a
+partial site. Grant the account `roles/serviceusage.serviceUsageAdmin`,
+`roles/developer` and `roles/datastore.user`, enable the six APIs, and it runs
+start to finish. Full detail, including the exact probe results, is in
+[`DEPLOYMENT.md`](DEPLOYMENT.md).
 
 ---
 
-## NexusLabs / Firebase Integration
+## Layout
 
-- The canonical open-source Judgely product is self-hosted and has zero runtime dependency on Firebase.
-- Firebase Hosting is deployed to the existing **NexusLabs** project (`nexuslabs-b7b5e` at `https://nexuslabs-b7b5e.web.app`) for client asset demonstration.
-- All Firebase hosting configuration is strictly scoped to `nexuslabs-b7b5e`.
+```
+src/server/
+  app.ts          Express assembly
+  config.ts       environment, validated once
+  db/             driver.ts (the contract) · sqlite.ts · firestore.ts · schema.sql
+  routes/         public · auth · participant · host · judge · api · invites
+  services/       events · projects · judging · results · teams · auth · invites
+  seed/           fixtures · demo · acceptance
+  middleware/     session · security · guards · errors
+src/views/        67 EJS templates
+public/css/       app · pages · workspace
+tests/            29 integration tests, in-process
+scripts/          serve · dev · sweep · journey · critic · loadtest · deploy-firebase
+```
+
+More detail: [`ARCHITECTURE.md`](ARCHITECTURE.md) ·
+[`DATA-MODEL.md`](DATA-MODEL.md) · [`JUDGING.md`](JUDGING.md) ·
+[`DEPLOYMENT.md`](DEPLOYMENT.md)
 
 ---
 
-## Technical Documentation
+## Scripts
 
-- [`ARCHITECTURE.md`](ARCHITECTURE.md): System components, role isolation security model, and rationale.
-- [`DATA-MODEL.md`](DATA-MODEL.md): Relational schema, join tables, and fixture transformation pipeline.
-- [`JUDGING.md`](JUDGING.md): Rubric weighting formulas, Z-score normalization proof, and tie-breaking rules.
-- [`LICENSE`](LICENSE): MIT License.
+| Command | What it does |
+| ------- | ------------ |
+| `docker compose up --build` | The self-hosted install. |
+| `npm run build` | `tsc` → `dist/`, then copy assets. |
+| `npm start` | Run the built server. |
+| `npm test` | Build, then 29 integration tests. |
+| `npm run db:reset` | Drop, migrate, re-seed. |
+| `bash scripts/sweep.sh` | Every route, every role, expected statuses. |
+| `node scripts/journey.mjs` | The end-to-end path, verified in the database. |
+| `node scripts/critic.mjs 390x844` | Screenshots and overflow/console checks. |
+| `node scripts/loadtest.mjs` | Measured throughput and latency. |
+| `node scripts/driver-contract.mjs` | Both drivers implement the full contract. |
+| `./scripts/deploy-firebase.sh` | Firebase deploy, with a prerequisite check first. |
+| `python3 run.py .dogfood.toml` | The DOGFOOD acceptance checker. |
+
+## Configuration
+
+Everything is optional except `SESSION_SECRET` in production. See
+[`.env.example`](.env.example) for the full list with defaults, and
+[`DEPLOYMENT.md`](DEPLOYMENT.md) for what each switch does.
+
+## License
+
+MIT — see [LICENSE](LICENSE).

@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Review Glass Signal · Hackerly</title>
+<meta name="description" content="Hackerly is a self-hostable platform for hackathons. Browse open events, join a team, submit a project, and let judges review it against a real rubric.">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="Review Glass Signal">
+<meta property="og:description" content="Find a hackathon. Host your event. Invite your judges.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="/css/app.css?v=dev">
+<link rel="stylesheet" href="/css/pages.css?v=dev">
+<link rel="stylesheet" href="/css/workspace.css?v=dev">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+</head>
+<body class="">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">H</span>
+      <span>Hackerly</span>
+      <span class="brand__sub">Hackathon platform</span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="sr-only">Menu</span>
+    </button>
+
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="/hackathons">Explore hackathons</a>
+      <a href="/projects">Showcase</a>
+      <a href="/host">Host a hackathon</a>
+      <a href="/judge" aria-current=&#34;page&#34;>Judge at Hackerly</a>
+      <a href="/about">About</a>
+    </nav>
+
+    <div class="header-actions">
+      
+        <a class="btn btn--ghost btn--sm hide-sm" href="/dashboard">My dashboard</a>
+        <div class="menu" data-menu-root>
+          <button class="btn btn--quiet" type="button" data-menu-trigger aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+            <span class="avatar avatar--xs" data-seed="256" data-name="Priya Nair">P</span>
+            <span class="hide-xs">Priya</span>
+          </button>
+          <div class="menu__panel" role="menu">
+            <div class="menu__header">
+              <div style="font-weight:600;font-size:.9rem">Priya Nair</div>
+              <div class="tiny muted mono">@priya-nair</div>
+            </div>
+            <a href="/dashboard" role="menuitem">Dashboard</a>
+            <a href="/u/priya-nair" role="menuitem">My public profile</a>
+            <a href="/settings/profile" role="menuitem">Profile settings</a>
+            <hr>
+            <form method="post" action="/auth/logout">
+              <input type="hidden" name="_csrf" value="cQ6ZGxao3fDHI1WMtvAo7p_jQH4nu2l5">
+              <button type="submit" role="menuitem">Sign out</button>
+            </form>
+          </div>
+        </div>
+      
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<div class="review-nav">
+  <div>
+    <a class="btn btn--ghost btn--sm" href="/judge/events/sample-hack-2026">← Queue</a>
+    <span class="tiny muted" style="margin-left:10px">Project 1 of 2</span>
+  </div>
+  <div class="row row-wrap">
+    
+    
+  </div>
+</div>
+
+<section class="section section--tight" style="padding-top:0">
+  <div class="wrap">
+    
+    
+    
+
+    <div class="ws" style="grid-template-columns:minmax(0,1fr) 300px;margin-bottom:24px">
+      <div>
+        <div class="row row-wrap" style="gap:6px;margin-bottom:12px">
+          <span class="tag">Security</span>
+          <span class="tag tag--accent">Under review</span>
+          <span class="tag">NorthKiln</span>
+        </div>
+        <h1 style="font-size:1.9rem">Glass Signal</h1>
+        <p class="lede" style="margin-top:10px">One line of what it does.</p>
+        <div class="row row-wrap" style="margin-top:14px;gap:8px">
+          
+            <a class="btn btn--ghost btn--sm" href="https://example.org/repo/01" target="_blank" rel="noopener nofollow">Repository ↗ <span class="muted tiny">example.org</span></a>
+          
+          
+        </div>
+      </div>
+      <div class="card">
+        <h2 class="card__title" style="margin-bottom:10px">Team</h2>
+        <ul class="judge-list">
+          
+            <li class="person">
+              <span class="avatar avatar--sm" style="background:hsl(98 46% 42%)">P</span>
+              <span class="grow">
+                <span class="person__name">Priya1</span>
+                <span class="person__meta">@priya1</span>
+              </span>
+            </li>
+          
+            <li class="person">
+              <span class="avatar avatar--sm" style="background:hsl(166 46% 42%)">M2</span>
+              <span class="grow">
+                <span class="person__name">Member1 2</span>
+                <span class="person__meta">@member1-2</span>
+              </span>
+            </li>
+          
+            <li class="person">
+              <span class="avatar avatar--sm" style="background:hsl(17 46% 42%)">M1</span>
+              <span class="grow">
+                <span class="person__name">Member1 1</span>
+                <span class="person__meta">@member1-1</span>
+              </span>
+            </li>
+          
+            <li class="person">
+              <span class="avatar avatar--sm" style="background:hsl(45 46% 42%)">AP</span>
+              <span class="grow">
+                <span class="person__name">Acceptance Participant</span>
+                <span class="person__meta">@participant</span>
+              </span>
+            </li>
+          
+        </ul>
+      </div>
+    </div>
+
+    <div class="review-layout">
+      <div>
+        
+          <div class="card" style="margin-bottom:20px">
+            <h2 class="card__title" style="margin-bottom:10px">What it does</h2>
+            <p style="margin:0">One line of what it does.</p>
+          </div>
+        
+
+        
+
+        <div class="card" style="margin-bottom:20px">
+          <h2 class="card__title" style="margin-bottom:12px">Submission answers</h2>
+          
+          
+          
+            
+            <div class="qa__row">
+              <dt>What problem does it solve?</dt>
+              <dd>One line of what it does.</dd>
+            </div>
+          
+          
+        </div>
+
+        <div class="card">
+          <div class="card__head">
+            <h2 class="card__title">Your review</h2>
+            
+              <span class="tag tag--ok">Submitted 7 months ago</span>
+            
+          </div>
+
+          
+            <div class="notice notice--info" style="margin-bottom:20px">
+              This review is submitted and read-only. If something is wrong with it, ask the
+              organizer to reopen it rather than editing.
+            </div>
+          
+
+          <form method="post" action="/judge/review/asg_684ooj7pfg9k" id="review-form">
+            <input type="hidden" name="_csrf" value="cQ6ZGxao3fDHI1WMtvAo7p_jQH4nu2l5">
+
+            <div class="criteria">
+              
+                
+                <div class="criterion" data-criterion="cri_0xt5a0q8uhgc">
+                  <div class="criterion__head">
+                    <span class="criterion__name">Functionality <span class="tag tag--warn" style="vertical-align:middle">required</span></span>
+                    <span class="criterion__weight">weight 40 · max 5</span>
+                  </div>
+                  <div class="criterion__desc">Does it do what it claims, end to end?</div>
+
+                  <div class="score-row" role="group" aria-label="Functionality score, 0 to 5">
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_0xt5a0q8uhgc"
+                              data-value="0"
+                              aria-pressed="false"
+                              disabled>0</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_0xt5a0q8uhgc"
+                              data-value="1"
+                              aria-pressed="false"
+                              disabled>1</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_0xt5a0q8uhgc"
+                              data-value="2"
+                              aria-pressed="false"
+                              disabled>2</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_0xt5a0q8uhgc"
+                              data-value="3"
+                              aria-pressed="false"
+                              disabled>3</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_0xt5a0q8uhgc"
+                              data-value="4"
+                              aria-pressed="true"
+                              disabled>4</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_0xt5a0q8uhgc"
+                              data-value="5"
+                              aria-pressed="false"
+                              disabled>5</button>
+                    
+                    <input type="hidden" name="criterion_cri_0xt5a0q8uhgc" value="4" data-score-value="cri_0xt5a0q8uhgc">
+                    
+                      <span class="tag" data-score-readout="cri_0xt5a0q8uhgc">4 / 5</span>
+                    
+                  </div>
+
+                  
+                </div>
+              
+                
+                <div class="criterion" data-criterion="cri_hpzp97qhwzdo">
+                  <div class="criterion__head">
+                    <span class="criterion__name">Quality <span class="tag tag--warn" style="vertical-align:middle">required</span></span>
+                    <span class="criterion__weight">weight 35 · max 5</span>
+                  </div>
+                  <div class="criterion__desc">Is the code and the structure sound?</div>
+
+                  <div class="score-row" role="group" aria-label="Quality score, 0 to 5">
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_hpzp97qhwzdo"
+                              data-value="0"
+                              aria-pressed="false"
+                              disabled>0</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_hpzp97qhwzdo"
+                              data-value="1"
+                              aria-pressed="false"
+                              disabled>1</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_hpzp97qhwzdo"
+                              data-value="2"
+                              aria-pressed="false"
+                              disabled>2</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_hpzp97qhwzdo"
+                              data-value="3"
+                              aria-pressed="false"
+                              disabled>3</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_hpzp97qhwzdo"
+                              data-value="4"
+                              aria-pressed="true"
+                              disabled>4</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_hpzp97qhwzdo"
+                              data-value="5"
+                              aria-pressed="false"
+                              disabled>5</button>
+                    
+                    <input type="hidden" name="criterion_cri_hpzp97qhwzdo" value="4" data-score-value="cri_hpzp97qhwzdo">
+                    
+                      <span class="tag" data-score-readout="cri_hpzp97qhwzdo">4 / 5</span>
+                    
+                  </div>
+
+                  
+                </div>
+              
+                
+                <div class="criterion" data-criterion="cri_edbo2fr9hupk">
+                  <div class="criterion__head">
+                    <span class="criterion__name">Innovation <span class="tag tag--warn" style="vertical-align:middle">required</span></span>
+                    <span class="criterion__weight">weight 25 · max 5</span>
+                  </div>
+                  <div class="criterion__desc">Is the idea its own?</div>
+
+                  <div class="score-row" role="group" aria-label="Innovation score, 0 to 5">
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_edbo2fr9hupk"
+                              data-value="0"
+                              aria-pressed="false"
+                              disabled>0</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_edbo2fr9hupk"
+                              data-value="1"
+                              aria-pressed="false"
+                              disabled>1</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_edbo2fr9hupk"
+                              data-value="2"
+                              aria-pressed="false"
+                              disabled>2</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_edbo2fr9hupk"
+                              data-value="3"
+                              aria-pressed="false"
+                              disabled>3</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_edbo2fr9hupk"
+                              data-value="4"
+                              aria-pressed="true"
+                              disabled>4</button>
+                    
+                      <button class="score-btn score-btn--req"
+                              type="button"
+                              data-score-input="criterion_cri_edbo2fr9hupk"
+                              data-value="5"
+                              aria-pressed="false"
+                              disabled>5</button>
+                    
+                    <input type="hidden" name="criterion_cri_edbo2fr9hupk" value="4" data-score-value="cri_edbo2fr9hupk">
+                    
+                      <span class="tag" data-score-readout="cri_edbo2fr9hupk">4 / 5</span>
+                    
+                  </div>
+
+                  
+                </div>
+              
+            </div>
+
+            
+
+            <div class="card" style="margin-top:20px;background:var(--paper-2)">
+              <h3 class="card__title" style="margin-bottom:12px">Explain</h3>
+              <div class="field">
+                <label class="field__label" for="comment">Overall comment</label>
+                <textarea class="textarea" id="comment" name="comment" maxlength="4000" style="min-height:120px" disabled>Written by the end-to-end journey.</textarea>
+              </div>
+              <div class="grid grid-2" style="gap:0 18px">
+                <div class="field">
+                  <label class="field__label" for="strengths">What worked</label>
+                  <textarea class="textarea" id="strengths" name="strengths" maxlength="2000" style="min-height:90px" disabled>Real form, real server.</textarea>
+                </div>
+                <div class="field">
+                  <label class="field__label" for="improvements">What did not</label>
+                  <textarea class="textarea" id="improvements" name="improvements" maxlength="2000" style="min-height:90px" disabled>Nothing.</textarea>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field__label" for="recommendation">Recommendation</label>
+                <select class="select" id="recommendation" name="recommendation" disabled>
+                  <option value="">No recommendation</option>
+                  
+                    <option value="strong_yes" >Strong yes — shortlist</option>
+                  
+                    <option value="yes" selected>Yes</option>
+                  
+                    <option value="neutral" >Neutral</option>
+                  
+                    <option value="no" >No</option>
+                  
+                </select>
+              </div>
+            </div>
+
+            
+          </form>
+        </div>
+      </div>
+
+      <aside class="review-side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Submission check</h2>
+          
+            <div class="notice notice--ok">Everything the organizer required is present.</div>
+          
+          <p class="tiny muted" style="margin-top:12px">
+            This is the same validation the server runs on submit. Score the project anyway — a
+            missing field is information, not a reason to skip it.
+          </p>
+        </div>
+
+        
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:10px">Stack</h2>
+            <div class="row row-wrap" style="gap:5px">
+              <span class="tag tag--outline">TypeScript</span><span class="tag tag--outline">Node.js</span>
+            </div>
+          </div>
+        
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">How scoring works</h2>
+          <ul class="check-list check-list--sm">
+            <li>Each criterion is 0 to its maximum</li>
+            <li>Required criteria must be scored before submitting</li>
+            <li>A score outside the range is refused by the server</li>
+            <li>Your total is the weighted sum, normalised to 0–100</li>
+            <li>No judge sees another judge&rsquo;s scores</li>
+          </ul>
+        </div>
+
+        
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:10px">Your submitted review</h2>
+            <dl class="kv">
+              <div><dt>Submitted</dt><dd>27 Feb 2026, 06:08 UTC</dd></div>
+              <div><dt>Weighted score</dt><dd>80.0</dd></div>
+              <div><dt>Recommendation</dt><dd>yes</dd></div>
+            </dl>
+            
+              <p class="tiny muted" style="margin-top:12px">Results are not published yet. Your score stays private to you and the organizers.</p>
+            
+          </div>
+        
+      </aside>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <div class="brand" style="margin-bottom:12px">
+          <span class="brand__mark" aria-hidden="true">H</span>
+          <span>Hackerly</span>
+        </div>
+        <p class="small" style="max-width:38ch">
+          Open source hackathon software. Run it yourself, keep your data, change anything.
+        </p>
+        <p class="tiny muted" style="margin-top:12px">
+          <a href="/about">About Hackerly</a> ·
+          <a href="/api/v1">REST API</a> ·
+          <a href="/healthz">Status</a>
+        </p>
+      </div>
+      <div>
+        <h5>For hackers</h5>
+        <ul>
+          <li><a href="/hackathons">Explore hackathons</a></li>
+          <li><a href="/projects">Project showcase</a></li>
+          <li><a href="/hackathons?status=open">Registration open</a></li>
+          <li><a href="/auth/signup">Create an account</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For organizers</h5>
+        <ul>
+          <li><a href="/host">Host a hackathon</a></li>
+          <li><a href="/host/events">Your events</a></li>
+          <li><a href="/host/start">Setup guide</a></li>
+          <li><a href="/about#self-host">Self-hosting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For judges</h5>
+        <ul>
+          <li><a href="/judge">Judge at Hackerly</a></li>
+          <li><a href="/judge/reviews">My reviews</a></li>
+          <li><a href="/about#judging">How judging works</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>Hackerly · MIT licensed · self-hostable</span>
+      <span class="mono">No account needed to browse</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/app.js?v=dev" defer></script>
+
+</body>
+</html>

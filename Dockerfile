@@ -1,30 +1,47 @@
-# Judgely Self-Hostable Container
-# Pinned runtime: Node.js 22 LTS Alpine
-FROM node:22-alpine
+# Hackerly — runtime image
+#
+# One stage on purpose: the build needs the TypeScript compiler, the runtime does
+# not, and a self-hosted install should be a small, auditable image rather than a
+# clever multi-stage one that is hard to debug.
+
+FROM node:22-bookworm-slim
+
+# better-sqlite3 needs a toolchain if no prebuilt binary matches the platform.
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 make g++ ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 
-ENV NODE_ENV=production
-ENV PORT=8080
+ENV NODE_ENV=production \
+    PORT=8080 \
+    DATA_DIR=/data \
+    SQLITE_FILE=/data/hackerly.db \
+    FIXTURES_FILE=/app/fixtures.json
 
-# Copy dependency manifests and install pinned dependencies
-COPY package*.json ./
-RUN npm ci --only=production
+# Dependencies first so a source change does not reinstall the world.
+COPY package.json package-lock.json* ./
+RUN npm ci --omit=dev --no-audit --no-fund || npm install --omit=dev --no-audit --no-fund
 
-# Copy application code, seed fixtures, and configuration
-COPY . .
+COPY tsconfig.json ./
+COPY src ./src
+COPY public ./public
+COPY fixtures.json run.py .dogfood.toml ./
+COPY scripts ./scripts
 
-# Create persistent database directory
-RUN mkdir -p /app/data
+# The compiler is a dev dependency, so build in the same image that runs.
+RUN npm install --no-save --no-audit --no-fund typescript@5.7.3 \
+ && npx tsc -p tsconfig.json \
+ && node scripts/copy-assets.mjs \
+ && npm prune --omit=dev
 
-# Pre-seed the SQLite database with fixtures.json so the container boots 100% offline
-RUN node src/db/seeder.js
+RUN mkdir -p /data && chown -R node:node /app /data
+USER node
 
-# Expose default port
+VOLUME ["/data"]
 EXPOSE 8080
 
-# Healthcheck for container readiness
-HEALTHCHECK --interval=20s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:8080/projects || exit 1
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||8080)+'/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-CMD ["node", "src/server.js"]
+CMD ["node", "dist/server/index.js"]

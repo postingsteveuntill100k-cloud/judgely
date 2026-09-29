@@ -1,0 +1,37 @@
+<%
+  const p = project;
+  const href = p.event_slug ? `/hackathons/${p.event_slug}/projects/${p.slug}` : `/projects/${p.slug}`;
+  const img = p.image_url && h.fmt.safe(p.image_url);
+  const stack = h.techList(p.tech_stack);
+%>
+<article class="project-card">
+  <a class="project-card__media" href="<%= href %>" tabindex="-1" aria-hidden="true">
+    <% if (img) { %>
+      <img src="<%= img %>" alt="" loading="lazy">
+    <% } else { %>
+      <%- h.projectCover({ seed: p.slug || p.id, title: p.title, monogram: h.initials(p.title), label: p.track_name || 'Project' }) %>
+    <% } %>
+  </a>
+  <div class="project-card__body">
+    <div class="project-card__meta">
+      <% if (p.track_name) { %><span class="tag"><%= p.track_name %></span><% } %>
+      <span class="tag <%= h.projectStatusTone(p.status) %>"><%= h.projectStatusLabel(p.status) %></span>
+      <% if (typeof p.public_rank === 'number' && p.public_rank) { %><span class="tag tag--ok">Rank #<%= p.public_rank %></span><% } %>
+    </div>
+    <h3 class="project-card__title"><a href="<%= href %>"><%= p.title %></a></h3>
+    <p class="project-card__summary"><%= p.tagline || p.summary || 'No description yet.' %></p>
+    <div class="project-card__foot">
+      <span class="person">
+        <span class="avatar avatar--xs" style="background:<%= h.avatarColor(p.team_avatar_seed ?? p.team_name ?? p.slug) %>"><%= h.initials(p.team_name || 'T') %></span>
+        <span class="person__name small"><%= p.team_name %></span>
+      </span>
+      <% if (p.event_name) { %><span class="tiny muted truncate"><%= p.event_name %></span><% } %>
+    </div>
+    <% if (stack.length) { %>
+      <div class="project-card__tech">
+        <% stack.slice(0, 4).forEach(t => { %><span class="tag tag--outline"><%= t %></span><% }) %>
+        <% if (stack.length > 4) { %><span class="tag tag--outline">+<%= stack.length - 4 %></span><% } %>
+      </div>
+    <% } %>
+  </div>
+</article>

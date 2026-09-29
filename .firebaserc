@@ -1,5 +1,15 @@
 {
   "projects": {
-    "default": "nexuslabs-b7b5e"
-  }
+    "default": "hackerly-hackatrons"
+  },
+  "targets": {
+    "hackerly-hackatrons": {
+      "hosting": {
+        "judgely": [
+          "judgely"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

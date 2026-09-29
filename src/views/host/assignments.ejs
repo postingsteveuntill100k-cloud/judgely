@@ -1,0 +1,171 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Assignments</p>
+        <h1 style="font-size:1.6rem">Who reviews what</h1>
+        <p class="small muted" style="margin:8px 0 0">
+          <%= projects.length %> submitted <%= h.fmt.plural(projects.length, 'project') %> ·
+          <%= judges.length %> active <%= h.fmt.plural(judges.length, 'judge') %> ·
+          <%= rows.length %> <%= h.fmt.plural(rows.length, 'assignment') %>
+        </p>
+      </div>
+      <% if (req.query.created !== undefined) { %>
+        <span class="tag tag--ok"><%= req.query.created %> assignments created</span>
+      <% } %>
+    </div>
+
+    <% if (!judges.length) { %>
+      <div class="empty" style="margin-bottom:20px">
+        <div class="empty__title">No active judges</div>
+        <p class="empty__body">A judge has to accept the invitation before they can be assigned. Invite the panel first.</p>
+        <a class="btn btn--accent" href="/host/events/<%= event.slug %>/judges">Invite judges</a>
+      </div>
+    <% } else if (!projects.length) { %>
+      <div class="empty" style="margin-bottom:20px">
+        <div class="empty__title">Nothing submitted yet</div>
+        <p class="empty__body">Assignments are created against submitted projects. Come back once teams have submitted, or check the deadline.</p>
+      </div>
+    <% } %>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <div class="card__head">
+            <h2 class="card__title">Assign</h2>
+            <span class="tag">green = assigned · orange = review in</span>
+          </div>
+          <form method="post" action="/host/events/<%= event.slug %>/assignments">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field">
+              <label class="field__label" for="strategy">Strategy</label>
+              <select class="select" id="strategy" name="strategy">
+                <option value="all">Every selected judge reviews every selected project</option>
+                <option value="round_robin">One judge per project, dealt round-robin</option>
+              </select>
+              <p class="field__hint">Nothing selected means every project and every active judge.</p>
+            </div>
+
+            <div class="field">
+              <span class="field__label">Judges</span>
+              <div class="row row-wrap">
+                <% judges.forEach(j => { %>
+                  <label class="check" style="border:1px solid var(--line);border-radius:var(--r);padding:8px 12px">
+                    <input type="checkbox" name="judge_ids" value="<%= j.id %>">
+                    <span class="check__text"><%= j.display_name || j.email %><div class="tiny muted"><%= perJudgeCount[j.id] || 0 %> assigned</div></span>
+                  </label>
+                <% }) %>
+              </div>
+              <% if (pendingJudges.length) { %>
+                <p class="field__hint">
+                  <%= pendingJudges.length %> invited <%= h.fmt.plural(pendingJudges.length, 'judge') %> <%= h.fmt.plural(pendingJudges.length, 'has', 'have') %> not opened the invitation yet
+                  (<%= pendingJudges.map(j => j.display_name || j.email).join(', ') %>). They become assignable as soon as they accept.
+                </p>
+              <% } %>
+              <p class="field__hint">Leaving every box unticked means all active judges and all projects.</p>
+            </div>
+
+            <div class="matrix-wrap" style="max-height:420px;overflow-y:auto">
+              <table class="matrix">
+                <thead>
+                  <tr>
+                    <th>Project</th>
+                    <% judges.forEach(j => { %><th title="<%= j.email %>"><%= h.initials(j.display_name || j.email) %></th><% }) %>
+                    <th class="matrix__pick">Pick</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% projects.forEach(p => { %>
+                    <tr>
+                      <td class="pname" title="<%= p.title %>"><%= p.title %><div class="tiny muted"><%= p.team_name %></div></td>
+                      <% judges.forEach(j => { %>
+                        <% const set = matrix[p.id]; %>
+                        <% const has = set && set.has(j.id); %>
+                        <% const a = rows.find(x => x.project_id === p.id && x.event_judge_id === j.id); %>
+                        <td>
+                          <span class="matrix-cell <%= a && a.status === 'submitted' ? 'matrix-cell--done' : has ? 'matrix-cell--on' : 'matrix-cell--off' %>">
+                            <%= a && a.status === 'submitted' ? '✓' : has ? '●' : '·' %>
+                          </span>
+                        </td>
+                      <% }) %>
+                      <td class="matrix__pick">
+                        <label class="check" style="padding:0">
+                          <input type="checkbox" name="project_ids" value="<%= p.id %>" aria-label="Select <%= p.title %>">
+                        </label>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+
+            <div class="row row-wrap" style="margin-top:16px">
+              <button class="btn btn--accent" type="submit">Create assignments</button>
+              <span class="tiny muted">Existing pairs are skipped, so pressing this twice is safe.</span>
+            </div>
+          </form>
+        </div>
+
+        <% if (rows.length) { %>
+          <div class="card" style="margin-top:20px;padding:0;overflow:hidden">
+            <div class="table-wrap" style="border:0">
+              <table class="data">
+                <thead><tr><th>Project</th><th>Judge</th><th>Status</th><th>Assigned</th><th></th></tr></thead>
+                <tbody>
+                  <% rows.forEach(a => { %>
+                    <tr>
+                      <td class="small"><%= a.project_title %><div class="tiny muted"><%= a.team_name %></div></td>
+                      <td class="small mono"><%= a.judge_email %></td>
+                      <td><span class="tag <%= a.status === 'submitted' ? 'tag--ok' : 'tag--warn' %>"><%= a.status %></span></td>
+                      <td class="small nowrap"><%= h.fmt.date(a.assigned_at) %></td>
+                      <td class="nowrap">
+                        <% if (a.status !== 'submitted') { %>
+                          <form method="post" action="/host/events/<%= event.slug %>/assignments/<%= a.id %>/delete" data-confirm="Remove this assignment?">
+                            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                            <button class="btn btn--quiet btn--sm" type="submit">Remove</button>
+                          </form>
+                        <% } %>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <% } %>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Balance the panel</h2>
+          <p class="small muted">
+            Give every uncovered project to the judge with the lightest load. Useful when a panel of
+            three has to get through forty projects.
+          </p>
+          <form method="post" action="/host/events/<%= event.slug %>/auto-assign" style="margin-top:12px" data-confirm="Auto-assign every project that has no judge yet?">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <button class="btn btn--ghost btn--block" type="submit" <%= judges.length && projects.length ? '' : 'disabled aria-disabled="true"' %>>
+              Auto-assign the gaps
+            </button>
+          </form>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Judge load</h2>
+          <ul class="list-rows">
+            <% judges.forEach(j => { %>
+              <li class="list-rows__item">
+                <div class="grow">
+                  <span class="list-rows__title"><%= j.display_name || j.email %></span>
+                  <span class="list-rows__meta"><%= perJudgeCount[j.id] || 0 %> projects</span>
+                </div>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

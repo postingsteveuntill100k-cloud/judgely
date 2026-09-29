@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Host a hackathon · Hackerly</title>
+<meta name="description" content="Run a complete hackathon on Hackerly: tracks, teams, submissions, judge invitations, weighted rubrics, results and exports.">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="Host a hackathon">
+<meta property="og:description" content="Run a complete hackathon on Hackerly: tracks, teams, submissions, judge invitations, weighted rubrics, results and exports.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="/css/app.css?v=dev">
+<link rel="stylesheet" href="/css/pages.css?v=dev">
+<link rel="stylesheet" href="/css/workspace.css?v=dev">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+</head>
+<body class="">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">H</span>
+      <span>Hackerly</span>
+      <span class="brand__sub">Hackathon platform</span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="sr-only">Menu</span>
+    </button>
+
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="/hackathons">Explore hackathons</a>
+      <a href="/projects">Showcase</a>
+      <a href="/host" aria-current=&#34;page&#34;>Host a hackathon</a>
+      <a href="/judge">Judge at Hackerly</a>
+      <a href="/about">About</a>
+    </nav>
+
+    <div class="header-actions">
+      
+        <a class="btn btn--quiet btn--sm" href="/auth/signin">Sign in</a>
+        <a class="btn btn--primary btn--sm" href="/auth/signup">Sign up</a>
+      
+    </div>
+  </div>
+</header>
+
+<main id="main"><section class="pitch">
+  <div class="wrap">
+    <div class="pitch__grid">
+      <div>
+        <p class="eyebrow eyebrow--accent">For organizers</p>
+        <h1>Run your hackathon here.<br>Keep your data.</h1>
+        <p class="lede" style="margin-top:20px">
+          Hackerly is the whole event, not a form builder. Tracks, teams, submissions, judge
+          invitations, weighted rubrics, judging progress, results and CSV export — with the
+          rules enforced on the server and an audit trail for the operations that matter.
+        </p>
+        <div class="row row-wrap" style="margin-top:28px;gap:10px">
+          
+            <a class="btn btn--accent btn--lg" href="/auth/signup?next=/host/events/new">Create an account to host</a>
+            <a class="btn btn--ghost btn--lg" href="/auth/signin?next=/host/events">Sign in</a>
+          
+        </div>
+        <p class="small muted" style="margin-top:16px">
+          Free and open source. Self-host it with one Docker command, or run it in the cloud.
+        </p>
+      </div>
+
+      <div class="pitch__card">
+        <h2 class="pitch__card-title">What you get</h2>
+        <ul class="check-list">
+          <li>Setup wizard that ends in a publishable event page</li>
+          <li>Your own branding: cover, accent colour, name, description</li>
+          <li>Tracks, team size rules, solo or team-only</li>
+          <li>Submission fields you define, validated server-side</li>
+          <li>Judge invitations by email, with acceptance tracking</li>
+          <li>Weighted rubrics; judges score against exactly what you published</li>
+          <li>Judging progress: who is behind, what is uncovered, what to chase</li>
+          <li>Results with documented normalization, or plain averages</li>
+          <li>CSV export of results, projects, teams, reviews, judges, audit</li>
+          <li>Audit log of every operation that changes the event</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--line">
+  <div class="wrap">
+    <div class="section__head">
+      <div>
+        <p class="eyebrow">Two ways to run it</p>
+        <h2>Local or global — the difference is the architecture, not the theme</h2>
+      </div>
+    </div>
+    <div class="grid grid-2">
+      <div class="mode-card">
+        <div class="mode-card__head">
+          <span class="mode-card__tag">Local</span>
+        </div>
+        <h3>Local hackathon</h3>
+        <p>For a physical event, a college fest, a company offsite. Self-contained: one process, one SQLite file, no internet required once the container is running.</p>
+        <ul class="check-list check-list--sm">
+          <li>Runs with the network off</li>
+          <li>Local accounts and sessions, no external identity provider</li>
+          <li>Invitations printed from the outbox instead of emailed</li>
+          <li>Export the database at the end and you own it</li>
+        </ul>
+      </div>
+      <div class="mode-card mode-card--alt">
+        <div class="mode-card__head">
+          <span class="mode-card__tag">Global</span>
+        </div>
+        <h3>Global hackathon</h3>
+        <p>For a public event on the open internet. Public discovery, concurrent registration and submissions, a judging panel working in parallel, and a public showcase afterwards.</p>
+        <ul class="check-list check-list--sm">
+          <li>Public event listing and per-event microsites</li>
+          <li>Firestore-backed storage when deployed on Google Cloud</li>
+          <li>Paginated reads, caching, rate limiting, background-safe writes</li>
+          <li>Results published to a public page when you release them</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--line">
+  <div class="wrap">
+    <div class="grid grid-3">
+      <div class="how__step">
+        <span class="how__num">01</span>
+        <h3>Set it up in ten steps</h3>
+        <p class="small muted">Basics, dates, prizes, teams, tracks, submission fields, judging rubric, rules, branding, then a preflight before you can publish.</p>
+        <p class="small" style="margin-top:10px"><a href="/host/start">Read the setup guide →</a></p>
+      </div>
+      <div class="how__step">
+        <span class="how__num">02</span>
+        <h3>Invite real judges</h3>
+        <p class="small muted">An invitation creates a judge record scoped to your event and a single-use link. The judge signs in, accepts, and their identity is bound to the panel.</p>
+      </div>
+      <div class="how__step">
+        <span class="how__num">03</span>
+        <h3>See what is stuck</h3>
+        <p class="small muted">The overview tells you the next action: publish it, invite a judge, assign the remaining projects, chase a batch, or publish the results. All from real numbers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--line">
+  <div class="wrap">
+    <div class="grid grid-2" style="align-items:center;gap:48px">
+      <div>
+        <p class="eyebrow">Self-hosting</p>
+        <h2>One command, no cloud account</h2>
+        <p class="lede" style="margin-top:14px">
+          <code>docker compose up</code> starts a fully working Hackerly on port 8080 with the schema
+          created, the fixtures loaded and the demo event seeded. The database is a file on a volume.
+          Nothing phones home.
+        </p>
+        <pre style="margin-top:20px">git clone https://github.com/your-org/hackerly
+cd hackerly
+docker compose up --build</pre>
+      </div>
+      <div class="card">
+        <h2 class="card__title" style="margin-bottom:14px">This install</h2>
+        <dl class="kv">
+          <div><dt>Hackathons published</dt><dd>4</dd></div>
+          <div><dt>Projects submitted</dt><dd>51</dd></div>
+          <div><dt>Reviews submitted</dt><dd>138</dd></div>
+          <div><dt>Accounts</dt><dd>155</dd></div>
+        </dl>
+        <p class="tiny muted" style="margin-top:14px">Read <a href="/about">About Hackerly</a> for the architecture, the data model and the judging method.</p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <div class="brand" style="margin-bottom:12px">
+          <span class="brand__mark" aria-hidden="true">H</span>
+          <span>Hackerly</span>
+        </div>
+        <p class="small" style="max-width:38ch">
+          Open source hackathon software. Run it yourself, keep your data, change anything.
+        </p>
+        <p class="tiny muted" style="margin-top:12px">
+          <a href="/about">About Hackerly</a> ·
+          <a href="/api/v1">REST API</a> ·
+          <a href="/healthz">Status</a>
+        </p>
+      </div>
+      <div>
+        <h5>For hackers</h5>
+        <ul>
+          <li><a href="/hackathons">Explore hackathons</a></li>
+          <li><a href="/projects">Project showcase</a></li>
+          <li><a href="/hackathons?status=open">Registration open</a></li>
+          <li><a href="/auth/signup">Create an account</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For organizers</h5>
+        <ul>
+          <li><a href="/host">Host a hackathon</a></li>
+          <li><a href="/host/events">Your events</a></li>
+          <li><a href="/host/start">Setup guide</a></li>
+          <li><a href="/about#self-host">Self-hosting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For judges</h5>
+        <ul>
+          <li><a href="/judge">Judge at Hackerly</a></li>
+          <li><a href="/judge/reviews">My reviews</a></li>
+          <li><a href="/about#judging">How judging works</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>Hackerly · MIT licensed · self-hostable</span>
+      <span class="mono">No account needed to browse</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/app.js?v=dev" defer></script>
+
+</body>
+</html>

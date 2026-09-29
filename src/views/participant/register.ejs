@@ -1,0 +1,94 @@
+<section class="page-head">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/hackathons">Hackathons</a> <span aria-hidden="true">/</span>
+      <a href="/hackathons/<%= event.slug %>"><%= event.name %></a> <span aria-hidden="true">/</span>
+      <span class="muted">Register</span>
+    </nav>
+    <p class="eyebrow" style="margin-top:22px"><%= state.headline %></p>
+    <h1><%= registered ? 'You are registered' : 'Register for ' + event.name %></h1>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap wrap-narrow">
+    <% if (registered) { %>
+      <div class="notice notice--ok" style="margin-bottom:24px">
+        <strong class="notice__title">You are on the list</strong>
+        Registration for this hackathon is done. Next step: get a team and start your project.
+      </div>
+
+      <% if (team) { %>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Your team</h2>
+          <p class="small muted"><%= team.name %> · you are the <%= team.my_team_role %></p>
+          <div class="row row-wrap" style="margin-top:16px">
+            <a class="btn btn--accent" href="/teams/<%= team.id %>">Open <%= team.name %></a>
+            <a class="btn btn--ghost" href="/hackathons/<%= event.slug %>">Back to the event</a>
+          </div>
+        </div>
+      <% } else { %>
+        <div class="card" style="margin-bottom:16px">
+          <h2 class="card__title" style="margin-bottom:10px">You are not on a team yet</h2>
+          <p class="small muted">
+            <% if (event.allow_solo) { %>
+              Teams can be 1–<%= event.max_team_size %> people, and solo entries are fine. Create a team, or join one someone has started.
+            <% } else { %>
+              This hackathon needs teams of <%= event.min_team_size %>–<%= event.max_team_size %> people. Create one or join an existing one.
+            <% } %>
+          </p>
+          <div class="row row-wrap" style="margin-top:16px">
+            <a class="btn btn--accent" href="/teams/new/<%= event.slug %>">Create a team</a>
+            <a class="btn btn--ghost" href="/hackathons/<%= event.slug %>/teams">See existing teams</a>
+          </div>
+        </div>
+      <% } %>
+    <% } else if (state.registration === 'closed') { %>
+      <div class="notice notice--warn">
+        <strong class="notice__title">Registration is closed</strong>
+        Registration for <%= event.name %> closed <%= h.fmt.dateTime(event.registration_closes_at || event.submission_deadline) %>.
+        If you were already registered you can still submit. Ask the organizer directly if you think this is wrong.
+      </div>
+      <p style="margin-top:20px"><a class="btn btn--ghost" href="/hackathons">Browse other hackathons</a></p>
+    <% } else if (state.registration === 'not_open') { %>
+      <div class="notice notice--info">
+        <strong class="notice__title">Not open yet</strong>
+        Registration opens <%= h.fmt.dateTime(event.registration_opens_at) %>.
+      </div>
+    <% } else { %>
+      <div class="card" style="margin-bottom:24px">
+        <h2 class="card__title" style="margin-bottom:14px">What you are agreeing to</h2>
+        <dl class="kv">
+          <div><dt>Event</dt><dd><%= event.name %></dd></div>
+          <div><dt>Format</dt><dd><%= h.formatLabel(event.format) %></dd></div>
+          <div><dt>Build window</dt><dd><%= h.fmt.range(event.starts_at, event.ends_at) %></dd></div>
+          <div><dt>Submissions close</dt><dd><%= h.fmt.dateTime(event.submission_deadline) %></dd></div>
+          <div><dt>Team size</dt><dd><%= event.min_team_size %>–<%= event.max_team_size %><%= event.allow_solo ? ' · solo ok' : '' %></dd></div>
+        </dl>
+        <% if (event.eligibility) { %>
+          <div class="notice notice--info" style="margin-top:16px">
+            <strong class="notice__title">Eligibility</strong>
+            <%= event.eligibility %>
+          </div>
+        <% } %>
+      </div>
+
+      <form method="post" action="/hackathons/<%= event.slug %>/register">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <div class="field">
+          <label class="check">
+            <input type="checkbox" name="confirm" required>
+            <span class="check__text">
+              <strong>I have read the rules and I will build during the event window.</strong>
+              I understand submissions close at the time above and the server will refuse anything submitted after it.
+            </span>
+          </label>
+        </div>
+        <div class="row row-wrap">
+          <button class="btn btn--accent btn--lg" type="submit">Register</button>
+          <a class="btn btn--ghost btn--lg" href="/hackathons/<%= event.slug %>">Not yet</a>
+        </div>
+      </form>
+    <% } %>
+  </div>
+</section>

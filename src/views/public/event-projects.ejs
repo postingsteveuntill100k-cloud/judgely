@@ -1,0 +1,47 @@
+<section class="page-head">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/hackathons">Hackathons</a> <span aria-hidden="true">/</span>
+      <a href="/hackathons/<%= event.slug %>"><%= event.name %></a> <span aria-hidden="true">/</span>
+      <span class="muted">Projects</span>
+    </nav>
+    <p class="eyebrow" style="margin-top:20px">Submissions</p>
+    <h1><%= total %> <%= h.fmt.plural(total, 'project') %><% if (track) { %> in <%= track.name %><% } %></h1>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <form class="filterbar" method="get" action="/hackathons/<%= event.slug %>/projects">
+      <div class="filterbar__search">
+        <label class="sr-only" for="q">Search projects</label>
+        <input class="input" id="q" type="search" name="q" value="<%= filters.q %>" placeholder="Search these projects">
+      </div>
+      <div class="filterbar__group">
+        <label class="sr-only" for="track">Track</label>
+        <select class="select" id="track" name="track">
+          <option value="">All tracks</option>
+          <% tracks.forEach(t => { %>
+            <option value="<%= t.slug %>" <%= filters.track === t.slug ? 'selected' : '' %>><%= t.name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <button class="btn btn--primary" type="submit">Apply</button>
+      <% if (filters.q || filters.track) { %><a class="btn btn--quiet" href="/hackathons/<%= event.slug %>/projects">Reset</a><% } %>
+    </form>
+
+    <% if (!projects.length) { %>
+      <div class="empty" style="margin-top:26px">
+        <div class="empty__title">No projects match</div>
+        <p class="empty__body">Nothing has been submitted here that matches your filters.</p>
+      </div>
+    <% } else { %>
+      <div class="grid grid-auto" style="margin-top:26px">
+        <% projects.forEach(project => { %>
+          <%- include('../partials/project-card', { project }) %>
+        <% }) %>
+      </div>
+      <%- include('../partials/pager', { page, pages, base: '/hackathons/' + event.slug + '/projects?track=' + filters.track + '&q=' + encodeURIComponent(filters.q) }) %>
+    <% } %>
+  </div>
+</section>

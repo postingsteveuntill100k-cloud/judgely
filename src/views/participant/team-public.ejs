@@ -1,0 +1,83 @@
+<%
+  const teamUrl = `/hackathons/${event.slug}/teams/${team.slug}`;
+%>
+<section class="page-head">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/hackathons"><%= event.name %></a> <span aria-hidden="true">/</span>
+      <a href="<%= teamUrl %>"><%= team.name %></a> <span aria-hidden="true">/</span>
+      <span class="muted">Teams</span>
+    </nav>
+    <p class="eyebrow" style="margin-top:22px">Team</p>
+    <h1><%= team.name %></h1>
+    <p class="small muted" style="margin-top:6px">
+      <%= members.length %> <%= h.fmt.plural(members.length, 'member') %> ·
+      teams may have <%= event.min_team_size %>–<%= event.max_team_size %><%= event.allow_solo ? ' members' : ' members, no solo' %>
+    </p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:12px">Members</h2>
+          <ul class="member-list">
+            <% members.forEach(m => { %>
+              <li class="person">
+                <span class="avatar avatar--sm" style="background:<%= h.avatarColor(m.avatar_seed) %>"><%= h.initials(m.display_name) %></span>
+                <span class="grow">
+                  <a class="person__name" href="/u/<%= m.username %>"><%= m.display_name %></a>
+                  <span class="person__meta">@<%= m.username %><%= m.team_role === 'owner' ? ' · team lead' : '' %></span>
+                </span>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+
+        <% if (team.description) { %>
+          <div class="card" style="margin-top:20px">
+            <h2 class="card__title" style="margin-bottom:10px">What they are building</h2>
+            <p style="margin:0"><%= team.description %></p>
+          </div>
+        <% } %>
+
+        <% if (projects.length) { %>
+          <h2 style="font-size:1.05rem;margin:32px 0 14px">Submitted projects</h2>
+          <div class="grid grid-auto">
+            <% projects.forEach(p => { %>
+              <%- include('../partials/project-card', { project: Object.assign({}, p, { event_slug: event.slug, team_name: team.name, team_avatar_seed: team.avatar_seed }) }) %>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Join this team</h2>
+          <% if (membership) { %>
+            <div class="notice notice--ok">You are on this team as the <%= membership.role %>.</div>
+            <a class="btn btn--primary btn--block" style="margin-top:12px" href="/teams/<%= team.id %>">Open your team</a>
+          <% } else if (members.length >= event.max_team_size) { %>
+            <p class="small muted">This team is full at <%= event.max_team_size %> members. Find another team on the event page.</p>
+            <a class="btn btn--ghost btn--block" style="margin-top:12px" href="/hackathons/<%= event.slug %>/teams">See other teams</a>
+          <% } else { %>
+            <p class="small muted">A team of <%= event.min_team_size %>–<%= event.max_team_size %><%= event.allow_solo ? ' members' : ' members' %>. You can only be on one team for this hackathon.</p>
+            <form method="post" action="/join" style="margin-top:12px">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <input type="hidden" name="event" value="<%= event.slug %>">
+              <input type="hidden" name="team" value="<%= team.slug %>">
+              <button class="btn btn--accent btn--block" type="submit">Join <%= team.name %></button>
+            </form>
+          <% } %>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">All teams</h2>
+          <a class="btn btn--ghost btn--block" href="/hackathons/<%= event.slug %>/teams">Browse teams in <%= event.name %></a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

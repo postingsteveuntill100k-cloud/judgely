@@ -1,0 +1,161 @@
+<%
+  const state = h.eventState ? null : null;
+%>
+<section class="hero">
+  <div class="wrap">
+    <div class="hero__grid">
+      <div class="hero__lead">
+        <p class="eyebrow eyebrow--accent">Hackathons worth showing up for</p>
+        <h1>Find a hackathon.<br>Build something real.<br><span class="hero__accent">Get it judged.</span></h1>
+        <p class="lede" style="margin-top:22px">
+          Every event here has a real prize pool, real dates and a published judging rubric.
+          Register, join a team, submit a repository — then let the judges work through a queue
+          instead of a spreadsheet.
+        </p>
+        <form class="hero__search" method="get" action="/hackathons" role="search">
+          <label class="sr-only" for="hero-q">Search hackathons</label>
+          <input class="input" id="hero-q" type="search" name="q" placeholder="Search by name, theme or keyword" autocomplete="off">
+          <button class="btn btn--primary" type="submit">Search</button>
+        </form>
+        <div class="hero__links">
+          <a href="/hackathons?status=open">Registration open</a>
+          <span aria-hidden="true">·</span>
+          <a href="/hackathons?format=offline">In person</a>
+          <span aria-hidden="true">·</span>
+          <a href="/projects">Project showcase</a>
+        </div>
+      </div>
+
+      <aside class="hero__panel" aria-label="What Hackerly does">
+        <div class="hero__panel-row">
+          <span class="hero__panel-num"><%= platform.events %></span>
+          <span class="hero__panel-label">hackathons run on Hackerly</span>
+        </div>
+        <div class="hero__panel-row">
+          <span class="hero__panel-num"><%= platform.projects %></span>
+          <span class="hero__panel-label">projects submitted and reviewed</span>
+        </div>
+        <div class="hero__panel-row">
+          <span class="hero__panel-num"><%= platform.users %></span>
+          <span class="hero__panel-label">people building, hosting and judging</span>
+        </div>
+        <div class="hero__panel-foot">
+          <p class="small">
+            Running the event instead? <a href="/host">Host a hackathon →</a>
+          </p>
+          <p class="small">
+            Invited to judge? <a href="/judge">Open your reviews →</a>
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+
+<section class="section section--line">
+  <div class="wrap">
+    <div class="section__head">
+      <div>
+        <p class="eyebrow"><%= openCount %> open for registration right now</p>
+        <h2>Upcoming hackathons</h2>
+      </div>
+      <a class="btn btn--ghost" href="/hackathons">See all <%= platform.events %> hackathons</a>
+    </div>
+
+    <% if (!featured.length) { %>
+      <div class="empty">
+        <div class="empty__title">No published hackathons yet</div>
+        <p class="empty__body">This install has no live events. If you are the organizer, publish one and it will appear here within a page refresh.</p>
+        <a class="btn btn--primary" href="/host/events/new">Host a hackathon</a>
+      </div>
+    <% } else { %>
+      <div class="grid grid-auto-lg">
+        <% featured.forEach(event => { %>
+          <%- include('../partials/event-card', { event, state: event.state, counts: null }) %>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>
+
+<% if (past.length) { %>
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head">
+      <div>
+        <p class="eyebrow">Recently finished</p>
+        <h2>Results and projects are public</h2>
+      </div>
+      <a class="btn btn--ghost" href="/projects">Browse the showcase</a>
+    </div>
+    <div class="table-wrap">
+      <table class="data">
+        <thead>
+          <tr><th>Hackathon</th><th>Dates</th><th>Format</th><th>Results</th><th></th></tr>
+        </thead>
+        <tbody>
+          <% past.forEach(e => { %>
+            <tr>
+              <td>
+                <a href="/hackathons/<%= e.slug %>" style="font-weight:580"><%= e.name %></a>
+                <div class="tiny muted"><%= e.tagline %></div>
+              </td>
+              <td class="nowrap small"><%= h.fmt.range(e.starts_at, e.ends_at) %></td>
+              <td><span class="tag"><%= h.formatLabel(e.format) %></span></td>
+              <td>
+                <% if (e.state.results === 'published') { %>
+                  <a class="tag tag--ok" href="/hackathons/<%= e.slug %>/results">Published</a>
+                <% } else { %>
+                  <span class="tag">Not published</span>
+                <% } %>
+              </td>
+              <td class="nowrap"><a class="btn btn--ghost btn--sm" href="/hackathons/<%= e.slug %>">Open</a></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<% if (showcase.length) { %>
+<section class="section section--line">
+  <div class="wrap">
+    <div class="section__head">
+      <div>
+        <p class="eyebrow">From the showcase</p>
+        <h2>What people actually shipped</h2>
+      </div>
+      <a class="btn btn--ghost" href="/projects">All projects</a>
+    </div>
+    <div class="grid grid-auto">
+      <% showcase.forEach(project => { %>
+        <%- include('../partials/project-card', { project }) %>
+      <% }) %>
+    </div>
+  </div>
+</section>
+<% } %>
+
+<section class="section section--line">
+  <div class="wrap">
+    <div class="grid grid-3 how">
+      <div class="how__step">
+        <span class="how__num">01</span>
+        <h3>Browse without an account</h3>
+        <p class="small muted">Every event page, track list and project is public. You only sign in when you want to do something: register, create a team, submit.</p>
+      </div>
+      <div class="how__step">
+        <span class="how__num">02</span>
+        <h3>Build with your team</h3>
+        <p class="small muted">Create a team or join one with an invite link. Keep the repository, the demo and the write-up together, and submit once before the deadline.</p>
+      </div>
+      <div class="how__step">
+        <span class="how__num">03</span>
+        <h3>Get judged against a rubric</h3>
+        <p class="small muted">Judges score the criteria the organizer published, with weights. Scores stay private. When results are released you see the ranking and the breakdown.</p>
+      </div>
+    </div>
+  </div>
+</section>

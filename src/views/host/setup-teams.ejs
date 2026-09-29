@@ -1,0 +1,71 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Step <%= stepIndex + 1 %> of <%= stepCount %></p>
+        <h1 style="font-size:1.6rem">Teams</h1>
+        <p class="small muted" style="margin:8px 0 0;max-width:60ch">These are server rules, not form hints. A full team cannot take a new member, whatever the browser thinks.</p>
+      </div>
+      <% if (req.query.saved) { %><span class="tag tag--ok">Saved</span><% } %>
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <form method="post" action="/host/events/<%= event.slug %>/setup/teams">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="min_team_size">Minimum team size</label>
+                <input class="input" id="min_team_size" name="min_team_size" type="number" min="1" max="20" value="<%= input.minTeamSize %>">
+                <p class="field__hint">Use 1 if a team can be a single person.</p>
+              </div>
+              <div class="field">
+                <label class="field__label" for="max_team_size">Maximum team size</label>
+                <input class="input" id="max_team_size" name="max_team_size" type="number" min="1" max="20" value="<%= input.maxTeamSize %>" required>
+                <p class="field__hint">Joining is refused once a team has this many members.</p>
+              </div>
+            </div>
+            <div class="field">
+              <label class="check">
+                <input type="checkbox" name="allow_solo" value="1" <%= input.allowSolo ? 'checked' : '' %>>
+                <span class="check__text">
+                  <strong>Allow solo entries</strong>
+                  One person can form a team and submit alone. Turn this off if the event is meant to be a team exercise.
+                </span>
+              </label>
+            </div>
+            <div class="field">
+              <label class="check">
+                <input type="checkbox" name="allow_cross_college" value="1" <%= input.allowCrossCollege ? 'checked' : '' %>>
+                <span class="check__text">
+                  <strong>Allow mixed institutions</strong>
+                  People from different schools, colleges or companies on one team.
+                </span>
+              </label>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn--ghost" type="submit" name="_action" value="save">Save and stay</button>
+              <button class="btn btn--primary" type="submit" name="_action" value="next">Save and continue</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Current rule</h2>
+          <p class="small">
+            Teams of <strong><%= event.min_team_size %>–<%= event.max_team_size %></strong><%= event.allow_solo ? ', solo welcome' : ', no solo entries' %>.
+          </p>
+          <p class="tiny muted" style="margin-top:10px">
+            Changing this after people have formed teams does not disband them. It only affects new
+            teams and new members.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

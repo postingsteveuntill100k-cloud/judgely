@@ -1,0 +1,202 @@
+<%
+  const answers = h.answersOf(project);
+  const special = { repo_url: 'repo_url', demo_url: 'demo_url', video_url: 'video_url', docs_url: 'docs_url' };
+%>
+<section class="page-head">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/teams">Your teams</a> <span aria-hidden="true">/</span>
+      <a href="/teams/<%= team.id %>"><%= team.name %></a> <span aria-hidden="true">/</span>
+      <span class="muted"><%= project.title %></span>
+    </nav>
+    <div class="row row-wrap row-between" style="margin-top:18px;align-items:flex-start;gap:20px">
+      <div>
+        <h1><%= project.title %></h1>
+        <p class="small muted" style="margin-top:4px">
+          <%= event.name %> · <%= project.status === 'draft' ? 'not submitted yet' : 'submitted ' + h.fmt.dateTime(project.submitted_at) %> ·
+          deadline <%= h.fmt.dateTime(event.submission_deadline) %>
+        </p>
+      </div>
+      <div class="row row-wrap">
+        <span class="tag <%= h.projectStatusTone(project.status) %>"><%= h.projectStatusLabel(project.status) %></span>
+        <% if (project.status !== 'draft') { %>
+          <a class="btn btn--ghost btn--sm" href="/hackathons/<%= event.slug %>/projects/<%= project.slug %>">View public page</a>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <% if (saved) { %><div class="notice notice--ok" style="margin-bottom:20px">Saved. Nothing is submitted until you press Submit.</div><% } %>
+    <% if (submitted) { %>
+      <div class="notice notice--ok" style="margin-bottom:20px">
+        <strong class="notice__title">Submitted</strong>
+        The judges can see this. You can keep editing until <%= h.fmt.dateTime(event.submission_deadline) %>.
+      </div>
+    <% } %>
+    <% if (formError) { %>
+      <div class="notice notice--danger" style="margin-bottom:20px">
+        <strong class="notice__title">The server refused the submission</strong>
+        <%= formError %>
+      </div>
+    <% } %>
+    <% if (!canEdit) { %>
+      <div class="notice notice--warn" style="margin-bottom:20px">
+        <strong class="notice__title">Submissions are closed</strong>
+        The deadline was <%= h.fmt.dateTime(event.submission_deadline) %>. The server rejects any further edit, so the form is read-only.
+      </div>
+    <% } %>
+
+    <div class="ws">
+      <div class="ws__main">
+        <form method="post" action="/teams/<%= team.id %>/project/<%= project.slug %>" id="project-form">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:16px">The project</h2>
+            <div class="field">
+              <label class="field__label" for="title">Project name<span class="field__req">*</span></label>
+              <input class="input" id="title" name="title" value="<%= project.title %>" maxlength="90" required <%= canEdit ? '' : 'disabled' %>>
+            </div>
+            <div class="field">
+              <label class="field__label" for="tagline">One-line summary</label>
+              <input class="input" id="tagline" name="tagline" value="<%= project.tagline %>" maxlength="160" placeholder="Flood alerts for renters, not just river gauges." <%= canEdit ? '' : 'disabled' %>>
+              <p class="field__hint">This is the first line judges and the showcase see.</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="summary">What it does</label>
+              <textarea class="textarea" id="summary" name="summary" maxlength="400" <%= canEdit ? '' : 'disabled' %>><%= project.summary %></textarea>
+            </div>
+            <div class="field">
+              <label class="field__label" for="description">How it works</label>
+              <textarea class="textarea" id="description" name="description" maxlength="8000" style="min-height:150px" <%= canEdit ? '' : 'disabled' %>><%= project.description %></textarea>
+            </div>
+            <div class="field">
+              <label class="field__label" for="track_id">Track</label>
+              <select class="select" id="track_id" name="track_id" <%= canEdit ? '' : 'disabled' %>>
+                <option value="">Choose a track</option>
+                <% tracks.forEach(t => { %>
+                  <option value="<%= t.id %>" <%= project.track_id === t.id ? 'selected' : '' %>><%= t.name %></option>
+                <% }) %>
+              </select>
+              <p class="field__hint">Judges use the same rubric whichever track you enter.</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="tech_stack">Technologies used</label>
+              <input class="input" id="tech_stack" name="tech_stack" value="<%= (project.tech_stack || []).join(', ') %>" placeholder="TypeScript, Postgres, Fly" <%= canEdit ? '' : 'disabled' %>>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <h2 class="card__title" style="margin-bottom:6px">Links</h2>
+            <p class="small muted" style="margin-bottom:16px">Only https links are accepted. A judge who cannot open these cannot score you fairly.</p>
+            <div class="field">
+              <label class="field__label" for="repo_url">Source code<span class="field__req">*</span></label>
+              <input class="input" id="repo_url" name="repo_url" value="<%= project.repo_url %>" placeholder="https://github.com/you/project" <%= canEdit ? '' : 'disabled' %>>
+            </div>
+            <div class="field">
+              <label class="field__label" for="demo_url">Live demo<span class="field__req">*</span></label>
+              <input class="input" id="demo_url" name="demo_url" value="<%= project.demo_url %>" placeholder="https://your-project.example" <%= canEdit ? '' : 'disabled' %>>
+            </div>
+            <div class="field">
+              <label class="field__label" for="video_url">Demo video</label>
+              <input class="input" id="video_url" name="video_url" value="<%= project.video_url %>" placeholder="https://www.youtube.com/watch?v=…" <%= canEdit ? '' : 'disabled' %>>
+            </div>
+            <div class="field">
+              <label class="field__label" for="docs_url">Documentation</label>
+              <input class="input" id="docs_url" name="docs_url" value="<%= project.docs_url %>" placeholder="https://github.com/you/project#readme" <%= canEdit ? '' : 'disabled' %>>
+            </div>
+            <div class="field">
+              <label class="field__label" for="image_url">Screenshot URL</label>
+              <input class="input" id="image_url" name="image_url" value="<%= project.image_url %>" placeholder="https://…/screenshot.png" <%= canEdit ? '' : 'disabled' %>>
+              <p class="field__hint">Optional. Without one we generate a title card from the project name.</p>
+            </div>
+          </div>
+
+          <% const custom = fields.filter(f => !['repo_url','demo_url','video_url','docs_url','tech_stack','problem','how_it_works','tried','summary'].includes(f.key)); %>
+          <% if (custom.length) { %>
+            <div class="card" style="margin-top:20px">
+              <h2 class="card__title" style="margin-bottom:16px">Extra questions from the organizer</h2>
+              <% custom.forEach(f => { %>
+                <div class="field">
+                  <label class="field__label" for="field_<%= f.key %>">
+                    <%= f.label %><% if (f.required) { %><span class="field__req">*</span><% } %>
+                  </label>
+                  <% if (f.type === 'textarea') { %>
+                    <textarea class="textarea" id="field_<%= f.key %>" name="field_<%= f.key %>" maxlength="4000" <%= canEdit ? '' : 'disabled' %>><%= answers[f.key] || '' %></textarea>
+                  <% } else { %>
+                    <input class="input" id="field_<%= f.key %>" name="field_<%= f.key %>" value="<%= answers[f.key] || '' %>" placeholder="<%= f.placeholder || '' %>" <%= canEdit ? '' : 'disabled' %>>
+                  <% } %>
+                  <% if (f.help) { %><p class="field__hint"><%= f.help %></p><% } %>
+                </div>
+              <% }) %>
+            </div>
+          <% } %>
+
+          <% if (canEdit) { %>
+            <div class="form-actions">
+              <button class="btn btn--ghost" type="submit" name="action" value="save">Save draft</button>
+              <% if (project.status === 'submitted') { %>
+                <button class="btn btn--ghost" type="submit" name="action" value="withdraw" data-confirm="Withdraw the submission? It will go back to draft and the judges will stop seeing it.">Withdraw</button>
+              <% } %>
+              <button class="btn btn--accent" type="submit" name="action" value="submit">
+                <%= project.status === 'submitted' ? 'Save and keep submitted' : 'Submit project' %>
+              </button>
+            </div>
+          <% } %>
+        </form>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:12px">Completion</h2>
+          <% if (issues.length) { %>
+            <div class="notice notice--warn">
+              <strong class="notice__title"><%= issues.length %> thing<%= issues.length === 1 ? '' : 's' %> left</strong>
+              <ul style="margin:6px 0 0;padding-left:18px">
+                <% issues.forEach(i => { %><li><%= i.message %></li><% }) %>
+              </ul>
+            </div>
+          <% } else { %>
+            <div class="notice notice--ok">Everything the organizer asked for is here. <%= project.status === 'draft' ? 'Press Submit when you are ready.' : 'Submitted.' %></div>
+          <% } %>
+          <p class="tiny muted" style="margin-top:12px">
+            This list is produced by the same validation the server runs when you submit.
+            A disabled button would not protect anything; the server refuses an incomplete submission.
+          </p>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Preview</h2>
+          <% if (project.status !== 'draft') { %>
+            <p class="small"><a href="/hackathons/<%= event.slug %>/projects/<%= project.slug %>">See the public page →</a></p>
+          <% } else { %>
+            <p class="small muted">The public page goes live the moment you submit, if the organizer has opened the showcase.</p>
+          <% } %>
+          <h3 class="card__title" style="margin:18px 0 8px;font-size:.86rem">Judging</h3>
+          <p class="tiny muted">
+            <%= event.judging_blurb || 'Assigned judges score this project against the published rubric.' %>
+            Individual judge scores are never shown to you.
+          </p>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Team</h2>
+          <ul class="judge-list">
+            <% members.forEach(m => { %>
+              <li class="person">
+                <span class="avatar avatar--sm" style="background:<%= h.avatarColor(m.avatar_seed) %>"><%= h.initials(m.display_name) %></span>
+                <span class="grow">
+                  <span class="person__name"><%= m.display_name %></span>
+                  <span class="person__meta">@<%= m.username %></span>
+                </span>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

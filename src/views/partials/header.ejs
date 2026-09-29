@@ -1,0 +1,55 @@
+<%
+  const active = (key) => (typeof nav !== 'undefined' && nav === key) ? ' aria-current="page"' : '';
+  const p = (typeof actor !== 'undefined' && actor) ? actor : null;
+%>
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">H</span>
+      <span>Hackerly</span>
+      <span class="brand__sub">Hackathon platform</span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="sr-only">Menu</span>
+    </button>
+
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="/hackathons"<%= active('hackathons') %>>Explore hackathons</a>
+      <a href="/projects"<%= active('projects') %>>Showcase</a>
+      <a href="/host"<%= active('host') %>>Host a hackathon</a>
+      <a href="/judge"<%= active('judge') %>>Judge at Hackerly</a>
+      <a href="/about"<%= active('about') %>>About</a>
+    </nav>
+
+    <div class="header-actions">
+      <% if (p) { %>
+        <a class="btn btn--ghost btn--sm hide-sm" href="/dashboard">My dashboard</a>
+        <div class="menu" data-menu-root>
+          <button class="btn btn--quiet" type="button" data-menu-trigger aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+            <span class="avatar avatar--xs" data-seed="<%= p.avatarSeed %>" data-name="<%= p.displayName %>"><%= p.displayName.slice(0,1).toUpperCase() %></span>
+            <span class="hide-xs"><%= p.displayName.split(' ')[0] %></span>
+          </button>
+          <div class="menu__panel" role="menu">
+            <div class="menu__header">
+              <div style="font-weight:600;font-size:.9rem"><%= p.displayName %></div>
+              <div class="tiny muted mono">@<%= p.username %></div>
+            </div>
+            <a href="/dashboard" role="menuitem">Dashboard</a>
+            <a href="/u/<%= p.username %>" role="menuitem">My public profile</a>
+            <a href="/settings/profile" role="menuitem">Profile settings</a>
+            <hr>
+            <form method="post" action="/auth/logout">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button type="submit" role="menuitem">Sign out</button>
+            </form>
+          </div>
+        </div>
+      <% } else { %>
+        <a class="btn btn--quiet btn--sm" href="/auth/signin">Sign in</a>
+        <a class="btn btn--primary btn--sm" href="/auth/signup">Sign up</a>
+      <% } %>
+    </div>
+  </div>
+</header>

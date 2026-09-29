@@ -1,0 +1,153 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/host/events/<%= event.slug %>/projects">Projects</a> <span aria-hidden="true">/</span>
+      <span class="muted"><%= project.title %></span>
+    </nav>
+    <div class="row row-wrap row-between" style="margin-top:16px;align-items:flex-start;gap:16px">
+      <div>
+        <h1 style="font-size:1.6rem"><%= project.title %></h1>
+        <p class="small muted" style="margin-top:4px">
+          <%= project.team_name %> · <%= project.track_name || 'no track' %> ·
+          <span class="tag <%= h.projectStatusTone(project.status) %>"><%= h.projectStatusLabel(project.status) %></span>
+        </p>
+      </div>
+      <div class="row row-wrap">
+        <% if (project.status !== 'draft') { %>
+          <a class="btn btn--ghost btn--sm" href="/hackathons/<%= event.slug %>/projects/<%= project.slug %>" target="_blank" rel="noopener">Public page</a>
+        <% } %>
+        <a class="btn btn--primary btn--sm" href="/host/events/<%= event.slug %>/assignments?project=<%= project.id %>">Assign judges</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:12px">Submission</h2>
+          <% if (project.tagline) { %><p style="font-size:1.05rem;font-weight:560;margin-bottom:12px"><%= project.tagline %></p><% } %>
+          <p><%= project.summary || 'No summary.' %></p>
+          <% if (project.description && project.description !== project.summary) { %>
+            <div class="prose" style="margin-top:16px"><%- h.renderRichText(project.description) %></div>
+          <% } %>
+        </div>
+
+        <div class="card" style="margin-top:20px">
+          <h2 class="card__title" style="margin-bottom:12px">Links and answers</h2>
+          <dl class="kv">
+            <div><dt>Repository</dt><dd><% if (project.repo_url) { %><a href="<%= project.repo_url %>" target="_blank" rel="noopener nofollow"><%= h.fmt.host(project.repo_url) %> ↗</a><% } else { %>—<% } %></dd></div>
+            <div><dt>Live demo</dt><dd><% if (project.demo_url) { %><a href="<%= project.demo_url %>" target="_blank" rel="noopener nofollow"><%= h.fmt.host(project.demo_url) %> ↗</a><% } else { %>—<% } %></dd></div>
+            <div><dt>Video</dt><dd><% if (project.video_url) { %><a href="<%= project.video_url %>" target="_blank" rel="noopener nofollow"><%= h.fmt.host(project.video_url) %> ↗</a><% } else { %>—<% } %></dd></div>
+            <div><dt>Docs</dt><dd><% if (project.docs_url) { %><a href="<%= project.docs_url %>" target="_blank" rel="noopener nofollow"><%= h.fmt.host(project.docs_url) %> ↗</a><% } else { %>—<% } %></dd></div>
+            <div><dt>Tech stack</dt><dd><%= (project.tech_stack || []).join(', ') || '—' %></dd></div>
+            <div><dt>Submitted</dt><dd><%= project.submitted_at ? h.fmt.dateTime(project.submitted_at) : 'Not submitted' %></dd></div>
+          </dl>
+          <% const ans = h.answersOf(project); const keys = Object.keys(ans).filter(k => ans[k] && !['tech_stack','problem','how_it_works'].includes(k)); %>
+          <% if (keys.length) { %>
+            <h3 class="card__title" style="margin:20px 0 10px;font-size:.9rem">Extra answers</h3>
+            <% keys.forEach(k => { %>
+              <div class="qa__row">
+                <dt class="mono"><%= k %></dt>
+                <dd><%= ans[k] %></dd>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+
+        <div class="card" style="margin-top:20px">
+          <div class="card__head">
+            <h2 class="card__title">Reviews</h2>
+            <span class="tag"><%= perJudge.length %> submitted of <%= assignments.length %> assigned</span>
+          </div>
+          <% if (!assignments.length) { %>
+            <div class="empty" style="padding:28px 20px">
+              <div class="empty__title">No judge assigned</div>
+              <p class="empty__body">This project cannot be ranked until at least one judge is assigned.</p>
+              <a class="btn btn--accent btn--sm" href="/host/events/<%= event.slug %>/assignments?project=<%= project.id %>">Assign a judge</a>
+            </div>
+          <% } else { %>
+            <ul class="list-rows">
+              <% assignments.forEach(a => { %>
+                <li class="list-rows__item">
+                  <div class="grow">
+                    <span class="list-rows__title"><%= a.judge_email %></span>
+                    <span class="list-rows__meta">
+                      <%= a.status %>
+                      <% if (a.review_submitted_at) { %> · <%= h.fmt.ago(a.review_submitted_at) %><% } %>
+                    </span>
+                  </div>
+                  <span class="tag <%= a.status === 'submitted' ? 'tag--ok' : 'tag--warn' %>"><%= a.status %></span>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+
+          <% if (perJudge.length) { %>
+            <h3 class="card__title" style="margin:24px 0 10px;font-size:.9rem">Submitted reviews</h3>
+            <% perJudge.forEach(pj => { %>
+              <div class="criterion" style="margin-bottom:12px">
+                <div class="criterion__head">
+                  <span class="criterion__name"><%= pj.judge ? (pj.judge.display_name || pj.judge.email) : 'Judge' %></span>
+                  <span class="criterion__weight"><%= pj.review.weighted_score != null ? Number(pj.review.weighted_score).toFixed(1) : '—' %> / 100</span>
+                </div>
+                <div class="row row-wrap" style="gap:6px;margin:8px 0">
+                  <% pj.scores.forEach(s => { %>
+                    <span class="tag tag--outline"><%= s.name %> <%= s.score %>/<%= s.max_score %></span>
+                  <% }) %>
+                </div>
+                <% if (pj.review.comment) { %><p class="small" style="margin:0"><%= pj.review.comment %></p><% } %>
+                <% if (pj.review.recommendation) { %><p class="tiny muted" style="margin:6px 0 0">Recommendation: <%= pj.review.recommendation %></p><% } %>
+              </div>
+            <% }) %>
+          <% } %>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Team</h2>
+          <ul class="judge-list">
+            <% members.forEach(m => { %>
+              <li class="person">
+                <span class="avatar avatar--sm" style="background:<%= h.avatarColor(m.avatar_seed) %>"><%= h.initials(m.display_name) %></span>
+                <span class="grow">
+                  <a class="person__name" href="/u/<%= m.username %>"><%= m.display_name %></a>
+                  <span class="person__meta">@<%= m.username %></span>
+                </span>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+
+        <% if (result) { %>
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:10px">Result</h2>
+            <dl class="kv">
+              <div><dt>Rank</dt><dd><%= h.rankSuffix(result.rank) %></dd></div>
+              <div><dt>Track rank</dt><dd><%= result.track_rank ? h.rankSuffix(result.track_rank) : '—' %></dd></div>
+              <div><dt>Final score</dt><dd><%= result.final_score != null ? Number(result.final_score).toFixed(1) : '—' %></dd></div>
+              <div><dt>Raw</dt><dd><%= result.raw_score != null ? Number(result.raw_score).toFixed(1) : '—' %></dd></div>
+              <div><dt>Published</dt><dd><%= result.published_at ? 'yes' : 'no' %></dd></div>
+            </dl>
+          </div>
+        <% } %>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Rubric used</h2>
+          <% if (!criteria.length) { %><p class="small muted">No rubric.</p><% } else { %>
+            <ul class="req-list">
+              <% criteria.forEach(c => { %>
+                <li><span><%= c.name %></span><span class="tag"><%= c.weight %> · max <%= c.max_score %></span></li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

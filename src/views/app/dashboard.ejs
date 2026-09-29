@@ -1,0 +1,167 @@
+<section class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Signed in as @<%= actor.username %></p>
+    <h1>Your dashboard</h1>
+    <p class="lede" style="margin-top:12px">Everything you are building, hosting and judging, in one place.</p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <% const openReviews = assignments.filter(a => a.status !== 'submitted'); %>
+    <% if (openReviews.length) { %>
+      <div class="callout callout--accent">
+        <div>
+          <strong><%= openReviews.length %> <%= h.fmt.plural(openReviews.length, 'review') %> waiting for you</strong>
+          <p class="small" style="margin:4px 0 0">You are judging <%= new Set(openReviews.map(a => a.event_slug)).size %> <%= h.fmt.plural(new Set(openReviews.map(a => a.event_slug)).size, 'hackathon') %>. Your scores are private to you.</p>
+        </div>
+        <a class="btn btn--primary" href="/judge/reviews">Open my reviews</a>
+      </div>
+    <% } %>
+
+    <% const needsWork = projects.filter(p => p.status === 'draft'); %>
+    <% if (needsWork.length) { %>
+      <div class="callout">
+        <div>
+          <strong><%= needsWork.length %> draft <%= h.fmt.plural(needsWork.length, 'submission') %> not sent yet</strong>
+          <p class="small" style="margin:4px 0 0">A draft is not a submission. Judges cannot see it until you submit.</p>
+        </div>
+        <a class="btn btn--ghost" href="/teams">Open your teams</a>
+      </div>
+    <% } %>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <div class="card__head">
+            <h2 class="card__title">Hackathons you are taking part in</h2>
+            <a class="btn btn--ghost btn--sm" href="/hackathons">Find more</a>
+          </div>
+          <% if (!events.length) { %>
+            <p class="small muted">You are not registered for anything yet.</p>
+            <a class="btn btn--accent btn--sm" href="/hackathons">Browse hackathons</a>
+          <% } else { %>
+            <ul class="list-rows">
+              <% events.forEach(e => { %>
+                <li class="list-rows__item">
+                  <div class="grow">
+                    <a class="list-rows__title" href="/hackathons/<%= e.slug %>"><%= e.name %></a>
+                    <span class="list-rows__meta"><%= h.fmt.range(e.starts_at, e.ends_at) %> · <%= h.formatLabel(e.format) %></span>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="/hackathons/<%= e.slug %>">Open</a>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
+
+        <% if (teams.length) { %>
+          <div class="card" style="margin-top:20px">
+            <div class="card__head">
+              <h2 class="card__title">Your teams</h2>
+              <a class="btn btn--ghost btn--sm" href="/teams">All teams</a>
+            </div>
+            <ul class="list-rows">
+              <% teams.forEach(t => { %>
+                <li class="list-rows__item">
+                  <div class="grow">
+                    <span class="list-rows__title"><%= t.name %></span>
+                    <span class="list-rows__meta"><%= t.event_name %> · you are the <%= t.my_team_role %></span>
+                  </div>
+                  <% if (t.project_title) { %>
+                    <span class="tag <%= h.projectStatusTone(t.project_status) %>"><%= h.projectStatusLabel(t.project_status) %></span>
+                  <% } else { %>
+                    <span class="tag tag--warn">No project</span>
+                  <% } %>
+                  <a class="btn btn--ghost btn--sm" href="/teams/<%= t.id %>">Open</a>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+
+        <% if (organized.length) { %>
+          <div class="card" style="margin-top:20px">
+            <div class="card__head">
+              <h2 class="card__title">Hackathons you organize</h2>
+              <a class="btn btn--ghost btn--sm" href="/host/events">Organizer view</a>
+            </div>
+            <ul class="list-rows">
+              <% organized.forEach(e => { %>
+                <li class="list-rows__item">
+                  <div class="grow">
+                    <span class="list-rows__title"><%= e.name %></span>
+                    <span class="list-rows__meta"><%= h.statusLabel(e.status) %> · <%= e.mode %> · <a href="/hackathons/<%= e.slug %>">public page</a></span>
+                  </div>
+                  <a class="btn btn--primary btn--sm" href="/host/events/<%= e.slug %>">Manage</a>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+
+        <% if (judges.length) { %>
+          <div class="card" style="margin-top:20px">
+            <div class="card__head">
+              <h2 class="card__title">Judging</h2>
+              <a class="btn btn--ghost btn--sm" href="/judge/events">Judge console</a>
+            </div>
+            <ul class="list-rows">
+              <% judges.forEach(j => { %>
+                <li class="list-rows__item">
+                  <div class="grow">
+                    <span class="list-rows__title"><%= j.event_name %></span>
+                    <span class="list-rows__meta"><%= j.assigned_count %> assigned · <%= j.submitted_count %> submitted</span>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="/judge/events/<%= j.event_slug %>">Open</a>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:12px">Your profile</h2>
+          <div class="person" style="margin-bottom:12px">
+            <span class="avatar avatar--lg" style="background:<%= h.avatarColor(actor.avatarSeed) %>"><%= h.initials(actor.displayName) %></span>
+            <span>
+              <span class="person__name" style="font-size:1rem"><%= actor.displayName %></span>
+              <span class="person__meta mono">@<%= actor.username %></span>
+            </span>
+          </div>
+          <% if (!actor.onboarded) { %>
+            <div class="notice notice--warn" style="margin-bottom:12px">
+              <strong class="notice__title">Your profile is empty</strong>
+              Judges and other participants see your name and username. A sentence about what you build makes teams want you.
+            </div>
+          <% } %>
+          <a class="btn btn--ghost btn--block" href="/settings/profile">Edit profile</a>
+          <a class="btn btn--quiet btn--block" style="margin-top:6px" href="/u/<%= actor.username %>">View public profile</a>
+        </div>
+
+        <% if (notifications.length) { %>
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:10px">Recent activity</h2>
+            <ul class="notif-list">
+              <% notifications.forEach(n => { %>
+                <li>
+                  <% if (n.link) { %><a href="<%= n.link %>"><strong><%= n.title %></strong></a><% } else { %><strong><%= n.title %></strong><% } %>
+                  <span class="tiny muted"><%= h.fmt.ago(n.created_at) %></span>
+                  <% if (n.body) { %><p class="tiny muted" style="margin:2px 0 0"><%= h.truncate(n.body, 120) %></p><% } %>
+                </li>
+              <% }) %>
+            </ul>
+          </div>
+        <% } %>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Run an event</h2>
+          <p class="small muted">Hackerly runs the whole hackathon: tracks, teams, submissions, judges, rubrics and results.</p>
+          <a class="btn btn--accent btn--block" style="margin-top:12px" href="/host/events/new">Host a hackathon</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

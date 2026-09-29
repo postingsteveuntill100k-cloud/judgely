@@ -1,0 +1,140 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Step <%= stepIndex + 1 %> of <%= stepCount %></p>
+        <h1 style="font-size:1.6rem">Review and publish</h1>
+        <p class="small muted" style="margin:8px 0 0;max-width:62ch">
+          This is what participants will see. Publishing makes the event page public and lists it in
+          discovery.
+        </p>
+      </div>
+      <span class="tag <%= h.statusTone(event.status) %>"><%= h.statusLabel(event.status) %></span>
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        <% if (event.status === 'draft') { %>
+          <div class="card" style="margin-bottom:20px">
+            <% if (blockers.length) { %>
+              <div class="attention" style="margin:0">
+                <h3>Not ready to publish</h3>
+                <ul>
+                  <% blockers.forEach(b => { %><li><%= b %></li><% }) %>
+                </ul>
+                <p class="tiny" style="margin-top:12px;color:#6d4804">The server refuses to publish until these are done. This is not a warning you can ignore.</p>
+              </div>
+            <% } else { %>
+              <div class="notice notice--ok" style="margin-bottom:16px">
+                <strong class="notice__title">Everything required is in place</strong>
+                Publishing makes <strong><%= event.name %></strong> public and opens registration according to your dates.
+              </div>
+            <% } %>
+            <form method="post" action="/host/events/<%= event.slug %>/publish" <%= blockers.length ? 'data-confirm="Publish this hackathon now?"' : '' %>>
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn--accent btn--lg" type="submit" <%= blockers.length ? 'disabled aria-disabled="true"' : '' %>>
+                Publish the hackathon
+              </button>
+            </form>
+          </div>
+        <% } else { %>
+          <div class="card" style="margin-bottom:20px">
+            <div class="notice notice--ok" style="margin-bottom:16px">
+              <strong class="notice__title">Published</strong>
+              The event page is live. <a href="/hackathons/<%= event.slug %>" target="_blank" rel="noopener">Open it ↗</a>
+            </div>
+            <div class="row row-wrap">
+              <form method="post" action="/host/events/<%= event.slug %>/status">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button class="btn btn--primary" type="submit">
+                  <%= event.status === 'published' ? 'Mark as live' : event.status === 'live' ? 'Close submissions' : event.status === 'closed' ? 'Archive the event' : 'Archived' %>
+                </button>
+              </form>
+              <form method="post" action="/host/events/<%= event.slug %>/unpublish" data-confirm="Move back to draft? The event page stops being public.">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button class="btn btn--ghost" type="submit">Unpublish</button>
+              </form>
+            </div>
+          </div>
+        <% } %>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:14px">Event page preview</h2>
+          <dl class="kv">
+            <div><dt>Name</dt><dd><%= event.name %></dd></div>
+            <div><dt>Tagline</dt><dd><%= event.tagline || '—' %></dd></div>
+            <div><dt>Mode</dt><dd><%= event.mode %></dd></div>
+            <div><dt>Format</dt><dd><%= h.formatLabel(event.format) %><%= event.city ? ' · ' + event.city : '' %></dd></div>
+            <div><dt>Prize</dt><dd><%= h.fmt.prize(event.prize_pool_cents, event.prize_currency, event.prize_headline) %></dd></div>
+            <div><dt>Dates</dt><dd><%= h.fmt.range(event.starts_at, event.ends_at) %></dd></div>
+            <div><dt>Submissions close</dt><dd><%= h.fmt.dateTime(event.submission_deadline) %></dd></div>
+            <div><dt>Teams</dt><dd><%= event.min_team_size %>–<%= event.max_team_size %><%= event.allow_solo ? ' · solo ok' : '' %></dd></div>
+            <div><dt>Tracks</dt><dd><%= tracks.length %></dd></div>
+            <div><dt>Rubric</dt><dd><%= criteria.length %> criteria<%= criteria.length ? ' · weights ' + criteria.reduce((a,c)=>a+c.weight,0) : '' %></dd></div>
+            <div><dt>Judging method</dt><dd><%= event.judging_mode === 'normalized' ? 'Normalized, λ = ' + event.normalize_lambda : 'Plain mean' %></dd></div>
+            <div><dt>Showcase</dt><dd><%= event.showcase_visibility === 'public' ? 'Public once submitted' : 'Private' %></dd></div>
+            <div><dt>Results</dt><dd><%= event.results_visibility === 'public' ? 'Will be public' : 'Private until you publish' %></dd></div>
+          </dl>
+        </div>
+
+        <div class="card" style="margin-top:20px">
+          <h2 class="card__title" style="margin-bottom:14px">Tracks</h2>
+          <% if (!tracks.length) { %><p class="small muted">No tracks yet.</p><% } else { %>
+            <ul class="list-rows">
+              <% tracks.forEach(t => { %>
+                <li class="list-rows__item">
+                  <span class="track-card__n" style="background:<%= h.accentFor('trk-' + t.slug) %>"></span>
+                  <div class="grow">
+                    <span class="list-rows__title"><%= t.name %></span>
+                    <span class="list-rows__meta"><%= t.description || 'No description' %></span>
+                  </div>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
+
+        <div class="card" style="margin-top:20px">
+          <h2 class="card__title" style="margin-bottom:14px">Rubric</h2>
+          <% if (!criteria.length) { %><p class="small muted">No rubric yet.</p><% } else { %>
+            <div class="table-wrap" style="border:0">
+              <table class="data">
+                <thead><tr><th>Criterion</th><th class="num">Weight</th><th class="num">Max</th><th>Required</th></tr></thead>
+                <tbody>
+                  <% criteria.forEach(c => { %>
+                    <tr>
+                      <td><%= c.name %><div class="tiny muted"><%= c.description %></div></td>
+                      <td class="num"><%= c.weight %></td>
+                      <td class="num"><%= c.max_score %></td>
+                      <td><%= c.required ? 'yes' : 'no' %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          <% } %>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">What happens on publish</h2>
+          <ul class="check-list check-list--sm">
+            <li>The event page becomes public</li>
+            <li>It appears in <a href="/hackathons">Explore hackathons</a></li>
+            <li>Registration opens according to your dates</li>
+            <li>Judges can be invited and assignments created</li>
+            <li>Nothing is submitted for you: teams still have to do the work</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-backdrop:0;margin-bottom:10px">Next after this</h2>
+          <a class="btn btn--ghost btn--block" href="/host/events/<%= event.slug %>/judges">Invite judges</a>
+          <a class="btn btn--ghost btn--block" style="margin-top:8px" href="/host/events/<%= event.slug %>/assignments">Assign projects</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,131 @@
+<section class="page-head">
+  <div class="wrap">
+    <p class="eyebrow">Setup guide</p>
+    <h1>Running a hackathon on Hackerly</h1>
+    <p class="lede" style="margin-top:14px">
+      Ten steps. Each one saves immediately, so you can stop and come back. You cannot publish
+      until the pieces that participants and judges depend on are in place.
+    </p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="ws">
+      <div class="ws__main doc">
+        <h2>1 · Name and describe it</h2>
+        <p>
+          The name, a one-line tagline and a description of at least 40 characters. The description
+          is what a stranger reads before deciding to register, so write it for them, not for the
+          people who already know you.
+        </p>
+
+        <h2>2 · Dates</h2>
+        <p>
+          Registration opening and closing, the build window, the submission deadline, the judging
+          period and when results go out. Only the submission deadline is mandatory, because the
+          server has to know when to refuse writes. Everything else you leave blank simply is not
+          shown.
+        </p>
+        <p>
+          All times are stored in UTC. The countdown on the public event page tells participants how
+          long is left, and the server enforces the deadline itself — a stale browser tab or a
+          crafted request gets the same answer.
+        </p>
+
+        <h2>3 · Prizes and eligibility</h2>
+        <p>
+          A prize pool with a currency, or a headline if you want to write “₹5,00,000 plus
+          hardware”. Eligibility text appears on the event page, so use it for age or region limits
+          if you have them.
+        </p>
+
+        <h2>4 · Teams</h2>
+        <p>
+          Minimum and maximum team size, and whether a solo entry counts. If you set a minimum above
+          one, participants have to form a team before they can submit — the server enforces it
+          rather than trusting the form.
+        </p>
+
+        <h2>5 · Tracks</h2>
+        <p>
+          Tracks are how you split a large field. Each has a name, a description, what a good entry
+          looks like, and an optional prize. A track cannot be deleted once a project has used it,
+          because the projects reference it.
+        </p>
+
+        <h2>6 · Submission fields</h2>
+        <p>
+          You decide what a submission contains: repository, demo, video, documentation,
+          technologies, and any written questions you want answered. Mark the ones that are required
+          and the server refuses an incomplete submission with a message naming what is missing.
+        </p>
+
+        <h2>7 · Judging</h2>
+        <p>
+          A rubric: named criteria, each with a weight and a maximum score. Weights must add up to
+          100, or all be zero for equal weighting. Judges score against this rubric and nothing
+          else — a request that names a criterion which is not in the rubric is rejected.
+        </p>
+        <p>
+          You also choose the aggregation method: a plain mean of the reviews, or the documented
+          normalization that removes panel harshness and scales inside each track. See
+          <code>JUDGING.md</code>.
+        </p>
+
+        <h2>8 · Rules and schedule</h2>
+        <p>
+          Rules accept a small, safe subset of markdown: <code>- bullets</code>, numbered lists,
+          <code>**bold**</code>, <code>`code`</code> and <code>&gt; quotes</code>. Everything else is
+          escaped. The schedule is a list of milestones with a date and a note.
+        </p>
+
+        <h2>9 · Branding</h2>
+        <p>
+          A cover image URL, or a generated poster from six styles. One accent colour from a fixed
+          palette, so an organizer cannot make their event unreadable. The Hackerly mark stays put.
+        </p>
+
+        <h2>10 · Review and publish</h2>
+        <p>
+          A preflight lists anything missing. Publishing makes the event public and opens discovery.
+          After that you can go live, close submissions, judge, compute results and publish them.
+        </p>
+
+        <h2>Judging operations</h2>
+        <p>
+          Invite judges by email or paste a list. Each invitation is a single-use link tied to that
+          address. Assign projects per judge, or let Hackerly balance the load across the panel.
+          The judging page shows who is behind, which projects have no judge, and which judges have
+          not accepted — all from the database, nothing hardcoded.
+        </p>
+
+        <h2>Results</h2>
+        <p>
+          Compute is separate from publish. Computing writes a private ranking; publishing releases
+          it on the public event page along with whatever prizes you entered. You can withdraw a
+          publication, and individual judges’ scores stay private to the panel either way.
+        </p>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Start now</h2>
+          <a class="btn btn--accent btn--block" href="/host/events/new">Create a hackathon</a>
+          <a class="btn btn--ghost btn--block" style="margin-top:8px" href="/host/events">Your events</a>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Judging rules</h2>
+          <p class="small muted">
+            A judge cannot read another judge’s scores, and a participant cannot read any of them.
+            The backend refuses both. Neither is enforced by hiding a button.
+          </p>
+          <p class="small muted" style="margin-top:10px">
+            Exports respect the same rules: only organizers get CSV, and every export is written to
+            the audit log.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,134 @@
+<section class="pitch">
+  <div class="wrap">
+    <div class="pitch__grid">
+      <div>
+        <p class="eyebrow eyebrow--accent">For organizers</p>
+        <h1>Run your hackathon here.<br>Keep your data.</h1>
+        <p class="lede" style="margin-top:20px">
+          Hackerly is the whole event, not a form builder. Tracks, teams, submissions, judge
+          invitations, weighted rubrics, judging progress, results and CSV export — with the
+          rules enforced on the server and an audit trail for the operations that matter.
+        </p>
+        <div class="row row-wrap" style="margin-top:28px;gap:10px">
+          <% if (actor) { %>
+            <a class="btn btn--accent btn--lg" href="/host/events/new">Create a hackathon</a>
+            <a class="btn btn--ghost btn--lg" href="/host/events">Your events</a>
+          <% } else { %>
+            <a class="btn btn--accent btn--lg" href="/auth/signup?next=/host/events/new">Create an account to host</a>
+            <a class="btn btn--ghost btn--lg" href="/auth/signin?next=/host/events">Sign in</a>
+          <% } %>
+        </div>
+        <p class="small muted" style="margin-top:16px">
+          Free and open source. Self-host it with one Docker command, or run it in the cloud.
+        </p>
+      </div>
+
+      <div class="pitch__card">
+        <h2 class="pitch__card-title">What you get</h2>
+        <ul class="check-list">
+          <li>Setup wizard that ends in a publishable event page</li>
+          <li>Your own branding: cover, accent colour, name, description</li>
+          <li>Tracks, team size rules, solo or team-only</li>
+          <li>Submission fields you define, validated server-side</li>
+          <li>Judge invitations by email, with acceptance tracking</li>
+          <li>Weighted rubrics; judges score against exactly what you published</li>
+          <li>Judging progress: who is behind, what is uncovered, what to chase</li>
+          <li>Results with documented normalization, or plain averages</li>
+          <li>CSV export of results, projects, teams, reviews, judges, audit</li>
+          <li>Audit log of every operation that changes the event</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--line">
+  <div class="wrap">
+    <div class="section__head">
+      <div>
+        <p class="eyebrow">Two ways to run it</p>
+        <h2>Local or global — the difference is the architecture, not the theme</h2>
+      </div>
+    </div>
+    <div class="grid grid-2">
+      <div class="mode-card">
+        <div class="mode-card__head">
+          <span class="mode-card__tag">Local</span>
+        </div>
+        <h3>Local hackathon</h3>
+        <p>For a physical event, a college fest, a company offsite. Self-contained: one process, one SQLite file, no internet required once the container is running.</p>
+        <ul class="check-list check-list--sm">
+          <li>Runs with the network off</li>
+          <li>Local accounts and sessions, no external identity provider</li>
+          <li>Invitations printed from the outbox instead of emailed</li>
+          <li>Export the database at the end and you own it</li>
+        </ul>
+      </div>
+      <div class="mode-card mode-card--alt">
+        <div class="mode-card__head">
+          <span class="mode-card__tag">Global</span>
+        </div>
+        <h3>Global hackathon</h3>
+        <p>For a public event on the open internet. Public discovery, concurrent registration and submissions, a judging panel working in parallel, and a public showcase afterwards.</p>
+        <ul class="check-list check-list--sm">
+          <li>Public event listing and per-event microsites</li>
+          <li>Firestore-backed storage when deployed on Google Cloud</li>
+          <li>Paginated reads, caching, rate limiting, background-safe writes</li>
+          <li>Results published to a public page when you release them</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--line">
+  <div class="wrap">
+    <div class="grid grid-3">
+      <div class="how__step">
+        <span class="how__num">01</span>
+        <h3>Set it up in ten steps</h3>
+        <p class="small muted">Basics, dates, prizes, teams, tracks, submission fields, judging rubric, rules, branding, then a preflight before you can publish.</p>
+        <p class="small" style="margin-top:10px"><a href="/host/start">Read the setup guide →</a></p>
+      </div>
+      <div class="how__step">
+        <span class="how__num">02</span>
+        <h3>Invite real judges</h3>
+        <p class="small muted">An invitation creates a judge record scoped to your event and a single-use link. The judge signs in, accepts, and their identity is bound to the panel.</p>
+      </div>
+      <div class="how__step">
+        <span class="how__num">03</span>
+        <h3>See what is stuck</h3>
+        <p class="small muted">The overview tells you the next action: publish it, invite a judge, assign the remaining projects, chase a batch, or publish the results. All from real numbers.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--line">
+  <div class="wrap">
+    <div class="grid grid-2" style="align-items:center;gap:48px">
+      <div>
+        <p class="eyebrow">Self-hosting</p>
+        <h2>One command, no cloud account</h2>
+        <p class="lede" style="margin-top:14px">
+          <code>docker compose up</code> starts a fully working Hackerly on port 8080 with the schema
+          created, the fixtures loaded and the demo event seeded. The database is a file on a volume.
+          Nothing phones home.
+        </p>
+        <pre style="margin-top:20px">git clone https://github.com/your-org/hackerly
+cd hackerly
+docker compose up --build</pre>
+      </div>
+      <div class="card">
+        <h2 class="card__title" style="margin-bottom:14px">This install</h2>
+        <dl class="kv">
+          <div><dt>Hackathons published</dt><dd><%= counts.events %></dd></div>
+          <div><dt>Projects submitted</dt><dd><%= counts.projects %></dd></div>
+          <div><dt>Reviews submitted</dt><dd><%= counts.reviews %></dd></div>
+          <div><dt>Accounts</dt><dd><%= counts.users %></dd></div>
+        </dl>
+        <p class="tiny muted" style="margin-top:14px">Read <a href="/about">About Hackerly</a> for the architecture, the data model and the judging method.</p>
+      </div>
+    </div>
+  </div>
+</section>

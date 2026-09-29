@@ -1,0 +1,57 @@
+<section class="page-head">
+  <div class="wrap wrap-narrow">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/teams">Your teams</a> <span aria-hidden="true">/</span>
+      <a href="/hackathons/<%= event.slug %>"><%= event.name %></a> <span aria-hidden="true">/</span>
+      <span class="muted">New team</span>
+    </nav>
+    <p class="eyebrow" style="margin-top:22px">Create a team</p>
+    <h1>Name your team</h1>
+    <p class="lede" style="margin-top:12px">
+      You are the team lead. You can add people afterwards with a join link, up to the
+      <%= event.max_team_size %> member limit for <%= event.name %>.
+    </p>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap wrap-narrow">
+    <% if (existingTeam) { %>
+      <div class="notice notice--warn" style="margin-bottom:20px">
+        <strong class="notice__title">You are already on a team for this hackathon</strong>
+        You are on <strong><%= existingTeam.name %></strong>. A participant can only be on one team per hackathon.
+        Leave that team first if you want to start a different one.
+        <div class="row" style="margin-top:12px">
+          <a class="btn btn--ghost btn--sm" href="/teams/<%= existingTeam.id %>">Open <%= existingTeam.name %></a>
+        </div>
+      </div>
+      <a class="btn btn--ghost" href="/teams">Back to your teams</a>
+    <% } else if (!state.canSubmit) { %>
+      <div class="notice notice--warn" style="margin-bottom:20px">
+        <strong class="notice__title">Submissions are closed</strong>
+        <%= event.name %> closed submissions <%= h.fmt.dateTime(event.submission_deadline) %>, so a new team cannot be created.
+      </div>
+      <a class="btn btn--ghost" href="/hackathons/<%= event.slug %>">Back to the event</a>
+    <% } else { %>
+      <div class="card">
+        <form method="post" action="/teams/new/<%= event.slug %>">
+          <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+          <div class="field">
+            <label class="field__label" for="name">Team name<span class="field__req">*</span></label>
+            <input class="input" id="name" name="name" required maxlength="60" placeholder="Northlight" autofocus>
+            <p class="field__hint">This is public. Other participants can see it and use it to join you.</p>
+          </div>
+          <div class="field">
+            <label class="field__label" for="description">What are you building?</label>
+            <textarea class="textarea" id="description" name="description" maxlength="400" placeholder="Two backend people looking for a frontend and a designer." style="min-height:90px"></textarea>
+            <p class="field__hint">One or two lines. It helps people find the right team to join.</p>
+          </div>
+          <div class="row row-wrap">
+            <button class="btn btn--accent" type="submit">Create team</button>
+            <a class="btn btn--ghost" href="/hackathons/<%= event.slug %>">Cancel</a>
+          </div>
+        </form>
+      </div>
+    <% } %>
+  </div>
+</section>

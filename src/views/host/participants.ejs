@@ -1,0 +1,78 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">People</p>
+        <h1 style="font-size:1.6rem"><%= stats.people %> <%= h.fmt.plural(stats.people, 'person') %></h1>
+        <p class="small muted" style="margin:8px 0 0">
+          Across <%= stats.teams %> <%= h.fmt.plural(stats.teams, 'team') %>.
+          <% if (stats.withoutTeam) { %><%= stats.withoutTeam %> registered but not on a team yet.<% } %>
+        </p>
+      </div>
+      <form class="row" method="get" action="/host/events/<%= event.slug %>/participants">
+        <input class="input" type="search" name="q" value="<%= q %>" placeholder="Search people" style="min-width:200px">
+        <button class="btn btn--ghost btn--sm" type="submit">Search</button>
+      </form>
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        <% if (!people.length) { %>
+          <div class="empty">
+            <div class="empty__title">Nobody registered yet</div>
+            <p class="empty__body">Share the event link. Once somebody registers they appear here with their team.</p>
+            <a class="btn btn--ghost" href="/hackathons/<%= event.slug %>" target="_blank" rel="noopener">View the public page</a>
+          </div>
+        <% } else { %>
+          <div class="card" style="padding:0;overflow:hidden">
+            <div class="table-wrap" style="border:0">
+              <table class="data">
+                <thead><tr><th>Person</th><th>Team</th><th>Role</th><th>Joined</th></tr></thead>
+                <tbody>
+                  <% people.forEach(p => { %>
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:<%= h.avatarColor(p.avatar_seed) %>"><%= h.initials(p.display_name) %></span>
+                          <span>
+                            <a class="person__name" href="/u/<%= p.username %>"><%= p.display_name %></a>
+                            <span class="person__meta mono"><%= p.email %></span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small"><%= p.team_name || '—' %></td>
+                      <td class="small"><%= p.team_role || 'registered' %></td>
+                      <td class="small nowrap"><%= h.fmt.date(p.registered_at) %></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        <% } %>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Add somebody by email</h2>
+          <p class="small muted">For a walk-in who has no account yet, or a co-organizer.</p>
+          <form method="post" action="/host/events/<%= event.slug %>/participants" style="margin-top:12px">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field">
+              <label class="field__label" for="pemail">Email</label>
+              <input class="input" id="pemail" type="email" name="email" required placeholder="person@example.org">
+              <p class="field__hint">They need a Hackerly account already. The server refuses an unknown address rather than creating a broken record.</p>
+            </div>
+            <button class="btn btn--ghost btn--sm" type="submit">Add as participant</button>
+          </form>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Export</h2>
+          <a class="btn btn--ghost btn--block" href="/api/events/<%= event.slug %>/participants.csv">participants.csv</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

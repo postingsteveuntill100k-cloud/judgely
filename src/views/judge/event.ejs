@@ -1,0 +1,111 @@
+<%- include('../partials/judge-head', { actor }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/judge/events">Judging</a> <span aria-hidden="true">/</span>
+      <span class="muted"><%= event.name %></span>
+    </nav>
+    <div class="row row-wrap row-between" style="margin-top:16px;align-items:flex-start;gap:16px">
+      <div>
+        <h1 style="font-size:1.5rem"><%= event.name %></h1>
+        <p class="small muted" style="margin-top:4px">
+          <%= mine.done %> of <%= mine.assigned %> reviews submitted ·
+          <%= h.queueOpen(assignments) %> still to do
+        </p>
+      </div>
+      <a class="btn btn--ghost btn--sm" href="/judge/events/<%= event.slug %>/compare?a=<%= assignments[0] && assignments[0].id %>">Compare two projects</a>
+    </div>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <div class="card__head">
+            <h2 class="card__title">Your queue</h2>
+            <span class="tag <%= mine.done === mine.assigned && mine.assigned > 0 ? 'tag--ok' : 'tag--warn' %>">
+              <%= mine.done %>/<%= mine.assigned %>
+            </span>
+          </div>
+
+          <% if (!assignments.length) { %>
+            <div class="empty" style="border:0;padding:32px 20px">
+              <div class="empty__title">No assignments yet</div>
+              <p class="empty__body">The organizer has not assigned you anything for this event, or nothing has been submitted yet.</p>
+            </div>
+          <% } else { %>
+            <ul class="list-rows">
+              <% assignments.forEach((a, i) => { %>
+                <li class="list-rows__item">
+                  <span class="queue-item__n"><%= i + 1 %></span>
+                  <div class="grow">
+                    <span class="list-rows__title"><%= a.project_title %></span>
+                    <span class="list-rows__meta"><%= a.team_name %><%= a.track_name ? ' · ' + a.track_name : '' %><%= a.status === 'submitted' ? ' · submitted ' + h.fmt.ago(a.review_submitted_at) : '' %></span>
+                  </div>
+                  <span class="tag <%= a.status === 'submitted' ? 'tag--ok' : 'tag--warn' %>"><%= a.status %></span>
+                  <a class="btn <%= a.status === 'submitted' ? 'btn--ghost' : 'btn--primary' %> btn--sm" href="/judge/review/<%= a.id %>">
+                    <%= a.status === 'submitted' ? 'View' : 'Review' %>
+                  </a>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
+
+        <div class="card" style="margin-top:20px">
+          <h2 class="card__title" style="margin-bottom:12px">The rubric you are scoring against</h2>
+          <% if (!criteria.length) { %>
+            <p class="small muted">The organizer has not published a rubric yet. Reviews cannot be submitted without one.</p>
+          <% } else { %>
+            <ul class="req-list">
+              <% criteria.forEach(c => { %>
+                <li>
+                  <span><%= c.name %><% if (c.description) { %><div class="tiny muted"><%= c.description %></div><% } %></span>
+                  <span class="tag"><%= c.weight %> · max <%= c.max_score %><%= c.required ? '' : ' · optional' %></span>
+                </li>
+              <% }) %>
+            </ul>
+            <p class="tiny muted" style="margin-top:12px">
+              Your score for each criterion is checked against the range above on the server. A value
+              outside it is refused rather than clamped.
+            </p>
+          <% } %>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Your privacy</h2>
+          <p class="small muted">
+            Other judges cannot read your scores, and participants cannot read them either. The
+            backend refuses both. The organizer can see that you finished, never what you wrote,
+            until results are published.
+          </p>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Event facts</h2>
+          <dl class="kv">
+            <div><dt>Format</dt><dd><%= h.formatLabel(event.format) %></dd></div>
+            <div><dt>Judging method</dt><dd><%= event.judging_mode === 'normalized' ? 'Normalized' : 'Plain mean' %></dd></div>
+            <div><dt>Submissions closed</dt><dd><%= h.fmt.date(event.submission_deadline) %></dd></div>
+            <div><dt>Judging ends</dt><dd><%= h.fmt.date(event.judging_ends_at) %></dd></div>
+            <div><dt>Results</dt><dd><%= resultsPublic ? 'Published' : 'Not published' %></dd></div>
+          </dl>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Stuck on something?</h2>
+          <p class="small muted">
+            <% if (event.contact_email && event.contact_visible) { %>
+              Contact the organizer: <a href="mailto:<%= event.contact_email %>"><%= event.contact_email %></a>
+            <% } else { %>
+              The organizer has not published a contact address on this event.
+            <% } %>
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

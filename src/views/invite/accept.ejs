@@ -1,0 +1,54 @@
+<div class="invite-shell">
+  <div class="invite-card">
+    <p class="eyebrow eyebrow--accent">Judging invitation</p>
+    <h1 style="font-size:1.7rem;margin-bottom:12px">You are invited to judge <%= event.name %></h1>
+
+    <div class="invite-card__event">
+      <span class="avatar avatar--sq avatar--lg" style="background:var(--ink);color:var(--paper)"><%= h.initials(event.name) %></span>
+      <div>
+        <div style="font-weight:600"><%= event.name %></div>
+        <div class="tiny muted">
+          <%= h.fmt.range(event.starts_at, event.ends_at) %> ·
+          submissions closed <%= h.fmt.date(event.submission_deadline) %>
+        </div>
+      </div>
+    </div>
+
+    <p class="small">
+      <%= invitation.created_by ? 'An organizer' : 'An organizer' %> invited <strong><%= invitation.email %></strong> to the
+      judging panel. Accepting creates your judge record and gives you a queue of projects to score
+      against the organizer&rsquo;s published rubric.
+    </p>
+    <ul class="check-list check-list--sm" style="margin:18px 0">
+      <li>Your scores stay private. No other judge can read them.</li>
+      <li>Participants never see judge scores, only the published ranking.</li>
+      <li>This link works once, and only for <%= invitation.email %>.</li>
+    </ul>
+
+    <% if (!signedIn) { %>
+      <div class="notice notice--info" style="margin-bottom:18px">
+        Sign in as <strong><%= invitation.email %></strong> to accept. If you do not have an account
+        yet, create one with that exact address.
+      </div>
+      <div class="row row-wrap">
+        <a class="btn btn--accent" href="/auth/signin?next=<%= encodeURIComponent('/invite/' + invitation.token) %>&identifier=<%= encodeURIComponent(invitation.email) %>">Sign in</a>
+        <a class="btn btn--ghost" href="/auth/signup?next=<%= encodeURIComponent('/invite/' + invitation.token) %>">Create an account</a>
+      </div>
+    <% } else if (!emailMatches) { %>
+      <div class="notice notice--danger" style="margin-bottom:18px">
+        <strong class="notice__title">This invitation is for a different address</strong>
+        It was sent to <strong><%= invitation.email %></strong> and you are signed in as
+        <strong><%= actor.email %></strong>. Sign in with the invited address to accept it.
+      </div>
+      <a class="btn btn--ghost" href="/auth/signin?next=<%= encodeURIComponent('/invite/' + invitation.token) %>&identifier=<%= encodeURIComponent(invitation.email) %>">Switch account</a>
+    <% } else { %>
+      <form method="post" action="/invite/<%= invitation.token %>">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        <button class="btn btn--accent btn--lg" type="submit">Accept and open my queue</button>
+      </form>
+      <% if (judge && judge.status === 'invited') { %>
+        <p class="tiny muted" style="margin-top:12px">You already have an invitation on record for this event. Accepting reactivates it.</p>
+      <% } %>
+    <% } %>
+  </div>
+</div>

@@ -1,0 +1,25 @@
+<%
+  const current = Number(page) || 1;
+  const total = Number(pages) || 1;
+  if (total > 1) {
+    const build = (n) => {
+      const u = new URL(typeof base === 'string' ? base : base || '', 'http://x');
+      u.searchParams.set('page', String(n));
+      return `${u.pathname}${u.search}`;
+    };
+    const nums = [];
+    for (let n = 1; n <= total; n += 1) {
+      if (n === 1 || n === total || Math.abs(n - current) <= 1) nums.push(n);
+    }
+%>
+<nav class="pager" aria-label="Pagination">
+  <% if (current > 1) { %><a href="<%= build(current - 1) %>" rel="prev">Previous</a><% } %>
+  <% let last = 0; %>
+  <% nums.forEach(n => { %>
+    <% if (last && n - last > 1) { %><span class="pager__gap">…</span><% } %>
+    <% if (n === current) { %><span aria-current="page"><%= n %></span><% } else { %><a href="<%= build(n) %>"><%= n %></a><% } %>
+    <% last = n; %>
+  <% }) %>
+  <% if (current < total) { %><a href="<%= build(current + 1) %>" rel="next">Next</a><% } %>
+</nav>
+<% } %>

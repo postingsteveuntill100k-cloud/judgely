@@ -1,0 +1,31 @@
+<div class="invite-shell">
+  <div class="invite-card">
+    <p class="eyebrow">Invitation</p>
+    <h1 style="font-size:1.7rem;margin-bottom:12px">This link is not usable</h1>
+    <p class="small"><%= reason %></p>
+
+    <% if (event) { %>
+      <div class="invite-card__event">
+        <span class="avatar avatar--sq avatar--lg" style="background:var(--ink);color:var(--paper)"><%= h.initials(event.name) %></span>
+        <div>
+          <div style="font-weight:600"><%= event.name %></div>
+          <div class="tiny muted"><%= h.fmt.range(event.starts_at, event.ends_at) %></div>
+        </div>
+      </div>
+    <% } %>
+
+    <div class="row row-wrap" style="margin-top:20px">
+      <% if (signedIn) { %>
+        <a class="btn btn--primary" href="/judge/events">My judging events</a>
+      <% } else { %>
+        <a class="btn btn--primary" href="/auth/signin">Sign in</a>
+      <% } %>
+      <a class="btn btn--ghost" href="/judge">About judging on Hackerly</a>
+    </div>
+
+    <p class="tiny muted" style="margin-top:22px">
+      Invitation links are single-use and tied to one email address. If yours has expired, ask the
+      organizer to send a new one from the judges page.
+    </p>
+  </div>
+</div>

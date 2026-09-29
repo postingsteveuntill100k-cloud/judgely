@@ -1,0 +1,295 @@
+<%
+  const cover = e0 => e0;
+  const img = event.cover_url && h.fmt.safe(event.cover_url);
+  const s = state;
+  const facts = [];
+  facts.push({ label: 'Prize pool', value: h.fmt.prize(event.prize_pool_cents, event.prize_currency, event.prize_headline) });
+  facts.push({ label: 'Dates', value: h.fmt.range(event.starts_at, event.ends_at) });
+  facts.push({ label: 'Format', value: h.formatLabel(event.format) + (event.city ? ' · ' + event.city : '') });
+  facts.push({ label: 'Team size', value: (event.min_team_size === 1 && event.allow_solo ? '1' : String(event.min_team_size)) + '–' + String(event.max_team_size) + (event.allow_solo ? ' · solo welcome' : '') });
+  const schedule = h.scheduleOf(event);
+  const sections = [
+    ['about', 'About', event.description],
+    ['tracks', 'Tracks', tracks.length ? '' : ''],
+    ['schedule', 'Schedule', schedule.length ? '' : ''],
+    ['rules', 'Rules', event.rules_md ? '' : ''],
+    ['prizes', 'Prizes', event.prize_headline || event.prize_pool_cents ? '' : ''],
+    ['judging', 'Judging', event.judging_blurb ? '' : ''],
+    ['projects', 'Projects', projectCount ? '' : ''],
+  ].filter(([, , v]) => v !== '' || true);
+%>
+<article class="event-page">
+  <header class="event-hero" style="<%= event.accent_color ? '--event-accent:' + event.accent_color + ';' : '' %>">
+    <div class="event-hero__art">
+      <% if (img) { %>
+        <img src="<%= img %>" alt="">
+      <% } else { %>
+        <%- h.cover({ seed: event.slug, style: event.cover_style, accent: event.accent_color }) %>
+      <% } %>
+    </div>
+    <div class="wrap event-hero__body">
+      <div class="event-hero__tags">
+        <span class="event-pill event-pill--<%= s.phase %>"><%= s.headline %></span>
+        <span class="event-pill"><%= h.formatLabel(event.format) %></span>
+        <% if (event.mode === 'local') { %><span class="event-pill">Self-hosted</span><% } %>
+        <% if (state.results === 'published') { %><span class="event-pill event-pill--ok">Results published</span><% } %>
+      </div>
+      <h1 class="event-hero__title"><%= event.name %></h1>
+      <% if (event.tagline) { %><p class="event-hero__tagline"><%= event.tagline %></p><% } %>
+
+      <div class="event-facts">
+        <% facts.forEach(f => { %>
+          <div class="event-facts__item">
+            <span class="event-facts__label"><%= f.label %></span>
+            <span class="event-facts__value"><%= f.value %></span>
+          </div>
+        <% }) %>
+      </div>
+
+      <div class="event-hero__actions">
+        <% if (s.canRegister) { %>
+          <% if (!actor) { %>
+            <a class="btn btn--accent btn--lg" href="/auth/signin?next=<%= encodeURIComponent('/hackathons/' + event.slug + '/register') %>">Sign in to participate</a>
+            <a class="btn btn--ghost btn--lg" href="/auth/signup?next=<%= encodeURIComponent('/hackathons/' + event.slug + '/register') %>">Create an account</a>
+          <% } else if (!viewer.registered && !viewer.team) { %>
+            <a class="btn btn--accent btn--lg" href="/hackathons/<%= event.slug %>/register">Register for this hackathon</a>
+          <% } else if (viewer.team && !viewer.project) { %>
+            <a class="btn btn--accent btn--lg" href="/teams/<%= viewer.team.id %>">Continue with <%= viewer.team.name %></a>
+          <% } else if (viewer.project && viewer.project.status === 'draft') { %>
+            <a class="btn btn--accent btn--lg" href="/teams/<%= viewer.team.id %>/project/<%= viewer.project.slug %>">Finish your submission</a>
+          <% } else { %>
+            <span class="event-hero__done">
+              <span class="tag tag--ok"><span class="tag__dot"></span>You are in</span>
+              <% if (viewer.project) { %>
+                <a class="btn btn--ghost" href="/hackathons/<%= event.slug %>/projects/<%= viewer.project.slug %>">View your project</a>
+              <% } else { %>
+                <a class="btn btn--ghost" href="/teams/<%= viewer.team.id %>">Open your team</a>
+              <% } %>
+            </span>
+          <% } %>
+        <% } else if (s.registration === 'not_open') { %>
+          <span class="notice notice--info" style="display:inline-block">Registration opens <%= h.fmt.dateTime(event.registration_opens_at) %>.</span>
+        <% } else if (s.registration === 'closed' && s.submissions === 'open') { %>
+          <span class="notice notice--warn" style="display:inline-block">Registration is closed. If you are already registered you can still submit.</span>
+        <% } else { %>
+          <span class="notice" style="display:inline-block">Submissions closed <%= h.fmt.dateTime(event.submission_deadline) %>.</span>
+        <% } %>
+
+        <% if (viewer.isOrganizer) { %>
+          <a class="btn btn--ghost" href="/host/events/<%= event.slug %>">Organizer view</a>
+        <% } %>
+        <% if (viewer.isJudge) { %>
+          <a class="btn btn--ghost" href="/judge/events/<%= event.slug %>">Go to judging</a>
+        <% } %>
+      </div>
+
+      <% if (s.nextDeadline) { %>
+        <p class="event-hero__countdown" data-countdown="<%= s.nextDeadline.at %>">
+          <strong><%= s.nextDeadline.label %></strong> <%= h.fmt.dateTime(s.nextDeadline.at) %> · <span data-countdown-text>…</span>
+        </p>
+      <% } %>
+    </div>
+  </header>
+
+  <nav class="event-nav" aria-label="Event sections">
+    <div class="wrap event-nav__inner">
+      <a href="#about">About</a>
+      <% if (tracks.length) { %><a href="#tracks">Tracks <span class="count"><%= tracks.length %></span></a><% } %>
+      <% if (schedule.length) { %><a href="#schedule">Schedule</a><% } %>
+      <% if (event.rules_md) { %><a href="#rules">Rules</a><% } %>
+      <% if (event.prize_headline || event.prize_pool_cents) { %><a href="#prizes">Prizes</a><% } %>
+      <% if (event.judging_blurb) { %><a href="#judging">Judging</a><% } %>
+      <% if (projectCount) { %><a href="#projects">Projects <span class="count"><%= projectCount %></span></a><% } %>
+      <% if (state.results === 'published') { %><a href="/hackathons/<%= event.slug %>/results">Results</a><% } %>
+    </div>
+  </nav>
+
+  <div class="wrap event-body">
+    <div class="event-body__main">
+      <% if (announcements.length) { %>
+        <section class="event-section" id="announcements">
+          <h2 class="event-section__title">Announcements</h2>
+          <% announcements.forEach(a => { %>
+            <div class="announcement">
+              <div class="row row-between" style="align-items:flex-start;gap:12px">
+                <strong><%= a.title %></strong>
+                <span class="tiny muted nowrap"><%= h.fmt.ago(a.created_at) %></span>
+              </div>
+              <p class="small" style="margin:6px 0 0;color:var(--ink-2)"><%= a.body %></p>
+            </div>
+          <% }) %>
+        </section>
+      <% } %>
+
+      <section class="event-section" id="about">
+        <h2 class="event-section__title">About</h2>
+        <div class="prose"><%- h.renderRichText(event.description) %></div>
+        <% if (event.eligibility) { %>
+          <div class="notice notice--info" style="margin-top:18px">
+            <strong class="notice__title">Who can take part</strong>
+            <%= event.eligibility %>
+          </div>
+        <% } %>
+        <% if (event.mode === 'local') { %>
+          <div class="notice" style="margin-top:12px">
+            <strong class="notice__title">This is a self-hosted event</strong>
+            It is being run on a local Hackerly install, so the organizer controls the data and the judging.
+            Nothing about it is shared with a central service.
+          </div>
+        <% } %>
+      </section>
+
+      <% if (tracks.length) { %>
+        <section class="event-section" id="tracks">
+          <h2 class="event-section__title">Tracks <span class="muted small"><%= tracks.length %></span></h2>
+          <p class="small muted" style="margin:-6px 0 16px">Pick the track your project belongs to when you submit. Judges score against the same rubric whichever track you enter.</p>
+          <div class="grid grid-2">
+            <% tracks.forEach((t, i) => { %>
+              <a class="track-card" href="/hackathons/<%= event.slug %>/tracks/<%= t.slug %>">
+                <div class="track-card__head">
+                  <span class="track-card__n" style="background:<%= h.cover ? h.accentFor('trk-' + t.slug) : 'var(--ink)' %>"></span>
+                  <h3><%= t.name %></h3>
+                </div>
+                <% if (t.description) { %><p class="small muted"><%= t.description %></p><% } %>
+                <% if (t.brief) { %><p class="small"><strong>What a good entry looks like:</strong> <%= t.brief %></p><% } %>
+                <% if (t.prize_text) { %><span class="tag tag--accent"><%= t.prize_text %></span><% } %>
+              </a>
+            <% }) %>
+          </div>
+        </section>
+      <% } %>
+
+      <% if (schedule.length) { %>
+        <section class="event-section" id="schedule">
+          <h2 class="event-section__title">Schedule</h2>
+          <ol class="timeline">
+            <% schedule.forEach(m => { %>
+              <li class="timeline__item">
+                <span class="timeline__time"><%= m.at ? h.fmt.shortDateTime(m.at) : 'TBC' %></span>
+                <span class="timeline__label"><%= m.label %></span>
+                <% if (m.detail) { %><span class="timeline__detail small muted"><%= m.detail %></span><% } %>
+              </li>
+            <% }) %>
+          </ol>
+        </section>
+      <% } %>
+
+      <% if (event.rules_md) { %>
+        <section class="event-section" id="rules">
+          <h2 class="event-section__title">Rules</h2>
+          <div class="prose"><%- h.renderRichText(event.rules_md) %></div>
+        </section>
+      <% } %>
+
+      <% if (event.prize_headline || event.prize_pool_cents) { %>
+        <section class="event-section" id="prizes">
+          <h2 class="event-section__title">Prizes</h2>
+          <p style="font-size:1.6rem;font-weight:650;letter-spacing:-.03em;margin:0 0 6px">
+            <%= h.fmt.prize(event.prize_pool_cents, event.prize_currency, event.prize_headline) %>
+          </p>
+          <p class="small muted">Across <%= tracks.length %> <%= h.fmt.plural(tracks.length, 'track') %>. Individual track prizes are listed above.</p>
+        </section>
+      <% } %>
+
+      <% if (event.judging_blurb) { %>
+        <section class="event-section" id="judging">
+          <h2 class="event-section__title">Judging</h2>
+          <div class="prose"><%- h.renderRichText(event.judging_blurb) %></div>
+          <p class="small muted">
+            Scores are private to each judge. Participants see the published ranking and a
+            per-criterion breakdown once the organizer releases results
+            <% if (event.results_release_at) { %>(scheduled for <%= h.fmt.date(event.results_release_at) %>)<% } %>.
+          </p>
+        </section>
+      <% } %>
+
+      <section class="event-section" id="projects">
+        <h2 class="event-section__title">Projects <span class="muted small"><%= projectCount %></span></h2>
+        <% if (!projectCount) { %>
+          <div class="empty">
+            <div class="empty__title">Nothing submitted yet</div>
+            <p class="empty__body">Projects appear here as soon as a team submits and the showcase is public.</p>
+          </div>
+        <% } else { %>
+          <div class="grid grid-auto">
+            <% projects.forEach(project => { %>
+              <%- include('../partials/project-card', { project }) %>
+            <% }) %>
+          </div>
+          <% if (projectCount > projects.length) { %>
+            <p style="margin-top:20px"><a class="btn btn--ghost" href="/hackathons/<%= event.slug %>/projects">See all <%= projectCount %> projects</a></p>
+          <% } %>
+        <% } %>
+      </section>
+    </div>
+
+    <aside class="event-body__side">
+      <div class="card">
+        <h3 class="card__title" style="margin-bottom:12px">What you need to submit</h3>
+        <ul class="req-list">
+          <% h.submissionFields(event).forEach(f => { %>
+            <li>
+              <span><%= f.label %></span>
+              <% if (f.required) { %><span class="tag tag--warn">required</span><% } else { %><span class="tag">optional</span><% } %>
+            </li>
+          <% }) %>
+        </ul>
+        <p class="tiny muted" style="margin-top:12px">
+          Team sizes <%= event.min_team_size %>–<%= event.max_team_size %><%= event.allow_solo ? ', solo entries welcome' : ', no solo entries' %>.
+          Submissions close <%= h.fmt.dateTime(event.submission_deadline) %>.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3 class="card__title" style="margin-bottom:10px">Organizer</h3>
+        <p style="font-weight:560;margin-bottom:2px"><%= event.organizer_name || 'Independent organizers' %></p>
+        <% if (event.contact_visible && event.contact_email) { %>
+          <p class="small"><a href="mailto:<%= event.contact_email %>"><%= event.contact_email %></a></p>
+        <% } %>
+        <% if (event.venue) { %>
+          <p class="small muted" style="margin-top:10px"><%= event.venue %><% if (event.city) { %>, <%= event.city %><% } %><% if (event.country) { %>, <%= event.country %><% } %></p>
+        <% } %>
+        <p class="tiny muted" style="margin-top:10px">Timezone <%= event.timezone %> · all times shown in UTC.</p>
+      </div>
+
+      <% if (judgeCount) { %>
+        <div class="card">
+          <h3 class="card__title" style="margin-bottom:12px">Judging panel <span class="muted small"><%= judgeCount %></span></h3>
+          <ul class="judge-list">
+            <% judges.forEach(j => { %>
+              <li class="person">
+                <span class="avatar avatar--sm" style="background:<%= h.avatarColor(j.avatar_seed ?? j.email) %>"><%= h.initials(j.display_name || j.email) %></span>
+                <span class="grow">
+                  <span class="person__name"><%= j.display_name || j.username || 'Judge' %></span>
+                  <% if (j.username) { %><span class="person__meta">@<%= j.username %></span><% } %>
+                </span>
+              </li>
+            <% }) %>
+          </ul>
+          <p class="tiny muted" style="margin-top:12px">
+            <% if (state.results === 'published') { %>
+              <a href="/hackathons/<%= event.slug %>/results">See the published results →</a>
+            <% } else { %>
+              Results are not published yet. Individual judge scores are never shown.
+            <% } %>
+          </p>
+        </div>
+      <% } %>
+
+      <div class="card">
+        <h3 class="card__title" style="margin-bottom:10px">Teams</h3>
+        <% if (!teamCount) { %>
+          <p class="small muted">No teams yet. Be the first — registration is open.</p>
+        <% } else { %>
+          <p class="small muted" style="margin-bottom:12px"><%= teamCount %> <%= h.fmt.plural(teamCount, 'team') %> registered so far.</p>
+          <ul class="team-chip-list">
+            <% teams.slice(0, 10).forEach(t => { %>
+              <li><a class="tag" href="/hackathons/<%= event.slug %>/teams/<%= t.slug %>"><%= t.name %></a></li>
+            <% }) %>
+            <% if (teamCount > 10) { %><li class="tiny muted">and <%= teamCount - 10 %> more</li><% } %>
+          </ul>
+        <% } %>
+      </div>
+    </aside>
+  </div>
+</article>

@@ -1,0 +1,226 @@
+<%
+  const stack = h.techList(project.tech_stack);
+  const answers = h.answersOf(project);
+  const b = result ? h.breakdownOf(result) : null;
+  const links = [
+    project.repo_url && { label: 'Repository', url: project.repo_url, host: h.fmt.host(project.repo_url) },
+    project.demo_url && { label: 'Live demo', url: project.demo_url, host: h.fmt.host(project.demo_url) },
+    project.video_url && { label: 'Demo video', url: project.video_url, host: h.fmt.host(project.video_url) },
+    project.docs_url && { label: 'Documentation', url: project.docs_url, host: h.fmt.host(project.docs_url) },
+  ].filter(Boolean);
+  const custom = fields.filter(f => !['repo_url','demo_url','video_url','docs_url','tech_stack','problem','how_it_works','tried'].includes(f.key));
+%>
+<section class="page-head" style="padding-top:28px">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/projects">Showcase</a> <span aria-hidden="true">/</span>
+      <a href="/hackathons/<%= event.slug %>"><%= event.name %></a> <span aria-hidden="true">/</span>
+      <span class="muted"><%= project.title %></span>
+    </nav>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="project-head">
+      <div class="project-head__main">
+        <div class="row row-wrap" style="gap:6px;margin-bottom:12px">
+          <% if (track) { %><a class="tag" href="/hackathons/<%= event.slug %>/tracks/<%= track.slug %>"><%= track.name %></a><% } %>
+          <span class="tag <%= h.projectStatusTone(project.status) %>"><%= h.projectStatusLabel(project.status) %></span>
+          <% if (result) { %><span class="tag tag--ok">Rank #<%= result.rank %></span><% } %>
+        </div>
+        <h1><%= project.title %></h1>
+        <% if (project.tagline) { %><p class="lede" style="margin-top:12px"><%= project.tagline %></p><% } %>
+        <div class="row row-wrap" style="margin-top:20px;gap:20px">
+          <span class="person">
+            <span class="avatar avatar--sm" style="background:<%= h.avatarColor(members[0] ? members[0].avatar_seed : project.slug) %>"><%= h.initials(project.team_name) %></span>
+            <span>
+              <span class="person__name"><%= project.team_name %></span>
+              <span class="person__meta"><%= members.length %> <%= h.fmt.plural(members.length, 'member') %></span>
+            </span>
+          </span>
+          <span class="small muted">
+            <% if (project.submitted_at) { %>Submitted <%= h.fmt.dateTime(project.submitted_at) %><% } else { %>Not submitted<% } %>
+          </span>
+          <% if (votes) { %><span class="small muted"><%= votes %> <%= h.fmt.plural(votes, 'vote') %></span><% } %>
+        </div>
+      </div>
+      <% if (links.length) { %>
+        <div class="project-head__links">
+          <% links.forEach(l => { %>
+            <a class="btn btn--ghost btn--block" href="<%= l.url %>" rel="noopener noreferrer nofollow" target="_blank">
+              <%= l.label %> <span class="muted tiny">↗ <%= l.host %></span>
+            </a>
+          <% }) %>
+        </div>
+      <% } %>
+    </div>
+
+    <div class="project-body">
+      <div class="project-body__main">
+        <% if (project.summary) { %>
+          <section class="panel">
+            <h2 class="panel__title">What it is</h2>
+            <p style="margin:0"><%= project.summary %></p>
+          </section>
+        <% } %>
+
+        <% if (project.description && project.description !== project.summary) { %>
+          <section class="panel">
+            <h2 class="panel__title">How it works</h2>
+            <div class="prose"><%- h.renderRichText(project.description) %></div>
+          </section>
+        <% } %>
+
+        <% const answerKeys = Object.keys(answers).filter(k => answers[k] && !['problem','how_it_works','tech_stack'].includes(k)); %>
+        <% if (answerKeys.length) { %>
+          <section class="panel">
+            <h2 class="panel__title">Submission details</h2>
+            <dl class="qa">
+              <% answerKeys.forEach(k => { %>
+                <% const f = fields.find(x => x.key === k); %>
+                <div class="qa__row">
+                  <dt><%= f ? f.label : k.replace(/_/g, ' ') %></dt>
+                  <dd><%= answers[k] %></dd>
+                </div>
+              <% }) %>
+            </dl>
+          </section>
+        <% } %>
+
+        <% if (result) { %>
+          <section class="panel">
+            <h2 class="panel__title">Result</h2>
+            <div class="result-summary">
+              <div class="result-summary__rank"><span class="result-summary__n"><%= h.rankSuffix(result.rank) %></span><span class="tiny muted">of <%= result.review_count %> <%= h.fmt.plural(result.review_count, 'review') %></span></div>
+              <div class="result-summary__score">
+                <div class="tiny muted">Final score</div>
+                <div style="font-size:2rem;font-weight:660;letter-spacing:-.035em;font-variant-numeric:tabular-nums"><%= result.final_score != null ? Number(result.final_score).toFixed(1) : '—' %></div>
+                <% if (result.raw_score != null && result.adjusted_score != null && result.raw_score !== result.adjusted_score) { %>
+                  <div class="tiny muted">raw <%= Number(result.raw_score).toFixed(1) %> → adjusted <%= Number(result.adjusted_score).toFixed(1) %></div>
+                <% } %>
+              </div>
+            </div>
+            <table class="data" style="margin-top:18px;border:1px solid var(--line);border-radius:var(--r);overflow:hidden">
+              <thead><tr><th>Criterion</th><th class="num">Score</th></tr></thead>
+              <tbody>
+                <% (b.per_judge || []).forEach(pj => { %>
+                  <tr>
+                    <td><%= pj.judge_email ? 'Judge' : 'Review' %></td>
+                    <td class="num"><%= pj.score != null ? Number(pj.score).toFixed(1) : '—' %></td>
+                  </tr>
+                <% }) %>
+                <% if (!(b.per_judge || []).length) { %>
+                  <tr><td colspan="2" class="muted small">Per-criterion detail is kept private to the panel.</td></tr>
+                <% } %>
+              </tbody>
+            </table>
+            <p class="tiny muted" style="margin-top:10px">
+              Individual judges&rsquo; scores are never published. This is the aggregated result only.
+            </p>
+          </section>
+        <% } %>
+
+        <section class="panel" id="community">
+          <div class="row row-wrap row-between" style="gap:12px;margin-bottom:14px">
+            <h2 class="panel__title" style="margin:0;padding:0;border:0">Community</h2>
+            <span class="tag"><%= votes %> <%= h.fmt.plural(votes, 'vote') %></span>
+          </div>
+
+          <div class="notice notice--info" style="margin-bottom:18px">
+            Votes and comments are for visibility only. They do not change the ranking — results come
+            from the judging rubric, and mixing popularity into a judged event is how a panel stops
+            being trusted.
+          </div>
+
+          <div class="row row-wrap" style="margin-bottom:20px">
+            <% if (event.showcase_visibility !== 'public') { %>
+              <span class="small muted">The organizer has this showcase closed, so voting and comments are off.</span>
+            <% } else if (!actor) { %>
+              <a class="btn btn--ghost btn--sm" href="/auth/signin?next=<%= encodeURIComponent('/hackathons/' + event.slug + '/projects/' + project.slug) %>">Sign in to vote or comment</a>
+            <% } else { %>
+              <form method="post" action="/projects/<%= project.id %>/vote">
+                <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                <button class="btn <%= voted ? 'btn--ghost' : 'btn--primary' %> btn--sm" type="submit">
+                  <%= voted ? 'Remove your vote' : 'Vote for this project' %>
+                </button>
+              </form>
+            <% } %>
+          </div>
+
+          <% if (comments.length) { %>
+            <ul class="comment-list">
+              <% comments.forEach(c => { %>
+                <li>
+                  <div class="row" style="gap:8px">
+                    <span class="avatar avatar--xs" style="background:<%= h.avatarColor(c.avatar_seed) %>"><%= h.initials(c.display_name) %></span>
+                    <a class="person__name small" href="/u/<%= c.username %>"><%= c.display_name %></a>
+                    <span class="tiny muted"><%= h.fmt.ago(c.created_at) %></span>
+                  </div>
+                  <p class="small" style="margin:6px 0 0 0"><%= c.body %></p>
+                </li>
+              <% }) %>
+            </ul>
+          <% } else { %>
+            <p class="small muted">No comments yet.</p>
+          <% } %>
+
+          <% if (actor && event.showcase_visibility === 'public') { %>
+            <form method="post" action="/projects/<%= project.id %>/comment" style="margin-top:20px">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <div class="field">
+                <label class="field__label" for="comment-body">Add a comment</label>
+                <textarea class="textarea" id="comment-body" name="body" maxlength="1000" style="min-height:80px" placeholder="What did you make, or what would you like to ask the team?"></textarea>
+              </div>
+              <button class="btn btn--ghost btn--sm" type="submit">Post comment</button>
+            </form>
+          <% } %>
+        </section>
+      </div>
+
+      <aside class="project-body__side">
+        <div class="card">
+          <h3 class="card__title" style="margin-bottom:12px">Team</h3>
+          <ul class="judge-list">
+            <% members.forEach(m => { %>
+              <li class="person">
+                <span class="avatar avatar--sm" style="background:<%= h.avatarColor(m.avatar_seed) %>"><%= h.initials(m.display_name) %></span>
+                <span class="grow">
+                  <a class="person__name" href="/u/<%= m.username %>"><%= m.display_name %></a>
+                  <span class="person__meta">@<%= m.username %><%= m.team_role === 'owner' ? ' · lead' : '' %></span>
+                </span>
+              </li>
+            <% }) %>
+          </ul>
+        </div>
+
+        <% if (stack.length) { %>
+          <div class="card">
+            <h3 class="card__title" style="margin-bottom:10px">Built with</h3>
+            <div class="row row-wrap" style="gap:5px">
+              <% stack.forEach(t => { %><span class="tag tag--outline"><%= t %></span><% }) %>
+            </div>
+          </div>
+        <% } %>
+
+        <div class="card">
+          <h3 class="card__title" style="margin-bottom:10px">From</h3>
+          <a class="person" href="/hackathons/<%= event.slug %>">
+            <span class="avatar avatar--sq avatar--sm" style="background:var(--ink);color:var(--paper)"><%= h.initials(event.name) %></span>
+            <span class="grow">
+              <span class="person__name"><%= event.name %></span>
+              <span class="person__meta"><%= h.fmt.range(event.starts_at, event.ends_at) %></span>
+            </span>
+          </a>
+          <p class="tiny muted" style="margin-top:12px">
+            <% if (state.results === 'published') { %>
+              <a href="/hackathons/<%= event.slug %>/results">See the full results →</a>
+            <% } else { %>
+              Results have not been published for this hackathon.
+            <% } %>
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

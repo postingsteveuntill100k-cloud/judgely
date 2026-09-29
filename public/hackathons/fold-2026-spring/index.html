@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Fold · Spring Edition · Hackerly</title>
+<meta name="description" content="A weekend spent making software for people who are hard to reach.">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="Fold · Spring Edition">
+<meta property="og:description" content="A weekend spent making software for people who are hard to reach.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="/css/app.css?v=dev">
+<link rel="stylesheet" href="/css/pages.css?v=dev">
+<link rel="stylesheet" href="/css/workspace.css?v=dev">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+</head>
+<body class="">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">H</span>
+      <span>Hackerly</span>
+      <span class="brand__sub">Hackathon platform</span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="sr-only">Menu</span>
+    </button>
+
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="/hackathons" aria-current=&#34;page&#34;>Explore hackathons</a>
+      <a href="/projects">Showcase</a>
+      <a href="/host">Host a hackathon</a>
+      <a href="/judge">Judge at Hackerly</a>
+      <a href="/about">About</a>
+    </nav>
+
+    <div class="header-actions">
+      
+        <a class="btn btn--quiet btn--sm" href="/auth/signin">Sign in</a>
+        <a class="btn btn--primary btn--sm" href="/auth/signup">Sign up</a>
+      
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<article class="event-page">
+  <header class="event-hero" style="--event-accent:#3b4cca;">
+    <div class="event-hero__art">
+      
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Event artwork"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#12161a"/><stop offset="1" stop-color="#04080c"/></linearGradient></defs><rect width="1200" height="675" fill="url(#g)"/><circle cx="55" cy="56" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="164" cy="56" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="273" cy="56" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="382" cy="56" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="600" cy="56" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="818" cy="56" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="927" cy="56" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="1036" cy="56" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="1145" cy="56" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="164" cy="169" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="273" cy="169" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="382" cy="169" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="709" cy="169" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="927" cy="169" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="1036" cy="169" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="1145" cy="169" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="164" cy="281" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="382" cy="281" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="600" cy="281" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="709" cy="281" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="818" cy="281" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="927" cy="281" r="37" fill="#fbfaf7" opacity="0.75"/><circle cx="55" cy="394" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="164" cy="394" r="37" fill="#fbfaf7" opacity="0.75"/><circle cx="600" cy="394" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="709" cy="394" r="37" fill="#fbfaf7" opacity="0.75"/><circle cx="927" cy="394" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="1036" cy="394" r="37" fill="#fbfaf7" opacity="0.75"/><circle cx="1145" cy="394" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="55" cy="506" r="37" fill="#fbfaf7" opacity="0.75"/><circle cx="273" cy="506" r="37" fill="#fbfaf7" opacity="0.75"/><circle cx="600" cy="506" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="818" cy="506" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="927" cy="506" r="37" fill="#fbfaf7" opacity="0.75"/><circle cx="55" cy="619" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="273" cy="619" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="382" cy="619" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="491" cy="619" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="600" cy="619" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="709" cy="619" r="16" fill="#fbfaf7" opacity="0.16"/><circle cx="1145" cy="619" r="16" fill="#fbfaf7" opacity="0.16"/><rect x="327" y="0" width="10" height="675" fill="#3b4cca" transform="rotate(18 327 337.5)" opacity="0.9"/><rect x="0" y="669" width="1200" height="6" fill="#3b4cca"/><text x="56" y="86" font-family="Inter, Helvetica, Arial, sans-serif" font-size="24" font-weight="700" letter-spacing="7" fill="#fbfaf7" opacity="0.92">HACKERLY</text><rect x="56" y="104" width="64" height="3" fill="#3b4cca"/></svg>
+      
+    </div>
+    <div class="wrap event-hero__body">
+      <div class="event-hero__tags">
+        <span class="event-pill event-pill--results">Results are out</span>
+        <span class="event-pill">Online</span>
+        
+        <span class="event-pill event-pill--ok">Results published</span>
+      </div>
+      <h1 class="event-hero__title">Fold · Spring Edition</h1>
+      <p class="event-hero__tagline">A weekend spent making software for people who are hard to reach.</p>
+
+      <div class="event-facts">
+        
+          <div class="event-facts__item">
+            <span class="event-facts__label">Prize pool</span>
+            <span class="event-facts__value">₹80,000 in prizes</span>
+          </div>
+        
+          <div class="event-facts__item">
+            <span class="event-facts__label">Dates</span>
+            <span class="event-facts__value">12–15 May 2026</span>
+          </div>
+        
+          <div class="event-facts__item">
+            <span class="event-facts__label">Format</span>
+            <span class="event-facts__value">Online</span>
+          </div>
+        
+          <div class="event-facts__item">
+            <span class="event-facts__label">Team size</span>
+            <span class="event-facts__value">2–5</span>
+          </div>
+        
+      </div>
+
+      <div class="event-hero__actions">
+        
+          <span class="notice" style="display:inline-block">Submissions closed 15 May 2026, 00:09 UTC.</span>
+        
+
+        
+        
+      </div>
+
+      
+    </div>
+  </header>
+
+  <nav class="event-nav" aria-label="Event sections">
+    <div class="wrap event-nav__inner">
+      <a href="#about">About</a>
+      <a href="#tracks">Tracks <span class="count">3</span></a>
+      <a href="#schedule">Schedule</a>
+      <a href="#rules">Rules</a>
+      <a href="#prizes">Prizes</a>
+      <a href="#judging">Judging</a>
+      <a href="#projects">Projects <span class="count">6</span></a>
+      <a href="/hackathons/fold-2026-spring/results">Results</a>
+    </div>
+  </nav>
+
+  <div class="wrap event-body">
+    <div class="event-body__main">
+      
+
+      <section class="event-section" id="about">
+        <h2 class="event-section__title">About</h2>
+        <div class="prose"><p>Fold ran for 36 hours in May. Thirty-one teams entered, twenty-eight submitted, and the results below are the published ranking with the per-criterion breakdown. Everything on this page is the real output of the event, not a mock-up.</p></div>
+        
+          <div class="notice notice--info" style="margin-top:18px">
+            <strong class="notice__title">Who can take part</strong>
+            Open to anyone. You need a Hackerly account to submit.
+          </div>
+        
+        
+      </section>
+
+      
+        <section class="event-section" id="tracks">
+          <h2 class="event-section__title">Tracks <span class="muted small">3</span></h2>
+          <p class="small muted" style="margin:-6px 0 16px">Pick the track your project belongs to when you submit. Judges score against the same rubric whichever track you enter.</p>
+          <div class="grid grid-2">
+            
+              <a class="track-card" href="/hackathons/fold-2026-spring/tracks/accessibility">
+                <div class="track-card__head">
+                  <span class="track-card__n" style="background:#1f6f6b"></span>
+                  <h3>Accessibility</h3>
+                </div>
+                <p class="small muted">Software that removes a barrier for someone.</p>
+                <p class="small"><strong>What a good entry looks like:</strong> Name the barrier and the person it is for.</p>
+                <span class="tag tag--accent">₹30,000</span>
+              </a>
+            
+              <a class="track-card" href="/hackathons/fold-2026-spring/tracks/care-and-health">
+                <div class="track-card__head">
+                  <span class="track-card__n" style="background:#1f6f6b"></span>
+                  <h3>Care and health</h3>
+                </div>
+                <p class="small muted">Software for carers, patients and clinics.</p>
+                <p class="small"><strong>What a good entry looks like:</strong> Clinical claims need evidence.</p>
+                <span class="tag tag--accent">₹30,000</span>
+              </a>
+            
+              <a class="track-card" href="/hackathons/fold-2026-spring/tracks/open-track">
+                <div class="track-card__head">
+                  <span class="track-card__n" style="background:#2b6cb0"></span>
+                  <h3>Open track</h3>
+                </div>
+                <p class="small muted">Everything else.</p>
+                <p class="small"><strong>What a good entry looks like:</strong> Make the case yourself.</p>
+                <span class="tag tag--accent">₹20,000</span>
+              </a>
+            
+          </div>
+        </section>
+      
+
+      
+        <section class="event-section" id="schedule">
+          <h2 class="event-section__title">Schedule</h2>
+          <ol class="timeline">
+            
+              <li class="timeline__item">
+                <span class="timeline__time">30 Aug · 09:00</span>
+                <span class="timeline__label">Registration opens</span>
+                
+              </li>
+            
+              <li class="timeline__item">
+                <span class="timeline__time">12 May · 00:00</span>
+                <span class="timeline__label">Build window opens</span>
+                
+              </li>
+            
+              <li class="timeline__item">
+                <span class="timeline__time">15 May · 18:00</span>
+                <span class="timeline__label">Submissions close</span>
+                <span class="timeline__detail small muted">The server refuses anything later.</span>
+              </li>
+            
+              <li class="timeline__item">
+                <span class="timeline__time">17 May · 12:00</span>
+                <span class="timeline__label">Judging closes</span>
+                
+              </li>
+            
+              <li class="timeline__item">
+                <span class="timeline__time">18 May · 12:00</span>
+                <span class="timeline__label">Results published</span>
+                
+              </li>
+            
+          </ol>
+        </section>
+      
+
+      
+        <section class="event-section" id="rules">
+          <h2 class="event-section__title">Rules</h2>
+          <div class="prose"><ul><li>Teams of 2–5 people.</li><li>Everything built during the weekend.</li><li>Judging uses a published weighted rubric; individual judge scores stay private.</li></ul></div>
+        </section>
+      
+
+      
+        <section class="event-section" id="prizes">
+          <h2 class="event-section__title">Prizes</h2>
+          <p style="font-size:1.6rem;font-weight:650;letter-spacing:-.03em;margin:0 0 6px">
+            ₹80,000 in prizes
+          </p>
+          <p class="small muted">Across 3 tracks. Individual track prizes are listed above.</p>
+        </section>
+      
+
+      
+        <section class="event-section" id="judging">
+          <h2 class="event-section__title">Judging</h2>
+          <div class="prose"><p>Assigned judges score every project against the published rubric. Scores stay private until results are released.</p></div>
+          <p class="small muted">
+            Scores are private to each judge. Participants see the published ranking and a
+            per-criterion breakdown once the organizer releases results
+            (scheduled for 18 May 2026).
+          </p>
+        </section>
+      
+
+      <section class="event-section" id="projects">
+        <h2 class="event-section__title">Projects <span class="muted small">6</span></h2>
+        
+          <div class="grid grid-auto">
+            
+              
+<article class="project-card">
+  <a class="project-card__media" href="/hackathons/fold-2026-spring/projects/parcel-log" tabindex="-1" aria-hidden="true">
+    
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Project artwork"><defs><linearGradient id="pg" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#232327"/><stop offset="1" stop-color="#1b1b1f"/></linearGradient></defs><rect width="1200" height="675" fill="url(#pg)"/><rect x="720" y="0" width="480" height="675" fill="#1f6f6b" opacity="0.9"/><rect x="0" y="135" width="720" height="2" fill="#fbfaf7" opacity="0.24"/><rect x="0" y="540" width="720" height="2" fill="#fbfaf7" opacity="0.24"/><text x="56" y="419" font-family="Inter, Helvetica, Arial, sans-serif" font-size="200" font-weight="800" letter-spacing="-10" fill="#fbfaf7" opacity="0.94">PL</text><text x="60" y="621" font-family="Inter, Helvetica, Arial, sans-serif" font-size="22" font-weight="600" letter-spacing="6" fill="#fbfaf7" opacity="0.6">CARE AND HEALTH</text></svg>
+    
+  </a>
+  <div class="project-card__body">
+    <div class="project-card__meta">
+      <span class="tag">Care and health</span>
+      <span class="tag tag--ok">Results released</span>
+      <span class="tag tag--ok">Rank #6</span>
+    </div>
+    <h3 class="project-card__title"><a href="/hackathons/fold-2026-spring/projects/parcel-log">Parcel Log</a></h3>
+    <p class="project-card__summary">Medication deliveries, tracked by the person receiving them.</p>
+    <div class="project-card__foot">
+      <span class="person">
+        <span class="avatar avatar--xs" style="background:hsl(335 46% 42%)">SS</span>
+        <span class="person__name small">Second Spring</span>
+      </span>
+      <span class="tiny muted truncate">Fold · Spring Edition</span>
+    </div>
+    
+      <div class="project-card__tech">
+        <span class="tag tag--outline">Ruby on Rails</span><span class="tag tag--outline">Postgres</span><span class="tag tag--outline">Sidekiq</span>
+        
+      </div>
+    
+  </div>
+</article>
+
+            
+              
+<article class="project-card">
+  <a class="project-card__media" href="/hackathons/fold-2026-spring/projects/quiet-hours" tabindex="-1" aria-hidden="true">
+    
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Project artwork"><defs><linearGradient id="pg" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#232327"/><stop offset="1" stop-color="#1b1b1f"/></linearGradient></defs><rect width="1200" height="675" fill="url(#pg)"/><rect x="0" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="133" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="400" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="533" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="667" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="933" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="1067" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="0" y="338" width="1200" height="6" fill="#a8761f"/><text x="56" y="419" font-family="Inter, Helvetica, Arial, sans-serif" font-size="200" font-weight="800" letter-spacing="-10" fill="#fbfaf7" opacity="0.94">QH</text><text x="60" y="621" font-family="Inter, Helvetica, Arial, sans-serif" font-size="22" font-weight="600" letter-spacing="6" fill="#fbfaf7" opacity="0.6">OPEN TRACK</text></svg>
+    
+  </a>
+  <div class="project-card__body">
+    <div class="project-card__meta">
+      <span class="tag">Open track</span>
+      <span class="tag tag--ok">Results released</span>
+      <span class="tag tag--ok">Rank #5</span>
+    </div>
+    <h3 class="project-card__title"><a href="/hackathons/fold-2026-spring/projects/quiet-hours">Quiet Hours</a></h3>
+    <p class="project-card__summary">A school timetable that respects screen time limits.</p>
+    <div class="project-card__foot">
+      <span class="person">
+        <span class="avatar avatar--xs" style="background:hsl(268 46% 42%)">FN</span>
+        <span class="person__name small">Fold Nine</span>
+      </span>
+      <span class="tiny muted truncate">Fold · Spring Edition</span>
+    </div>
+    
+      <div class="project-card__tech">
+        <span class="tag tag--outline">Kotlin</span><span class="tag tag--outline">Jetpack Compose</span>
+        
+      </div>
+    
+  </div>
+</article>
+
+            
+              
+<article class="project-card">
+  <a class="project-card__media" href="/hackathons/fold-2026-spring/projects/reading-room" tabindex="-1" aria-hidden="true">
+    
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Project artwork"><defs><linearGradient id="pg" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#232327"/><stop offset="1" stop-color="#1b1b1f"/></linearGradient></defs><rect width="1200" height="675" fill="url(#pg)"/><rect x="0" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="133" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="267" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="400" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="533" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="800" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="933" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="1067" y="0" width="2" height="675" fill="#fbfaf7" opacity="0.1"/><rect x="0" y="338" width="1200" height="6" fill="#2b6cb0"/><text x="56" y="419" font-family="Inter, Helvetica, Arial, sans-serif" font-size="200" font-weight="800" letter-spacing="-10" fill="#fbfaf7" opacity="0.94">RR</text><text x="60" y="621" font-family="Inter, Helvetica, Arial, sans-serif" font-size="22" font-weight="600" letter-spacing="6" fill="#fbfaf7" opacity="0.6">ACCESSIBILITY</text></svg>
+    
+  </a>
+  <div class="project-card__body">
+    <div class="project-card__meta">
+      <span class="tag">Accessibility</span>
+      <span class="tag tag--ok">Results released</span>
+      <span class="tag tag--ok">Rank #3</span>
+    </div>
+    <h3 class="project-card__title"><a href="/hackathons/fold-2026-spring/projects/reading-room">Reading Room</a></h3>
+    <p class="project-card__summary">A screen reader that survives your own components.</p>
+    <div class="project-card__foot">
+      <span class="person">
+        <span class="avatar avatar--xs" style="background:hsl(201 46% 42%)">L</span>
+        <span class="person__name small">Lantern</span>
+      </span>
+      <span class="tiny muted truncate">Fold · Spring Edition</span>
+    </div>
+    
+      <div class="project-card__tech">
+        <span class="tag tag--outline">TypeScript</span><span class="tag tag--outline">React</span><span class="tag tag--outline">Vitest</span>
+        
+      </div>
+    
+  </div>
+</article>
+
+            
+              
+<article class="project-card">
+  <a class="project-card__media" href="/hackathons/fold-2026-spring/projects/glass-signal" tabindex="-1" aria-hidden="true">
+    
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Project artwork"><defs><linearGradient id="pg" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#282825"/><stop offset="1" stop-color="#20201d"/></linearGradient></defs><rect width="1200" height="675" fill="url(#pg)"/><rect x="0" y="108" width="1200" height="37" fill="#fbfaf7" opacity="0.08"/><rect x="0" y="223" width="1200" height="31" fill="#fbfaf7" opacity="0.08"/><rect x="0" y="338" width="1200" height="23" fill="#3b4cca" opacity="0.9"/><rect x="0" y="452" width="1200" height="27" fill="#fbfaf7" opacity="0.08"/><rect x="0" y="567" width="1200" height="34" fill="#fbfaf7" opacity="0.08"/><text x="56" y="419" font-family="Inter, Helvetica, Arial, sans-serif" font-size="200" font-weight="800" letter-spacing="-10" fill="#fbfaf7" opacity="0.94">GS</text><text x="60" y="621" font-family="Inter, Helvetica, Arial, sans-serif" font-size="22" font-weight="600" letter-spacing="6" fill="#fbfaf7" opacity="0.6">ACCESSIBILITY</text></svg>
+    
+  </a>
+  <div class="project-card__body">
+    <div class="project-card__meta">
+      <span class="tag">Accessibility</span>
+      <span class="tag tag--ok">Results released</span>
+      <span class="tag tag--ok">Rank #4</span>
+    </div>
+    <h3 class="project-card__title"><a href="/hackathons/fold-2026-spring/projects/glass-signal">Glass Signal</a></h3>
+    <p class="project-card__summary">Detects a broken captcha before the user retries.</p>
+    <div class="project-card__foot">
+      <span class="person">
+        <span class="avatar avatar--xs" style="background:hsl(134 46% 42%)">NK</span>
+        <span class="person__name small">North Kiln</span>
+      </span>
+      <span class="tiny muted truncate">Fold · Spring Edition</span>
+    </div>
+    
+      <div class="project-card__tech">
+        <span class="tag tag--outline">Rust</span><span class="tag tag--outline">WebAssembly</span>
+        
+      </div>
+    
+  </div>
+</article>
+
+            
+              
+<article class="project-card">
+  <a class="project-card__media" href="/hackathons/fold-2026-spring/projects/keepsake" tabindex="-1" aria-hidden="true">
+    
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Project artwork"><defs><linearGradient id="pg" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#1c1c1e"/><stop offset="1" stop-color="#141416"/></linearGradient></defs><rect width="1200" height="675" fill="url(#pg)"/><circle cx="887" cy="203" r="172" fill="#7a3e9d" opacity="0.9"/><rect x="0" y="500" width="1200" height="2" fill="#fbfaf7" opacity="0.2"/><text x="56" y="419" font-family="Inter, Helvetica, Arial, sans-serif" font-size="200" font-weight="800" letter-spacing="-10" fill="#fbfaf7" opacity="0.94">K</text><text x="60" y="621" font-family="Inter, Helvetica, Arial, sans-serif" font-size="22" font-weight="600" letter-spacing="6" fill="#fbfaf7" opacity="0.6">CARE AND HEALTH</text></svg>
+    
+  </a>
+  <div class="project-card__body">
+    <div class="project-card__meta">
+      <span class="tag">Care and health</span>
+      <span class="tag tag--ok">Results released</span>
+      <span class="tag tag--ok">Rank #2</span>
+    </div>
+    <h3 class="project-card__title"><a href="/hackathons/fold-2026-spring/projects/keepsake">Keepsake</a></h3>
+    <p class="project-card__summary">A handover tool for hospital ward rounds.</p>
+    <div class="project-card__foot">
+      <span class="person">
+        <span class="avatar avatar--xs" style="background:hsl(67 46% 42%)">SS</span>
+        <span class="person__name small">Slow Signal</span>
+      </span>
+      <span class="tiny muted truncate">Fold · Spring Edition</span>
+    </div>
+    
+      <div class="project-card__tech">
+        <span class="tag tag--outline">Python</span><span class="tag tag--outline">Django</span><span class="tag tag--outline">SQLite</span>
+        
+      </div>
+    
+  </div>
+</article>
+
+            
+              
+<article class="project-card">
+  <a class="project-card__media" href="/hackathons/fold-2026-spring/projects/tidewatch" tabindex="-1" aria-hidden="true">
+    
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 675" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" role="img" aria-label="Project artwork"><defs><linearGradient id="pg" x1="0" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#282825"/><stop offset="1" stop-color="#20201d"/></linearGradient></defs><rect width="1200" height="675" fill="url(#pg)"/><circle cx="963" cy="203" r="226" fill="#7a3e9d" opacity="0.9"/><rect x="0" y="500" width="1200" height="2" fill="#fbfaf7" opacity="0.2"/><text x="56" y="419" font-family="Inter, Helvetica, Arial, sans-serif" font-size="200" font-weight="800" letter-spacing="-10" fill="#fbfaf7" opacity="0.94">T</text><text x="60" y="621" font-family="Inter, Helvetica, Arial, sans-serif" font-size="22" font-weight="600" letter-spacing="6" fill="#fbfaf7" opacity="0.6">ACCESSIBILITY</text></svg>
+    
+  </a>
+  <div class="project-card__body">
+    <div class="project-card__meta">
+      <span class="tag">Accessibility</span>
+      <span class="tag tag--ok">Results released</span>
+      <span class="tag tag--ok">Rank #1</span>
+    </div>
+    <h3 class="project-card__title"><a href="/hackathons/fold-2026-spring/projects/tidewatch">Tidewatch</a></h3>
+    <p class="project-card__summary">Flood alerts for renters, not just river gauges.</p>
+    <div class="project-card__foot">
+      <span class="person">
+        <span class="avatar avatar--xs" style="background:hsl(0 46% 42%)">A</span>
+        <span class="person__name small">Almanac</span>
+      </span>
+      <span class="tiny muted truncate">Fold · Spring Edition</span>
+    </div>
+    
+      <div class="project-card__tech">
+        <span class="tag tag--outline">TypeScript</span><span class="tag tag--outline">Fastify</span><span class="tag tag--outline">Postgres</span><span class="tag tag--outline">MapLibre</span>
+        
+      </div>
+    
+  </div>
+</article>
+
+            
+          </div>
+          
+        
+      </section>
+    </div>
+
+    <aside class="event-body__side">
+      <div class="card">
+        <h3 class="card__title" style="margin-bottom:12px">What you need to submit</h3>
+        <ul class="req-list">
+          
+            <li>
+              <span>Source code</span>
+              <span class="tag tag--warn">required</span>
+            </li>
+          
+            <li>
+              <span>Working demo</span>
+              <span class="tag tag--warn">required</span>
+            </li>
+          
+            <li>
+              <span>Two-minute demo video</span>
+              <span class="tag">optional</span>
+            </li>
+          
+            <li>
+              <span>Technologies used</span>
+              <span class="tag tag--warn">required</span>
+            </li>
+          
+            <li>
+              <span>What problem does it solve?</span>
+              <span class="tag tag--warn">required</span>
+            </li>
+          
+            <li>
+              <span>How does it work?</span>
+              <span class="tag">optional</span>
+            </li>
+          
+        </ul>
+        <p class="tiny muted" style="margin-top:12px">
+          Team sizes 2–5, no solo entries.
+          Submissions close 15 May 2026, 00:09 UTC.
+        </p>
+      </div>
+
+      <div class="card">
+        <h3 class="card__title" style="margin-bottom:10px">Organizer</h3>
+        <p style="font-weight:560;margin-bottom:2px">Meera Raghavan</p>
+        
+          <p class="small"><a href="mailto:meera@hackerly.dev">meera@hackerly.dev</a></p>
+        
+        
+        <p class="tiny muted" style="margin-top:10px">Timezone UTC · all times shown in UTC.</p>
+      </div>
+
+      
+        <div class="card">
+          <h3 class="card__title" style="margin-bottom:12px">Judging panel <span class="muted small">3</span></h3>
+          <ul class="judge-list">
+            
+              <li class="person">
+                <span class="avatar avatar--sm" style="background:hsl(22 46% 42%)">YD</span>
+                <span class="grow">
+                  <span class="person__name">Yusuf Demir</span>
+                  <span class="person__meta">@yusuf</span>
+                </span>
+              </li>
+            
+              <li class="person">
+                <span class="avatar avatar--sm" style="background:hsl(302 46% 42%)">CM</span>
+                <span class="grow">
+                  <span class="person__name">Clara Mensah</span>
+                  <span class="person__meta">@clara</span>
+                </span>
+              </li>
+            
+              <li class="person">
+                <span class="avatar avatar--sm" style="background:hsl(228 46% 42%)">HO</span>
+                <span class="grow">
+                  <span class="person__name">Henrik Olsen</span>
+                  <span class="person__meta">@henrik</span>
+                </span>
+              </li>
+            
+          </ul>
+          <p class="tiny muted" style="margin-top:12px">
+            
+              <a href="/hackathons/fold-2026-spring/results">See the published results →</a>
+            
+          </p>
+        </div>
+      
+
+      <div class="card">
+        <h3 class="card__title" style="margin-bottom:10px">Teams</h3>
+        
+          <p class="small muted" style="margin-bottom:12px">6 teams registered so far.</p>
+          <ul class="team-chip-list">
+            
+              <li><a class="tag" href="/hackathons/fold-2026-spring/teams/second-spring">Second Spring</a></li>
+            
+              <li><a class="tag" href="/hackathons/fold-2026-spring/teams/fold-nine">Fold Nine</a></li>
+            
+              <li><a class="tag" href="/hackathons/fold-2026-spring/teams/lantern">Lantern</a></li>
+            
+              <li><a class="tag" href="/hackathons/fold-2026-spring/teams/north-kiln">North Kiln</a></li>
+            
+              <li><a class="tag" href="/hackathons/fold-2026-spring/teams/slow-signal">Slow Signal</a></li>
+            
+              <li><a class="tag" href="/hackathons/fold-2026-spring/teams/almanac">Almanac</a></li>
+            
+            
+          </ul>
+        
+      </div>
+    </aside>
+  </div>
+</article>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <div class="brand" style="margin-bottom:12px">
+          <span class="brand__mark" aria-hidden="true">H</span>
+          <span>Hackerly</span>
+        </div>
+        <p class="small" style="max-width:38ch">
+          Open source hackathon software. Run it yourself, keep your data, change anything.
+        </p>
+        <p class="tiny muted" style="margin-top:12px">
+          <a href="/about">About Hackerly</a> ·
+          <a href="/api/v1">REST API</a> ·
+          <a href="/healthz">Status</a>
+        </p>
+      </div>
+      <div>
+        <h5>For hackers</h5>
+        <ul>
+          <li><a href="/hackathons">Explore hackathons</a></li>
+          <li><a href="/projects">Project showcase</a></li>
+          <li><a href="/hackathons?status=open">Registration open</a></li>
+          <li><a href="/auth/signup">Create an account</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For organizers</h5>
+        <ul>
+          <li><a href="/host">Host a hackathon</a></li>
+          <li><a href="/host/events">Your events</a></li>
+          <li><a href="/host/start">Setup guide</a></li>
+          <li><a href="/about#self-host">Self-hosting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For judges</h5>
+        <ul>
+          <li><a href="/judge">Judge at Hackerly</a></li>
+          <li><a href="/judge/reviews">My reviews</a></li>
+          <li><a href="/about#judging">How judging works</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>Hackerly · MIT licensed · self-hostable</span>
+      <span class="mono">No account needed to browse</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/app.js?v=dev" defer></script>
+
+</body>
+</html>

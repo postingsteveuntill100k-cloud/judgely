@@ -1,0 +1,99 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Step <%= stepIndex + 1 %> of <%= stepCount %></p>
+        <h1 style="font-size:1.6rem">Tracks</h1>
+        <p class="small muted" style="margin:8px 0 0;max-width:60ch">
+          Tracks split the field so a team knows what it is entering. A track with a used project
+          cannot be deleted.
+        </p>
+      </div>
+      <% if (req.query.saved) { %><span class="tag tag--ok"><%= req.query.saved %> added</span><% } %>
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:14px">Add a track</h2>
+          <form method="post" action="/host/events/<%= event.slug %>/tracks">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field">
+              <label class="field__label" for="tname">Name<span class="field__req">*</span></label>
+              <input class="input" id="tname" name="name" required maxlength="60" placeholder="Developer tools">
+            </div>
+            <div class="field">
+              <label class="field__label" for="tdesc">Description</label>
+              <input class="input" id="tdesc" name="description" maxlength="600" placeholder="Anything that makes other developers faster or safer.">
+            </div>
+            <div class="field">
+              <label class="field__label" for="tbrief">What a good entry looks like</label>
+              <textarea class="textarea" id="tbrief" name="brief" maxlength="2000" style="min-height:80px" placeholder="A tool another team could adopt tomorrow morning."></textarea>
+              <p class="field__hint">Sets the bar. Judges read this alongside the rubric.</p>
+            </div>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="tprize">Track prize</label>
+                <input class="input" id="tprize" name="prize_text" maxlength="200" placeholder="₹1,50,000">
+              </div>
+              <div class="field">
+                <label class="field__label" for="telig">Eligibility note</label>
+                <input class="input" id="telig" name="eligibility" maxlength="400" placeholder="Open track">
+              </div>
+            </div>
+            <button class="btn btn--primary" type="submit">Add track</button>
+          </form>
+        </div>
+
+        <div class="card" style="margin-top:20px">
+          <div class="card__head">
+            <h2 class="card__title">Your tracks</h2>
+            <span class="tag"><%= tracks.length %></span>
+          </div>
+          <% if (!tracks.length) { %>
+            <div class="empty" style="padding:32px 20px">
+              <div class="empty__title">No tracks yet</div>
+              <p class="empty__body">You need at least one track before you can publish. Participants choose a track when they submit.</p>
+            </div>
+          <% } else { %>
+            <ul class="list-rows">
+              <% tracks.forEach(t => { %>
+                <li class="list-rows__item">
+                  <span class="track-card__n" style="background:<%= h.accentFor('trk-' + t.slug) %>"></span>
+                  <div class="grow">
+                    <span class="list-rows__title"><%= t.name %></span>
+                    <span class="list-rows__meta"><%= t.description || 'No description' %><%= t.prize_text ? ' · ' + t.prize_text : '' %></span>
+                  </div>
+                  <a class="btn btn--ghost btn--sm" href="/hackathons/<%= event.slug %>/tracks/<%= t.slug %>" target="_blank" rel="noopener">Public page</a>
+                  <form method="post" action="/host/events/<%= event.slug %>/tracks/<%= t.id %>/delete" data-confirm="Delete the track <%= t.name %>?">
+                    <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                    <button class="btn btn--quiet btn--sm" type="submit">Delete</button>
+                  </form>
+                </li>
+              <% }) %>
+            </ul>
+          <% } %>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">How many tracks?</h2>
+          <p class="small muted">
+            Two to five works well. One track means nobody has to think about which one they are in;
+            eight means the panel cannot rank across them.
+          </p>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Track prizes</h2>
+          <p class="small muted">
+            Per-track prize text is a label, not a payout. Hackerly does not hold money; it records
+            who placed where so you can pay out.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

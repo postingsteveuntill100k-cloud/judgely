@@ -1,0 +1,113 @@
+<%- include('../partials/judge-head', { actor }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/judge/events">Judging</a> <span aria-hidden="true">/</span>
+      <a href="/judge/events/<%= event.slug %>"><%= event.name %></a> <span aria-hidden="true">/</span>
+      <span class="muted">Compare</span>
+    </nav>
+    <div class="section__head" style="margin:18px 0 16px">
+      <div>
+        <p class="eyebrow">Side by side</p>
+        <h1 style="font-size:1.6rem">Compare your scores</h1>
+        <p class="small muted" style="margin:8px 0 0;max-width:62ch">
+          Up to three of your own assignments. You see the submissions, the requirements and the
+          scores you entered. You never see another judge&rsquo;s numbers.
+        </p>
+      </div>
+    </div>
+
+    <form class="filterbar" method="get" action="/judge/events/<%= event.slug %>/compare" style="position:static;margin-bottom:22px">
+      <% ['a','b','c'].forEach((k, i) => { %>
+        <div class="filterbar__group grow">
+          <label class="sr-only" for="<%= k %>">Project <%= i + 1 %></label>
+          <select class="select" id="<%= k %>" name="<%= k %>">
+            <option value="">— none —</option>
+            <% available.forEach(a => { %>
+              <option value="<%= a.id %>" <%= cards[i] && cards[i].assignment.id === a.id ? 'selected' : '' %>>
+                <%= a.title %><%= a.done ? ' (reviewed)' : '' %>
+              </option>
+            <% }) %>
+          </select>
+        </div>
+      <% }) %>
+      <button class="btn btn--primary" type="submit">Compare</button>
+    </form>
+
+    <div class="compare-grid">
+      <% cards.forEach(card => { %>
+        <div class="compare-col">
+          <div class="compare-col__head">
+            <div class="row row-between" style="align-items:flex-start;gap:10px">
+              <div>
+                <div style="font-weight:620"><%= card.project.title %></div>
+                <div class="tiny muted"><%= card.project.team_name %><%= card.project.track_name ? ' · ' + card.project.track_name : '' %></div>
+              </div>
+              <span class="tag <%= card.assignment.status === 'submitted' ? 'tag--ok' : 'tag--warn' %>"><%= card.assignment.status %></span>
+            </div>
+          </div>
+          <div class="compare-col__body">
+            <% if (card.project.tagline || card.project.summary) { %>
+              <p class="small" style="margin:0 0 12px"><%= card.project.tagline || card.project.summary %></p>
+            <% } %>
+
+            <div class="compare-row">
+              <span class="compare-row__k">Requirement check</span>
+              <span class="compare-row__v">
+                <% if (!card.issues.length) { %><span class="tag tag--ok">complete</span><% } else { %>
+                  <span class="tag tag--warn"><%= card.issues.length %> missing</span>
+                <% } %>
+              </span>
+            </div>
+            <div class="compare-row">
+              <span class="compare-row__k">Repository</span>
+              <span class="compare-row__v"><%= card.project.repo_url ? h.fmt.host(card.project.repo_url) : '—' %></span>
+            </div>
+            <div class="compare-row">
+              <span class="compare-row__k">Demo</span>
+              <span class="compare-row__v"><%= card.project.demo_url ? h.fmt.host(card.project.demo_url) : '—' %></span>
+            </div>
+            <div class="compare-row">
+              <span class="compare-row__k">Stack</span>
+              <span class="compare-row__v"><%= h.truncate(h.techList(card.project.tech_stack).join(', ') || '—', 48) %></span>
+            </div>
+
+            <h3 class="card__title" style="margin:16px 0 8px;font-size:.84rem">Your scores</h3>
+            <% criteria.forEach(c => { %>
+              <% const s = card.scores.find(x => x.criterion_id === c.id); %>
+              <div class="compare-row">
+                <span class="compare-row__k"><%= c.name %></span>
+                <span class="compare-row__v"><%= s ? s.score + ' / ' + c.max_score : '—' %></span>
+              </div>
+            <% }) %>
+            <div class="compare-row" style="border-top:2px solid var(--ink);margin-top:6px;padding-top:10px">
+              <span class="compare-row__k"><strong>Weighted</strong></span>
+              <span class="compare-row__v"><strong><%= card.review && card.review.weighted_score != null ? Number(card.review.weighted_score).toFixed(1) : '—' %></strong></span>
+            </div>
+
+            <% if (card.review && card.review.comment) { %>
+              <h3 class="card__title" style="margin:16px 0 6px;font-size:.84rem">Your note</h3>
+              <p class="small muted" style="margin:0"><%= h.truncate(card.review.comment, 220) %></p>
+            <% } %>
+
+            <a class="btn <%= card.assignment.status === 'submitted' ? 'btn--ghost' : 'btn--primary' %> btn--block" style="margin-top:16px" href="/judge/review/<%= card.assignment.id %>">
+              <%= card.assignment.status === 'submitted' ? 'View review' : 'Score this one' %>
+            </a>
+          </div>
+        </div>
+      <% }) %>
+    </div>
+
+    <div class="notice" style="margin-top:26px">
+      <strong class="notice__title">What this view deliberately does not do</strong>
+      It never shows another judge&rsquo;s score, comment or identity, and it never shows a
+      participant&rsquo;s view. Those refusals are made by the backend on every request, not by
+      hiding a control here.
+    </div>
+
+    <% if (h.queueOpen(available)) { %>
+      <p style="margin-top:22px"><a class="btn btn--ghost" href="/judge/events/<%= event.slug %>">Back to the queue (<%= h.queueOpen(available) %> to do)</a></p>
+    <% } %>
+  </div>
+</section>

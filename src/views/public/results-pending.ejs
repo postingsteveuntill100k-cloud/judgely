@@ -1,0 +1,32 @@
+<section class="page-head">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/hackathons">Hackathons</a> <span aria-hidden="true">/</span>
+      <a href="/hackathons/<%= event.slug %>"><%= event.name %></a> <span aria-hidden="true">/</span>
+      <span class="muted">Results</span>
+    </nav>
+    <p class="eyebrow" style="margin-top:22px">Not published</p>
+    <h1>Results for <%= event.name %> are not out yet</h1>
+    <p class="lede" style="margin-top:14px">
+      <% if (event.results_release_at) { %>
+        The organizers plan to publish results on <strong><%= h.fmt.dateTime(event.results_release_at) %></strong>.
+      <% } else { %>
+        The organizers have not set a results date yet.
+      <% } %>
+      Until then, private judge scores are not visible to anyone — not to participants, not to the public.
+    </p>
+
+    <div class="card" style="margin-top:32px;max-width:640px">
+      <h2 class="card__title" style="margin-bottom:12px">Where the event is now</h2>
+      <dl class="kv">
+        <div><dt>Judging</dt><dd><%= state.judging === 'open' ? 'In progress' : state.judging === 'closed' ? 'Finished' : 'Not started' %></dd></div>
+        <div><dt>Submissions</dt><dd><%= state.submissions === 'open' ? 'Open' : 'Closed' %> <%= h.fmt.date(event.submission_deadline) %></dd></div>
+        <div><dt>Results visibility</dt><dd><%= event.results_visibility === 'public' ? 'Will be public' : 'Private to organizers' %></dd></div>
+      </dl>
+      <% const pCount = typeof projectCount !== 'undefined' ? projectCount : (event.project_count || 0); %>
+      <% if (pCount) { %>
+        <p style="margin-top:16px"><a class="btn btn--ghost" href="/hackathons/<%= event.slug %>/projects">Browse the <%= pCount %> submitted projects instead</a></p>
+      <% } %>
+    </div>
+  </div>
+</section>

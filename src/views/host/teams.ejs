@@ -1,0 +1,92 @@
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Teams</p>
+        <h1 style="font-size:1.6rem"><%= total %> <%= h.fmt.plural(total, 'team') %></h1>
+      </div>
+      <form class="row" method="get" action="/host/events/<%= event.slug %>/teams">
+        <input class="input" type="search" name="q" value="<%= q %>" placeholder="Search teams" style="min-width:200px">
+        <button class="btn btn--ghost btn--sm" type="submit">Search</button>
+      </form>
+    </div>
+
+    <% if (req.query.saved) { %><div class="notice notice--ok" style="margin-bottom:18px"><%= req.query.saved === 'member-removed' ? 'Member removed.' : 'Saved.' %></div><% } %>
+
+    <div class="ws">
+      <div class="ws__main">
+        <% if (!teams.length) { %>
+          <div class="empty">
+            <div class="empty__title">No teams yet</div>
+            <p class="empty__body">Participants create and join teams themselves. You can also create one on their behalf if somebody is stuck.</p>
+          </div>
+        <% } else { %>
+          <div class="card" style="padding:0;overflow:hidden">
+            <div class="table-wrap" style="border:0">
+              <table class="data">
+                <thead>
+                  <tr><th>Team</th><th>Members</th><th>Project</th><th>Status</th><th></th></tr>
+                </thead>
+                <tbody>
+                  <% teams.forEach(t => { %>
+                    <tr>
+                      <td>
+                        <span style="font-weight:560"><%= t.name %></span>
+                        <% if (t.description) { %><div class="tiny muted"><%= h.truncate(t.description, 80) %></div><% } %>
+                      </td>
+                      <td>
+                        <div class="row row-wrap" style="gap:4px">
+                          <% t.members.forEach(m => { %>
+                            <span class="avatar avatar--xs" title="<%= m.display_name %>" style="background:<%= h.avatarColor(m.avatar_seed) %>"><%= h.initials(m.display_name) %></span>
+                          <% }) %>
+                        </div>
+                        <div class="tiny muted" style="margin-top:2px"><%= t.member_count %>/<%= event.max_team_size %></div>
+                      </td>
+                      <td class="small"><%= t.project_title || '—' %></td>
+                      <td><% if (t.project_status) { %><span class="tag <%= h.projectStatusTone(t.project_status) %>"><%= h.projectStatusLabel(t.project_status) %></span><% } else { %><span class="tag tag--warn">No project</span><% } %></td>
+                      <td class="nowrap">
+                        <a class="btn btn--ghost btn--sm" href="/hackathons/<%= event.slug %>/teams/<%= t.slug %>" target="_blank" rel="noopener">Public</a>
+                      </td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          <%- include('../partials/pager', { page, pages, base: '/host/events/' + event.slug + '/teams?q=' + encodeURIComponent(q) }) %>
+        <% } %>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Create a team for somebody</h2>
+          <p class="small muted">For a walk-in who cannot sign in, or a team that needs to exist before they arrive.</p>
+          <form method="post" action="/host/events/<%= event.slug %>/teams" style="margin-top:12px">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div class="field">
+              <label class="field__label" for="nte">Team name</label>
+              <input class="input" id="nte" name="name" required maxlength="60" placeholder="Late Entrants">
+            </div>
+            <div class="field">
+              <label class="field__label" for="nted">Note</label>
+              <input class="input" id="nted" name="description" maxlength="400" placeholder="Created at the door">
+            </div>
+            <button class="btn btn--ghost btn--sm" type="submit">Create team</button>
+          </form>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Team rules</h2>
+          <p class="small muted">
+            Teams of <%= event.min_team_size %>–<%= event.max_team_size %><%= event.allow_solo ? ', solo welcome' : ', no solo entries' %>.
+            Members are enforced server-side: a full team refuses a join request.
+          </p>
+          <p class="tiny muted" style="margin-top:10px">
+            <a href="/host/events/<%= event.slug %>/settings">Change team settings</a>
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

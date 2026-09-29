@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Judge at Hackerly · Hackerly</title>
+<meta name="description" content="Review assigned projects against a published rubric, explain your scores, and move on to the next one.">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="Judge at Hackerly">
+<meta property="og:description" content="Review assigned projects against a published rubric, explain your scores, and move on to the next one.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="/css/app.css?v=dev">
+<link rel="stylesheet" href="/css/pages.css?v=dev">
+<link rel="stylesheet" href="/css/workspace.css?v=dev">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+</head>
+<body class="">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">H</span>
+      <span>Hackerly</span>
+      <span class="brand__sub">Hackathon platform</span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="sr-only">Menu</span>
+    </button>
+
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="/hackathons">Explore hackathons</a>
+      <a href="/projects">Showcase</a>
+      <a href="/host">Host a hackathon</a>
+      <a href="/judge" aria-current=&#34;page&#34;>Judge at Hackerly</a>
+      <a href="/about">About</a>
+    </nav>
+
+    <div class="header-actions">
+      
+        <a class="btn btn--quiet btn--sm" href="/auth/signin">Sign in</a>
+        <a class="btn btn--primary btn--sm" href="/auth/signup">Sign up</a>
+      
+    </div>
+  </div>
+</header>
+
+<main id="main"><section class="pitch">
+  <div class="wrap">
+    <div class="pitch__grid">
+      <div>
+        <p class="eyebrow eyebrow--accent">For judges</p>
+        <h1>Review submissions<br>without a spreadsheet.</h1>
+        <p class="lede" style="margin-top:20px">
+          You get a queue, not a folder. Each project opens with the submission, the repository
+          link, the demo, the write-up and the rubric in one screen. Score, explain, submit, move on.
+        </p>
+        <div class="row row-wrap" style="margin-top:28px;gap:10px">
+          
+            <a class="btn btn--accent btn--lg" href="/auth/signin?next=/judge/reviews">Sign in to start</a>
+          
+        </div>
+        <p class="small muted" style="margin-top:16px">
+          Invited by an organizer? Open the link they emailed you. It works once, and only for the address it was sent to.
+        </p>
+      </div>
+
+      <div class="pitch__card">
+        <h2 class="pitch__card-title">What the workspace gives you</h2>
+        <ul class="check-list">
+          <li>The submission, the answers, the links and the tech stack on one screen</li>
+          <li>The rubric you must use, with weights and maximums from the organizer</li>
+          <li>A completeness checklist: what is missing from the entry, flagged server-side</li>
+          <li>Score ranges validated in the backend, not just in the form</li>
+          <li>Fields for what worked, what did not, and your recommendation</li>
+          <li>Save as a draft, submit when you are done, jump straight to the next one</li>
+          <li>Side-by-side comparison of your own scores on up to three projects</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--line">
+  <div class="wrap">
+    <div class="grid grid-3">
+      <div class="how__step">
+        <span class="how__num">01</span>
+        <h3>Your scores stay yours</h3>
+        <p class="small muted">A judge cannot read another judge&rsquo;s scores — not through the interface, not through the API, not by changing a URL. The backend refuses it, and it refuses it for participants too.</p>
+      </div>
+      <div class="how__step">
+        <span class="how__num">02</span>
+        <h3>You see only your assignments</h3>
+        <p class="small muted">Opening an unassigned project is a 403, not a hidden button. The assignment is what authorises the read, and it is checked on every request.</p>
+      </div>
+      <div class="how__step">
+        <span class="how__num">03</span>
+        <h3>You are not alone</h3>
+        <p class="small muted">The organizer can see how far you have got without ever seeing what you wrote. If you finish early, nothing changes about your score weighting.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--line">
+  <div class="wrap">
+    <div class="grid grid-2" style="align-items:center;gap:48px">
+      <div>
+        <p class="eyebrow">The loop</p>
+        <h2>Open. Inspect. Score. Explain. Submit. Next.</h2>
+        <p class="lede" style="margin-top:14px">
+          Six steps, no navigation between pages. When you submit, the project is marked under
+          review and the queue moves you to whatever is still open.
+        </p>
+        <ol class="steps">
+          <li><span>1</span><div><strong>Open</strong><p>The submission, its track, its team and its links.</p></div></li>
+          <li><span>2</span><div><strong>Inspect</strong><p>Repository, live demo, video, documentation, tech stack.</p></div></li>
+          <li><span>3</span><div><strong>Score</strong><p>Every criterion, with the range the organizer set.</p></div></li>
+          <li><span>4</span><div><strong>Explain</strong><p>What worked, what did not, and your recommendation.</p></div></li>
+          <li><span>5</span><div><strong>Submit</strong><p>Locked in, timestamped, and visible to the organizer.</p></div></li>
+          <li><span>6</span><div><strong>Next</strong><p>Straight into the next unfinished project.</p></div></li>
+        </ol>
+      </div>
+      <div class="card">
+        <h2 class="card__title" style="margin-bottom:14px">A rubric looks like this</h2>
+        <table class="data" style="border:0">
+          <thead><tr><th>Criterion</th><th class="num">Weight</th><th class="num">Max</th></tr></thead>
+          <tbody>
+            <tr><td>Does it work</td><td class="num">35</td><td class="num">10</td></tr>
+            <tr><td>Technical quality</td><td class="num">25</td><td class="num">10</td></tr>
+            <tr><td>Originality</td><td class="num">15</td><td class="num">10</td></tr>
+            <tr><td>Impact</td><td class="num">15</td><td class="num">10</td></tr>
+            <tr><td>Clarity</td><td class="num">10</td><td class="num">10</td></tr>
+          </tbody>
+        </table>
+        <p class="tiny muted" style="margin-top:12px">
+          Weights are validated when the organizer saves them. A client cannot invent a criterion:
+          an unknown criterion id is rejected with a 400.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <div class="brand" style="margin-bottom:12px">
+          <span class="brand__mark" aria-hidden="true">H</span>
+          <span>Hackerly</span>
+        </div>
+        <p class="small" style="max-width:38ch">
+          Open source hackathon software. Run it yourself, keep your data, change anything.
+        </p>
+        <p class="tiny muted" style="margin-top:12px">
+          <a href="/about">About Hackerly</a> ·
+          <a href="/api/v1">REST API</a> ·
+          <a href="/healthz">Status</a>
+        </p>
+      </div>
+      <div>
+        <h5>For hackers</h5>
+        <ul>
+          <li><a href="/hackathons">Explore hackathons</a></li>
+          <li><a href="/projects">Project showcase</a></li>
+          <li><a href="/hackathons?status=open">Registration open</a></li>
+          <li><a href="/auth/signup">Create an account</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For organizers</h5>
+        <ul>
+          <li><a href="/host">Host a hackathon</a></li>
+          <li><a href="/host/events">Your events</a></li>
+          <li><a href="/host/start">Setup guide</a></li>
+          <li><a href="/about#self-host">Self-hosting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For judges</h5>
+        <ul>
+          <li><a href="/judge">Judge at Hackerly</a></li>
+          <li><a href="/judge/reviews">My reviews</a></li>
+          <li><a href="/about#judging">How judging works</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>Hackerly · MIT licensed · self-hostable</span>
+      <span class="mono">No account needed to browse</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/app.js?v=dev" defer></script>
+
+</body>
+</html>

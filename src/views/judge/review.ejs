@@ -1,0 +1,285 @@
+<%
+  const answers = h.answersOf(project);
+  const stack = h.techList(project.tech_stack);
+  const scoreOf = (cid) => { const s = (scores || []).find(x => x.criterion_id === cid); return s ? s.score : null; };
+  const noteOf = (cid) => { const s = (scores || []).find(x => x.criterion_id === cid); return s ? s.note : ''; };
+  const isSubmitted = review && review.status === 'submitted';
+  const custom = fields.filter(f => !['repo_url','demo_url','video_url','docs_url','tech_stack','problem','how_it_works','tried','summary'].includes(f.key));
+  const links = [
+    project.repo_url && { label: 'Repository', url: project.repo_url, host: h.fmt.host(project.repo_url) },
+    project.demo_url && { label: 'Live demo', url: project.demo_url, host: h.fmt.host(project.demo_url) },
+    project.video_url && { label: 'Video', url: project.video_url, host: h.fmt.host(project.video_url) },
+    project.docs_url && { label: 'Docs', url: project.docs_url, host: h.fmt.host(project.docs_url) },
+  ].filter(Boolean);
+%>
+
+<div class="review-nav">
+  <div>
+    <a class="btn btn--ghost btn--sm" href="/judge/events/<%= event.slug %>">← Queue</a>
+    <span class="tiny muted" style="margin-left:10px">Project <%= position %> of <%= of %></span>
+  </div>
+  <div class="row row-wrap">
+    <% if (queue > 1) { %>
+      <a class="btn btn--ghost btn--sm" href="/judge/events/<%= event.slug %>/compare?a=<%= assignment.id %>">Compare</a>
+    <% } %>
+    <% if (nextUp) { %>
+      <a class="btn btn--ghost btn--sm" href="/judge/review/<%= nextUp.id %>">Next project →</a>
+    <% } %>
+  </div>
+</div>
+
+<section class="section section--tight" style="padding-top:0">
+  <div class="wrap">
+    <% if (req.query.submitted === '1') { %>
+      <div class="notice notice--ok" style="margin-bottom:20px">
+        <strong class="notice__title">Review submitted</strong>
+        It is locked and timestamped. The organizers can see that you finished, not what you wrote.
+        <% if (nextUp) { %> <a href="/judge/review/<%= nextUp.id %>">Open the next one →</a><% } %>
+      </div>
+    <% } %>
+    <% if (req.query.saved === '1') { %>
+      <div class="notice notice--ok" style="margin-bottom:20px">Draft saved. Nothing is final until you press Submit review.</div>
+    <% } %>
+    <% if (formError) { %>
+      <div class="notice notice--danger" style="margin-bottom:20px" role="alert">
+        <strong class="notice__title">The server refused this review</strong>
+        <%= formError %>
+        <% if (formIssues && formIssues.length) { %>
+          <ul style="margin:8px 0 0;padding-left:18px">
+            <% formIssues.forEach(i => { %><li><%= i.message %></li><% }) %>
+          </ul>
+        <% } %>
+      </div>
+    <% } %>
+
+    <div class="ws" style="grid-template-columns:minmax(0,1fr) 300px;margin-bottom:24px">
+      <div>
+        <div class="row row-wrap" style="gap:6px;margin-bottom:12px">
+          <% if (project.track_name) { %><span class="tag"><%= project.track_name %></span><% } %>
+          <span class="tag <%= h.projectStatusTone(project.status) %>"><%= h.projectStatusLabel(project.status) %></span>
+          <span class="tag"><%= project.team_name %></span>
+        </div>
+        <h1 style="font-size:1.9rem"><%= project.title %></h1>
+        <% if (project.tagline) { %><p class="lede" style="margin-top:10px"><%= project.tagline %></p><% } %>
+        <div class="row row-wrap" style="margin-top:14px;gap:8px">
+          <% links.forEach(l => { %>
+            <a class="btn btn--ghost btn--sm" href="<%= l.url %>" target="_blank" rel="noopener nofollow"><%= l.label %> ↗ <span class="muted tiny"><%= l.host %></span></a>
+          <% }) %>
+          <% if (!links.length) { %>
+            <span class="notice notice--warn">No repository, demo, video or documentation link was submitted. Score what you can and note the gap.</span>
+          <% } %>
+        </div>
+      </div>
+      <div class="card">
+        <h2 class="card__title" style="margin-bottom:10px">Team</h2>
+        <ul class="judge-list">
+          <% members.forEach(m => { %>
+            <li class="person">
+              <span class="avatar avatar--sm" style="background:<%= h.avatarColor(m.avatar_seed) %>"><%= h.initials(m.display_name) %></span>
+              <span class="grow">
+                <span class="person__name"><%= m.display_name %></span>
+                <span class="person__meta">@<%= m.username %></span>
+              </span>
+            </li>
+          <% }) %>
+        </ul>
+      </div>
+    </div>
+
+    <div class="review-layout">
+      <div>
+        <% if (project.summary) { %>
+          <div class="card" style="margin-bottom:20px">
+            <h2 class="card__title" style="margin-bottom:10px">What it does</h2>
+            <p style="margin:0"><%= project.summary %></p>
+          </div>
+        <% } %>
+
+        <% if (project.description && project.description !== project.summary) { %>
+          <div class="card" style="margin-bottom:20px">
+            <h2 class="card__title" style="margin-bottom:10px">How it works</h2>
+            <div class="prose"><%- h.renderRichText(project.description) %></div>
+          </div>
+        <% } %>
+
+        <div class="card" style="margin-bottom:20px">
+          <h2 class="card__title" style="margin-bottom:12px">Submission answers</h2>
+          <% const keys = Object.keys(answers).filter(k => answers[k]); %>
+          <% if (!keys.length && !custom.length) { %>
+            <p class="small muted">The team answered no written questions.</p>
+          <% } %>
+          <% keys.forEach(k => { %>
+            <% const f = fields.find(x => x.key === k); %>
+            <div class="qa__row">
+              <dt><%= f ? f.label : k.replace(/_/g, ' ') %></dt>
+              <dd><%= answers[k] %></dd>
+            </div>
+          <% }) %>
+          <% custom.forEach(f => { %>
+            <div class="qa__row">
+              <dt><%= f.label %><% if (f.required) { %> <span class="tag tag--warn">required</span><% } %></dt>
+              <dd><%= answers[f.key] || 'Not answered' %></dd>
+            </div>
+          <% }) %>
+        </div>
+
+        <div class="card">
+          <div class="card__head">
+            <h2 class="card__title">Your review</h2>
+            <% if (isSubmitted) { %>
+              <span class="tag tag--ok">Submitted <%= h.fmt.ago(review.submitted_at) %></span>
+            <% } else { %>
+              <span class="tag tag--warn">Draft</span>
+            <% } %>
+          </div>
+
+          <% if (isSubmitted) { %>
+            <div class="notice notice--info" style="margin-bottom:20px">
+              This review is submitted and read-only. If something is wrong with it, ask the
+              organizer to reopen it rather than editing.
+            </div>
+          <% } %>
+
+          <form method="post" action="/judge/review/<%= assignment.id %>" id="review-form">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+            <div class="criteria">
+              <% criteria.forEach(c => { %>
+                <% const value = scoreOf(c.id); %>
+                <div class="criterion" data-criterion="<%= c.id %>">
+                  <div class="criterion__head">
+                    <span class="criterion__name"><%= c.name %><% if (c.required) { %> <span class="tag tag--warn" style="vertical-align:middle">required</span><% } %></span>
+                    <span class="criterion__weight">weight <%= c.weight %> · max <%= c.max_score %></span>
+                  </div>
+                  <% if (c.description) { %><div class="criterion__desc"><%= c.description %></div><% } %>
+
+                  <div class="score-row" role="group" aria-label="<%= c.name %> score, 0 to <%= c.max_score %>">
+                    <% for (let n = 0; n <= c.max_score; n += 1) { %>
+                      <button class="score-btn <%= c.required ? 'score-btn--req' : '' %>"
+                              type="button"
+                              data-score-input="criterion_<%= c.id %>"
+                              data-value="<%= n %>"
+                              aria-pressed="<%= value === n ? 'true' : 'false' %>"
+                              <%= isSubmitted ? 'disabled' : '' %>><%= n %></button>
+                    <% } %>
+                    <input type="hidden" name="criterion_<%= c.id %>" value="<%= value === null ? '' : value %>" data-score-value="<%= c.id %>">
+                    <% if (value !== null) { %>
+                      <span class="tag" data-score-readout="<%= c.id %>"><%= value %> / <%= c.max_score %></span>
+                    <% } %>
+                  </div>
+
+                  <% if (!isSubmitted) { %>
+                    <div class="field" style="margin:12px 0 0">
+                      <label class="field__label" for="note_<%= c.id %>">Note <span class="muted" style="font-weight:400">(optional, private)</span></label>
+                      <input class="input" id="note_<%= c.id %>" name="note_<%= c.id %>" value="<%= noteOf(c.id) %>" maxlength="600" placeholder="One line that explains this score to yourself.">
+                    </div>
+                  <% } else if (noteOf(c.id)) { %>
+                    <p class="small muted" style="margin:10px 0 0"><%= noteOf(c.id) %></p>
+                  <% } %>
+                </div>
+              <% }) %>
+            </div>
+
+            <% if (!criteria.length) { %>
+              <div class="notice notice--warn">This event has no rubric, so there is nothing to score yet.</div>
+            <% } %>
+
+            <div class="card" style="margin-top:20px;background:var(--paper-2)">
+              <h3 class="card__title" style="margin-bottom:12px">Explain</h3>
+              <div class="field">
+                <label class="field__label" for="comment">Overall comment</label>
+                <textarea class="textarea" id="comment" name="comment" maxlength="4000" style="min-height:120px" <%= isSubmitted ? 'disabled' : '' %>><%= review ? review.comment : (typeof comment !== 'undefined' ? comment : '') %></textarea>
+              </div>
+              <div class="grid grid-2" style="gap:0 18px">
+                <div class="field">
+                  <label class="field__label" for="strengths">What worked</label>
+                  <textarea class="textarea" id="strengths" name="strengths" maxlength="2000" style="min-height:90px" <%= isSubmitted ? 'disabled' : '' %>><%= review ? review.strengths : (typeof strengths !== 'undefined' ? strengths : '') %></textarea>
+                </div>
+                <div class="field">
+                  <label class="field__label" for="improvements">What did not</label>
+                  <textarea class="textarea" id="improvements" name="improvements" maxlength="2000" style="min-height:90px" <%= isSubmitted ? 'disabled' : '' %>><%= review ? review.improvements : (typeof improvements !== 'undefined' ? improvements : '') %></textarea>
+                </div>
+              </div>
+              <div class="field">
+                <label class="field__label" for="recommendation">Recommendation</label>
+                <select class="select" id="recommendation" name="recommendation" <%= isSubmitted ? 'disabled' : '' %>>
+                  <option value="">No recommendation</option>
+                  <% [['strong_yes','Strong yes — shortlist'],['yes','Yes'],['neutral','Neutral'],['no','No']].forEach(([v,l]) => { %>
+                    <option value="<%= v %>" <%= review && review.recommendation === v ? 'selected' : '' %>><%= l %></option>
+                  <% }) %>
+                </select>
+              </div>
+            </div>
+
+            <% if (!isSubmitted) { %>
+              <input type="hidden" name="action" value="submit">
+              <div class="form-actions">
+                <button class="btn btn--ghost" type="submit" name="then" value="stay" formnovalidate>Save draft</button>
+                <% if (nextUp) { %>
+                  <button class="btn btn--ghost" type="submit" name="then" value="done">Submit and finish</button>
+                  <button class="btn btn--primary" type="submit" name="then" value="next">Submit and go to next →</button>
+                <% } else { %>
+                  <button class="btn btn--accent" type="submit" name="then" value="done">Submit review</button>
+                <% } %>
+              </div>
+            <% } %>
+          </form>
+        </div>
+      </div>
+
+      <aside class="review-side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Submission check</h2>
+          <% if (!issues.length) { %>
+            <div class="notice notice--ok">Everything the organizer required is present.</div>
+          <% } else { %>
+            <div class="notice notice--warn">
+              <strong class="notice__title"><%= issues.length %> missing</strong>
+              <ul style="margin:6px 0 0;padding-left:18px">
+                <% issues.forEach(i => { %><li><%= i.message %></li><% }) %>
+              </ul>
+            </div>
+          <% } %>
+          <p class="tiny muted" style="margin-top:12px">
+            This is the same validation the server runs on submit. Score the project anyway — a
+            missing field is information, not a reason to skip it.
+          </p>
+        </div>
+
+        <% if (stack.length) { %>
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:10px">Stack</h2>
+            <div class="row row-wrap" style="gap:5px">
+              <% stack.forEach(t => { %><span class="tag tag--outline"><%= t %></span><% }) %>
+            </div>
+          </div>
+        <% } %>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">How scoring works</h2>
+          <ul class="check-list check-list--sm">
+            <li>Each criterion is 0 to its maximum</li>
+            <li>Required criteria must be scored before submitting</li>
+            <li>A score outside the range is refused by the server</li>
+            <li>Your total is the weighted sum, normalised to 0–100</li>
+            <li>No judge sees another judge&rsquo;s scores</li>
+          </ul>
+        </div>
+
+        <% if (isSubmitted) { %>
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:10px">Your submitted review</h2>
+            <dl class="kv">
+              <div><dt>Submitted</dt><dd><%= h.fmt.dateTime(review.submitted_at) %></dd></div>
+              <div><dt>Weighted score</dt><dd><%= review.weighted_score != null ? Number(review.weighted_score).toFixed(1) : '—' %></dd></div>
+              <div><dt>Recommendation</dt><dd><%= review.recommendation || '—' %></dd></div>
+            </dl>
+            <% if (!resultsPublic) { %>
+              <p class="tiny muted" style="margin-top:12px">Results are not published yet. Your score stays private to you and the organizers.</p>
+            <% } %>
+          </div>
+        <% } %>
+      </aside>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,161 @@
+<%
+  const presets = [
+    { key: 'repo_url', label: 'Source code', type: 'url', required: true },
+    { key: 'demo_url', label: 'Working demo', type: 'url', required: false },
+    { key: 'video_url', label: 'Demo video', type: 'url', required: false },
+    { key: 'docs_url', label: 'Documentation', type: 'url', required: false },
+    { key: 'tech_stack', label: 'Technologies used', type: 'tags', required: true },
+    { key: 'problem', label: 'What problem does it solve?', type: 'textarea', required: true },
+    { key: 'how_it_works', label: 'How does it work?', type: 'textarea', required: false },
+    { key: 'tried', label: 'What did you try that did not work?', type: 'textarea', required: false },
+  ];
+%>
+<%- include('../partials/host-head', { event, nav: hostNav, counts }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Step <%= stepIndex + 1 %> of <%= stepCount %></p>
+        <h1 style="font-size:1.6rem">Submission</h1>
+        <p class="small muted" style="margin:8px 0 0;max-width:62ch">
+          Decide what a submission contains. The server validates every required field and refuses
+          an incomplete submission with a message naming what is missing.
+        </p>
+      </div>
+      <% if (req.query.saved) { %><span class="tag tag--ok">Saved</span><% } %>
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <form method="post" action="/host/events/<%= event.slug %>/setup/submission">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+
+            <div class="repeat-row" style="background:var(--white)">
+              <div class="repeat-row__head">
+                <span class="repeat-row__title">Fields</span>
+                <span class="tag" data-weight-total>—</span>
+              </div>
+              <p class="tiny muted" style="margin:0">
+                Required fields block a submission until they are filled. Keep the list short: every
+                extra question reduces the number of finished entries.
+              </p>
+
+              <div data-repeat-list="fields">
+                <% fields.forEach((f, i) => { %>
+                  <div data-repeat-row class="repeat-row">
+                    <div class="repeat-row__head">
+                      <span class="repeat-row__title">Field <%= i + 1 %></span>
+                      <button class="btn btn--quiet btn--sm" type="button" data-repeat-remove>Remove</button>
+                    </div>
+                    <div class="grid grid-2" style="gap:0 16px">
+                      <div class="field">
+                        <label class="field__label">Label</label>
+                        <input class="input" name="field_label[]" value="<%= f.label %>" maxlength="120">
+                      </div>
+                      <div class="field">
+                        <label class="field__label">Key</label>
+                        <input class="input mono" name="field_key[]" value="<%= f.key %>" maxlength="40">
+                      </div>
+                    </div>
+                    <div class="grid grid-2" style="gap:0 16px">
+                      <div class="field">
+                        <label class="field__label">Type</label>
+                        <select class="select" name="field_type[]">
+                          <% ['url','text','textarea','tags'].forEach(t => { %>
+                            <option value="<%= t %>" <%= f.type === t ? 'selected' : '' %>><%= t %></option>
+                          <% }) %>
+                        </select>
+                      </div>
+                      <div class="field">
+                        <label class="field__label">Help text</label>
+                        <input class="input" name="field_help[]" value="<%= f.help || '' %>" maxlength="240" placeholder="The judges read this first.">
+                      </div>
+                    </div>
+                    <label class="check">
+                      <input type="checkbox" name="field_required[]" <%= f.required ? 'checked' : '' %>>
+                      <span class="check__text">Required to submit</span>
+                    </label>
+                  </div>
+                <% }) %>
+              </div>
+
+              <template data-repeat-template>
+                <div data-repeat-row class="repeat-row">
+                  <div class="repeat-row__head">
+                    <span class="repeat-row__title">New field</span>
+                    <button class="btn btn--quiet btn--sm" type="button" data-repeat-remove>Remove</button>
+                  </div>
+                  <div class="grid grid-2" style="gap:0 16px">
+                    <div class="field">
+                      <label class="field__label">Label</label>
+                      <input class="input" name="field_label[]" maxlength="120" placeholder="What is your data source?">
+                    </div>
+                    <div class="field">
+                      <label class="field__label">Key</label>
+                      <input class="input mono" name="field_key[]" maxlength="40" placeholder="data_source">
+                    </div>
+                  </div>
+                  <div class="grid grid-2" style="gap:0 16px">
+                    <div class="field">
+                      <label class="field__label">Type</label>
+                      <select class="select" name="field_type[]">
+                        <option value="text">text</option>
+                        <option value="url">url</option>
+                        <option value="textarea">textarea</option>
+                        <option value="tags">tags</option>
+                      </select>
+                    </div>
+                    <div class="field">
+                      <label class="field__label">Help text</label>
+                      <input class="input" name="field_help[]" maxlength="240">
+                    </div>
+                  </div>
+                  <label class="check">
+                    <input type="checkbox" name="field_required[]">
+                    <span class="check__text">Required to submit</span>
+                  </label>
+                </div>
+              </template>
+
+              <div class="row row-wrap">
+                <button class="btn btn--ghost btn--sm" type="button" data-repeat-add="fields">Add a field</button>
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:20px">
+              <label class="field__label" for="judging_blurb">Judging blurb</label>
+              <textarea class="textarea" id="judging_blurb" name="judging_blurb" maxlength="400" style="min-height:80px" placeholder="Each project is scored against the published rubric by the assigned judges. Scores stay private."><%= input.judgingBlurb %></textarea>
+              <p class="field__hint">Shown on the event page under Judging.</p>
+            </div>
+
+            <div class="form-actions">
+              <button class="btn btn--ghost" type="submit" name="_action" value="save">Save and stay</button>
+              <button class="btn btn--primary" type="submit" name="_action" value="next">Save and continue</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Start from a preset</h2>
+          <p class="small muted">A repository, a demo, a tech list and one written answer is enough for most events. Add video only if you will actually watch it.</p>
+          <ul class="check-list check-list--sm" style="margin-top:12px">
+            <% presets.forEach(p => { %>
+              <li><%= p.label %><span class="muted"> (<%= p.type %><%= p.required ? ', required' : '' %>)</span></li>
+            <% }) %>
+          </ul>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">What the server checks</h2>
+          <p class="small muted">
+            Required fields are non-empty, links are https, and the team has a track if you have
+            tracks. Failures come back as a list, not a single opaque error.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>

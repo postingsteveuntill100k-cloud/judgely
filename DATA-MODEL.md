@@ -1,157 +1,178 @@
-# Judgely Data Model Specification
+# Data model
 
-## 1. Relational Entity Architecture
+Twenty-five tables, one relational shape, two storage backends.
 
-Judgely utilizes a normalized relational data model implemented in SQLite with foreign key enforcement (`PRAGMA foreign_keys = ON;`) and write-ahead logging (`WAL`) for concurrent read performance.
+- SQLite (canonical, via `better-sqlite3`) — what `docker compose up` uses.
+- Firestore (Global mode on Google Cloud) — same contract, same SQL semantics
+  emulated in the driver.
 
-```mermaid
-erDiagram
-    EVENTS ||--o{ TRACKS : "hosts"
-    EVENTS ||--o{ RUBRIC_CRITERIA : "defines"
-    EVENTS ||--o{ TEAMS : "participate in"
-    EVENTS ||--o{ PROJECTS : "submitted to"
-    EVENTS ||--o{ JUDGE_ASSIGNMENTS : "schedules"
-    EVENTS ||--o{ REVIEWS : "evaluates"
-    EVENTS ||--o{ AUDIT_LOGS : "logs"
+`src/server/db/driver.ts` is the contract. `sqlite.ts` and `firestore.ts` are
+the only two implementations, and `scripts/driver-contract.mjs` checks that both
+implement all 124 methods with no stubs.
 
-    USERS ||--o| JUDGES : "identified as"
-    USERS ||--o{ TEAM_MEMBERS : "joined as"
+---
 
-    TRACKS ||--o{ PROJECTS : "categorizes"
-    TRACKS ||--o{ JUDGE_TRACKS : "specialized in"
+## The shape
 
-    JUDGES ||--o{ JUDGE_TRACKS : "assigned tracks"
-    JUDGES ||--o{ JUDGE_ASSIGNMENTS : "assigned to"
-    JUDGES ||--o{ REVIEWS : "submits"
-
-    TEAMS ||--o{ TEAM_MEMBERS : "comprises"
-    TEAMS ||--o{ PROJECTS : "submits"
-
-    PROJECTS ||--o{ JUDGE_ASSIGNMENTS : "receives"
-    PROJECTS ||--o{ REVIEWS : "reviewed in"
-
-    REVIEWS ||--o{ REVIEW_SCORES : "details"
-    RUBRIC_CRITERIA ||--o{ REVIEW_SCORES : "evaluated by"
+```
+users ──┬── sessions              (one login per device)
+        ├── login_attempts        (audit of failures, for rate limiting)
+        ├── event_organizers ──── events
+        ├── event_members         (participants, per event)
+        ├── team_members ──── teams ──── projects ──┬── project_votes
+        │                                            ├── project_comments
+        │                                            ├── judge_assignments ──── reviews ──── review_scores
+        │                                            └── results ──── result_prizes
+        ├── event_judges ──────── judge_assignments
+        └── invitations, notifications, audit_events
 ```
 
----
-
-## 2. Table Definitions
-
-### `events`
-Stores hackathon event instances and global deadlines.
-- `id` (TEXT, PK): Unique event identifier (e.g. `evt_01`).
-- `name` (TEXT, NOT NULL): Official event name.
-- `submissions_close` (TEXT, NOT NULL): ISO 8601 UTC timestamp enforced by the submission barrier.
-- `created_at` (TEXT, NOT NULL): Timestamp of creation.
-
-### `tracks`
-Challenge categories belonging to an event.
-- `id` (TEXT, PK): Track identifier (e.g. `trk_01`).
-- `event_id` (TEXT, FK): References `events(id)`.
-- `name` (TEXT, NOT NULL): Track title (e.g. "Developer tools").
-
-### `rubric_criteria`
-Configurable scoring dimensions.
-- `id` (TEXT, PK): Unique criterion identifier.
-- `event_id` (TEXT, FK): References `events(id)`.
-- `name` (TEXT, NOT NULL): Criterion key (e.g. `functionality`).
-- `description` (TEXT): Guidelines for judges.
-- `weight` (REAL, NOT NULL): Weight fraction (e.g. `0.40`).
-- `max_score` (REAL, NOT NULL): Scale ceiling (e.g. `5.0`).
-
-### `users`
-Authenticated identities and roles.
-- `id` (TEXT, PK): User identifier (`usr_organizer`, `usr_judge_a`, etc.).
-- `email` (TEXT, UNIQUE): User email address.
-- `name` (TEXT, NOT NULL): Display name.
-- `role` (TEXT, NOT NULL): `organizer`, `judge`, `participant`, or `visitor`.
-- `session_token` (TEXT, UNIQUE): Session credential matched in auth middleware.
-- `created_at` (TEXT, NOT NULL): Timestamp of account creation.
-
-### `judges` & `judge_tracks`
-Judge profiles and their declared track expertise.
-- `judges.id` (TEXT, PK): Judge identifier (e.g. `jdg_01`).
-- `judges.user_id` (TEXT, FK): References `users(id)`.
-- `judges.name` (TEXT, NOT NULL): Judge name.
-- `judges.email` (TEXT, NOT NULL): Contact email.
-- `judge_tracks`: Join table (`judge_id REFERENCES judges(id)`, `track_id REFERENCES tracks(id)`).
-
-### `teams` & `team_members`
-Participant teams and relational membership roster.
-- `teams.id` (TEXT, PK): Team identifier (e.g. `tm_01`).
-- `teams.event_id` (TEXT, FK): References `events(id)`.
-- `teams.name` (TEXT, NOT NULL): Team name.
-- `team_members`: Join table (`team_id REFERENCES teams(id)`, `email TEXT`, `user_id REFERENCES users(id)`).
-
-### `projects`
-Submitted hackathon projects.
-- `id` (TEXT, PK): Project identifier (e.g. `prj_01`).
-- `event_id` (TEXT, FK): References `events(id)`.
-- `team_id` (TEXT, FK): References `teams(id)`.
-- `track_id` (TEXT, FK): References `tracks(id)`.
-- `title` (TEXT, NOT NULL): Project title.
-- `summary` (TEXT): Elevator pitch.
-- `repo_url` (TEXT): Source repository URL.
-- `demo_url` (TEXT): Working demonstration URL.
-- `submitted_at` (TEXT, NOT NULL): Timestamp of submission.
-- `status` (TEXT, NOT NULL): `submitted`, `draft`, `withdrawn`, `disqualified`.
-
-### `judge_assignments`
-Formal assignment schedule connecting judges and projects.
-- `id` (TEXT, PK): Assignment ID.
-- `event_id` (TEXT, FK): References `events(id)`.
-- `project_id` (TEXT, FK): References `projects(id)`.
-- `judge_id` (TEXT, FK): References `judges(id)`.
-- `status` (TEXT, NOT NULL): `assigned`, `completed`, `conflict`.
-- `assigned_at` (TEXT, NOT NULL): Timestamp of assignment.
-- *Constraint*: `UNIQUE(project_id, judge_id)`.
-
-### `reviews` & `review_scores`
-Judge evaluations and individual rubric scores.
-- `reviews.id` (TEXT, PK): Review ID (`rev_{project_id}_{judge_id}`).
-- `reviews.event_id` (TEXT, FK): References `events(id)`.
-- `reviews.project_id` (TEXT, FK): References `projects(id)`.
-- `reviews.judge_id` (TEXT, FK): References `judges(id)`.
-- `reviews.comment` (TEXT): Constructive qualitative feedback.
-- `reviews.total_weighted_score` (REAL): Computed weighted evaluation.
-- `reviews.submitted_at` (TEXT, NOT NULL): Submission timestamp.
-- *Constraint*: `UNIQUE(project_id, judge_id)`.
-- `review_scores`: Atomic criterion score records (`review_id`, `criterion_name`, `score`).
-
-### `audit_logs`
-Append-only log of security and state mutations.
-- `id` (TEXT, PK): Log entry ID (`aud_{timestamp}_{random}`).
-- `event_id` (TEXT, FK): References `events(id)`.
-- `user_id` (TEXT): Authenticated actor ID.
-- `role` (TEXT): Role at time of operation.
-- `action` (TEXT, NOT NULL): e.g. `review.submitted`, `assignment.created`.
-- `resource_type` (TEXT, NOT NULL): e.g. `review`, `project`, `export`.
-- `resource_id` (TEXT): Target resource ID.
-- `details` (TEXT): JSON-encoded payload.
-- `timestamp` (TEXT, NOT NULL): UTC ISO timestamp.
+`events` also owns `tracks`, `rubrics` → `rubric_criteria`, and
+`announcements`.
 
 ---
 
-## 3. Fixture Transformation Pipeline
+## Tables
 
-The supplied `fixtures.json` is treated as external input data. The seeder transforms it into the normalized schema:
-1. `fixtures.event` $\longrightarrow$ `events` table (retaining exact `submissions_close`).
-2. `fixtures.tracks` $\longrightarrow$ `tracks` table.
-3. `fixtures.judges` $\longrightarrow$ `judges` + `judge_tracks` join table.
-4. `fixtures.teams` $\longrightarrow$ `teams` + `team_members` join table.
-5. `fixtures.projects` $\longrightarrow$ `projects` table.
-6. `fixtures.scores` $\longrightarrow$ `reviews` + `review_scores` + `judge_assignments` tables.
-7. Awkward cases preserved:
-   - Duplicate submission: `tm_07` submitted `prj_07` and `prj_41` $\longrightarrow$ stored as separate project records.
-   - Zero-variance judge: `jdg_07` scored every project 4.0 $\longrightarrow$ stored accurately; regularized during normalization.
-   - Incomplete review batches $\longrightarrow$ handled gracefully via Bayesian shrinkage.
+### Identity
+
+**`users`** — `id`, `email` (unique, stored lowercased), `username` (unique),
+`display_name`, `password_hash` (scrypt, per-user salt), `firebase_uid`,
+`auth_provider`, `bio`, `headline`, `avatar_seed`, `email_verified`,
+`disabled_at`, timestamps.
+
+Email and username are both unique, so `/login` can accept either. Passwords
+are hashed with scrypt; the plaintext is never stored or logged.
+
+**`sessions`** — `token_hash` (SHA-256 of the token, unique), `user_id`,
+`expires_at`, `last_seen_at`, `user_agent`, `ip`. The cookie carries the token,
+the database stores only its hash, so a database leak does not hand over live
+sessions.
+
+**`login_attempts`** — `identifier`, `ip`, `ok`, `created_at`. Drives the
+"too many sign-in attempts" limit and the security page.
+
+### Events
+
+**`events`** — the big one. `slug` unique, `mode` (`local` / `global`),
+`status` (`draft` / `published` / `live` / `closed` / `archived`), `format`,
+venue and city, `registration_opens_at` / `registration_closes_at` /
+`starts_at` / `ends_at` / `submission_deadline` / `judging_starts_at` /
+`judging_ends_at` / `results_release_at`, team size limits, `allow_solo`,
+`allow_cross_college`, `eligibility`, `judging_mode` (`raw` / `normalized`),
+`normalize_lambda`, `results_visibility`, `showcase_visibility`,
+`public_listing`, `prize_pool_cents`, `prize_currency`, `accent_color`,
+`cover_style`, and two JSON columns: `submission_fields` and `schedule`.
+
+`submission_fields` is what makes the submission form per-event: an organizer
+declares the fields, whether each is required, and the server validates against
+that declaration. A client cannot add a field the organizer did not ask for.
+
+**`event_organizers`** — `(event_id, user_id)` unique. The only source of host
+authority; there is no global "admin" role that could reach every event.
+
+**`event_members`** — `(event_id, user_id, role)` unique. Registration
+membership. A registered participant on one event is a stranger on another.
+
+**`tracks`** — `event_id`, `slug`, `name`, `description`, `eligibility`,
+`prize_text`, `brief`, `requirements`, `sort_order`. Tracks carry prizes
+because a hackathon's track prize is part of what a hacker is choosing between.
+
+**`announcements`** — organizer posts shown on the event page.
+
+### Teams and projects
+
+**`teams`** — `event_id`, `slug` (unique per event), `name`, `description`,
+`avatar_seed`, `created_by`.
+
+**`team_members`** — `(team_id, user_id)` unique, `role` (`owner` / `member`),
+`joined_at`. The owner is the only one who can delete the team or add people.
+
+**`projects`** — `event_id`, `team_id`, `track_id`, `slug` (unique per event),
+`title`, `tagline`, `summary`, `description`, `tech_stack` (JSON array),
+`image_url`, `repo_url`, `demo_url`, `video_url`, `docs_url`, `answers` (JSON,
+keyed by the event's `submission_fields`), `status`
+(`draft` / `submitted` / `under_review` / `results_released`), `submitted_at`,
+`locked_at`.
+
+One project per team, enforced in `services/projects.ts`. `locked_at` is set
+when submissions close so the audit trail shows when the content stopped moving.
+
+**`project_votes`** — `(project_id, user_id)` unique. One vote per person.
+**`project_comments`** — moderated public discussion on a project.
+
+### Judging
+
+**`rubrics`** — `event_id`, `version`, `status` (`draft` / `active` /
+`archived`), `created_by`. Exactly one active rubric per event.
+
+**`rubric_criteria`** — `rubric_id`, `key`, `name`, `description`, `weight`,
+`max_score`, `required`, `sort_order`.
+
+**`event_judges`** — `event_id`, `user_id`, `email`, `email_lower`, `status`
+(`invited` / `active` / `declined` / `removed`), `invited_by`, `invited_at`,
+`accepted_at`, `removed_at`. A judge must accept before they can be assigned
+work — which is why the assignment screen shows pending invitations as a
+follow-up rather than as a checkbox that would do nothing.
+
+**`judge_assignments`** — `event_id`, `project_id`, `event_judge_id`, `status`
+(`pending` / `in_progress` / `submitted` / `reopened`), `assigned_at`,
+`due_at`, `reopened_at`. Unique per `(project_id, event_judge_id)`, so
+"create assignments" is safe to press twice.
+
+**`reviews`** — `assignment_id`, `event_id`, `project_id`, `event_judge_id`,
+`user_id`, `status`, `comment`, `strengths`, `improvements`, `recommendation`,
+`submitted_at`, `rubric_id` (the version that was in force).
+
+**`review_scores`** — `review_id`, `criterion_id`, `score`, `note`. Notes are
+per-judge and private to the panel.
+
+### Results
+
+**`results`** — `event_id`, `project_id`, `review_count`, `raw_score`,
+`adjusted_score`, `final_score`, `judge_offset`, `rank`, `track_rank`,
+`per_judge` (JSON), `notes` (JSON diagnostics), `computed_at`, `published_at`.
+
+`published_at` is the switch between "the organizer has computed this" and
+"the public can see it". Both raw and adjusted are kept, so the effect of
+normalization is always inspectable.
+
+**`result_prizes`** — per-track prize rows shown on the public results page.
+
+### Operational
+
+**`invitations`** — organizer invites, single-use tokens, expiry.
+**`notifications`** — per-user, `read_at`.
+**`audit_events`** — every organizer action: who, when, what, with
+`entity_type` / `entity_id` / `meta`. This is the audit page and the CSV
+export's source.
 
 ---
 
-## 4. Export Mapping
+## Constraints
 
-The CSV export endpoint (`/api/export.csv`) flattens project, team, track, and normalized ranking metrics:
-```csv
-Rank,Project ID,Project Title,Team Name,Track,Raw Score,Normalized Score,Rank Delta,Review Count,Status
-```
+- **25 tables, 46 foreign keys, 17 unique constraints, 35 indexes.**
+- Every `event_id` foreign key makes cross-event isolation a database fact
+  rather than a convention: a team from one event cannot be joined to a project
+  in another, and the organizer route checks the event before it touches a row.
+- Uniqueness that expresses a rule: one project per team (enforced in the
+  service), one review per assignment, one vote per person per project, one
+  active rubric per event, one session per token hash.
+- `PRAGMA foreign_keys = ON` on every SQLite connection, so those keys are
+  actually enforced rather than merely declared.
+
+---
+
+## Storage behind the interface
+
+The application never sees SQL. It calls the `Driver`, which is 124 methods
+over the domain. `sqlite.ts` translates them to SQL; `firestore.ts` translates
+them to collection reads, writes and (for the handful of aggregate queries)
+`collectionGroup` queries with the composite indexes in
+`firestore.indexes.json`.
+
+The consequence worth stating: **the Firestore path is not a degraded mode.**
+It implements the same contract, including the joins (`getProject` returns its
+track, team and event; `listAssignments` returns project, team, track, judge and
+review) that the SQLite driver does with `LEFT JOIN`. The only difference is
+cost per join, not capability.

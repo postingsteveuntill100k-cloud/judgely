@@ -1,0 +1,46 @@
+<%- include('../partials/judge-head', { actor }) %>
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Panel work</p>
+        <h1 style="font-size:1.6rem">Events you are judging</h1>
+        <p class="small muted" style="margin:8px 0 0">You see only the events you accepted an invitation to.</p>
+      </div>
+    </div>
+
+    <% if (!events.length) { %>
+      <div class="empty">
+        <div class="empty__title">You are not on a panel yet</div>
+        <p class="empty__body">An organizer invites you by email. Open the link they sent, sign in with that address, and the event appears here.</p>
+        <a class="btn btn--ghost" href="/host">Running an event instead?</a>
+      </div>
+    <% } else { %>
+      <div class="grid grid-auto-lg">
+        <% events.forEach(e => { %>
+          <article class="card">
+            <div class="row row-between" style="align-items:flex-start;gap:12px">
+              <h2 class="card__title" style="font-size:1.05rem"><%= e.event_name %></h2>
+              <span class="tag <%= e.state.phase === 'judging' ? 'tag--accent' : 'tag' %>"><%= e.state.headline %></span>
+            </div>
+            <div class="row row-wrap" style="gap:6px;margin-top:10px">
+              <span class="tag <%= e.done === e.total ? 'tag--ok' : 'tag--warn' %>"><%= e.done %> of <%= e.total %> done</span>
+              <% if (e.open) { %><span class="tag"><%= e.open %> to do</span><% } %>
+            </div>
+            <div class="meter" style="margin-top:14px" role="img" aria-label="<%= e.total ? Math.round((e.done / e.total) * 100) : 0 %>% complete">
+              <div class="meter__fill <%= e.done === e.total && e.total > 0 ? 'meter__fill--ok' : 'meter__fill--accent' %>" style="width:<%= e.total ? Math.round((e.done / e.total) * 100) : 0 %>%"></div>
+            </div>
+            <p class="tiny muted" style="margin-top:12px">
+              Submissions closed <%= h.fmt.date(e.submission_deadline) %> · judging ends <%= h.fmt.date(e.judging_ends_at) %>
+            </p>
+            <div class="row row-wrap" style="margin-top:14px">
+              <a class="btn btn--primary btn--sm" href="/judge/events/<%= e.event_slug %>">Open queue</a>
+              <a class="btn btn--ghost btn--sm" href="/hackathons/<%= e.event_slug %>" target="_blank" rel="noopener">Event page</a>
+            </div>
+          </article>
+        <% }) %>
+      </div>
+    <% } %>
+  </div>
+</section>

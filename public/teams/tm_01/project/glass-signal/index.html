@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Glass Signal · Hackerly</title>
+<meta name="description" content="Hackerly is a self-hostable platform for hackathons. Browse open events, join a team, submit a project, and let judges review it against a real rubric.">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="Glass Signal">
+<meta property="og:description" content="Find a hackathon. Host your event. Invite your judges.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="/css/app.css?v=dev">
+<link rel="stylesheet" href="/css/pages.css?v=dev">
+<link rel="stylesheet" href="/css/workspace.css?v=dev">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+</head>
+<body class="">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">H</span>
+      <span>Hackerly</span>
+      <span class="brand__sub">Hackathon platform</span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="sr-only">Menu</span>
+    </button>
+
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="/hackathons">Explore hackathons</a>
+      <a href="/projects">Showcase</a>
+      <a href="/host">Host a hackathon</a>
+      <a href="/judge">Judge at Hackerly</a>
+      <a href="/about">About</a>
+    </nav>
+
+    <div class="header-actions">
+      
+        <a class="btn btn--ghost btn--sm hide-sm" href="/dashboard">My dashboard</a>
+        <div class="menu" data-menu-root>
+          <button class="btn btn--quiet" type="button" data-menu-trigger aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+            <span class="avatar avatar--xs" data-seed="45" data-name="Acceptance Participant">A</span>
+            <span class="hide-xs">Acceptance</span>
+          </button>
+          <div class="menu__panel" role="menu">
+            <div class="menu__header">
+              <div style="font-weight:600;font-size:.9rem">Acceptance Participant</div>
+              <div class="tiny muted mono">@participant</div>
+            </div>
+            <a href="/dashboard" role="menuitem">Dashboard</a>
+            <a href="/u/participant" role="menuitem">My public profile</a>
+            <a href="/settings/profile" role="menuitem">Profile settings</a>
+            <hr>
+            <form method="post" action="/auth/logout">
+              <input type="hidden" name="_csrf" value="rsnhgcvrN51JlOtNvcSX00a-UengtjAn">
+              <button type="submit" role="menuitem">Sign out</button>
+            </form>
+          </div>
+        </div>
+      
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<section class="page-head">
+  <div class="wrap">
+    <nav class="crumbs" aria-label="Breadcrumb">
+      <a href="/teams">Your teams</a> <span aria-hidden="true">/</span>
+      <a href="/teams/tm_01">NorthKiln</a> <span aria-hidden="true">/</span>
+      <span class="muted">Glass Signal</span>
+    </nav>
+    <div class="row row-wrap row-between" style="margin-top:18px;align-items:flex-start;gap:20px">
+      <div>
+        <h1>Glass Signal</h1>
+        <p class="small muted" style="margin-top:4px">
+          Sample Hack 2026 · submitted 27 Feb 2026, 04:08 UTC ·
+          deadline 1 Mar 2026, 18:00 UTC
+        </p>
+      </div>
+      <div class="row row-wrap">
+        <span class="tag tag--accent">Under review</span>
+        
+          <a class="btn btn--ghost btn--sm" href="/hackathons/sample-hack-2026/projects/glass-signal">View public page</a>
+        
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--tight">
+  <div class="wrap">
+    
+    
+    
+    
+      <div class="notice notice--warn" style="margin-bottom:20px">
+        <strong class="notice__title">Submissions are closed</strong>
+        The deadline was 1 Mar 2026, 18:00 UTC. The server rejects any further edit, so the form is read-only.
+      </div>
+    
+
+    <div class="ws">
+      <div class="ws__main">
+        <form method="post" action="/teams/tm_01/project/glass-signal" id="project-form">
+          <input type="hidden" name="_csrf" value="rsnhgcvrN51JlOtNvcSX00a-UengtjAn">
+
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:16px">The project</h2>
+            <div class="field">
+              <label class="field__label" for="title">Project name<span class="field__req">*</span></label>
+              <input class="input" id="title" name="title" value="Glass Signal" maxlength="90" required disabled>
+            </div>
+            <div class="field">
+              <label class="field__label" for="tagline">One-line summary</label>
+              <input class="input" id="tagline" name="tagline" value="One line of what it does." maxlength="160" placeholder="Flood alerts for renters, not just river gauges." disabled>
+              <p class="field__hint">This is the first line judges and the showcase see.</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="summary">What it does</label>
+              <textarea class="textarea" id="summary" name="summary" maxlength="400" disabled>One line of what it does.</textarea>
+            </div>
+            <div class="field">
+              <label class="field__label" for="description">How it works</label>
+              <textarea class="textarea" id="description" name="description" maxlength="8000" style="min-height:150px" disabled>One line of what it does.</textarea>
+            </div>
+            <div class="field">
+              <label class="field__label" for="track_id">Track</label>
+              <select class="select" id="track_id" name="track_id" disabled>
+                <option value="">Choose a track</option>
+                
+                  <option value="trk_01" >Developer tools</option>
+                
+                  <option value="trk_02" >Data and analytics</option>
+                
+                  <option value="trk_03" >Accessibility</option>
+                
+                  <option value="trk_04" selected>Security</option>
+                
+                  <option value="trk_05" >Climate</option>
+                
+                  <option value="trk_06" >Health</option>
+                
+                  <option value="trk_07" >Education</option>
+                
+                  <option value="trk_08" >Open hardware</option>
+                
+              </select>
+              <p class="field__hint">Judges use the same rubric whichever track you enter.</p>
+            </div>
+            <div class="field">
+              <label class="field__label" for="tech_stack">Technologies used</label>
+              <input class="input" id="tech_stack" name="tech_stack" value="TypeScript, Node.js" placeholder="TypeScript, Postgres, Fly" disabled>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <h2 class="card__title" style="margin-bottom:6px">Links</h2>
+            <p class="small muted" style="margin-bottom:16px">Only https links are accepted. A judge who cannot open these cannot score you fairly.</p>
+            <div class="field">
+              <label class="field__label" for="repo_url">Source code<span class="field__req">*</span></label>
+              <input class="input" id="repo_url" name="repo_url" value="https://example.org/repo/01" placeholder="https://github.com/you/project" disabled>
+            </div>
+            <div class="field">
+              <label class="field__label" for="demo_url">Live demo<span class="field__req">*</span></label>
+              <input class="input" id="demo_url" name="demo_url" value="" placeholder="https://your-project.example" disabled>
+            </div>
+            <div class="field">
+              <label class="field__label" for="video_url">Demo video</label>
+              <input class="input" id="video_url" name="video_url" value="" placeholder="https://www.youtube.com/watch?v=…" disabled>
+            </div>
+            <div class="field">
+              <label class="field__label" for="docs_url">Documentation</label>
+              <input class="input" id="docs_url" name="docs_url" value="" placeholder="https://github.com/you/project#readme" disabled>
+            </div>
+            <div class="field">
+              <label class="field__label" for="image_url">Screenshot URL</label>
+              <input class="input" id="image_url" name="image_url" value="" placeholder="https://…/screenshot.png" disabled>
+              <p class="field__hint">Optional. Without one we generate a title card from the project name.</p>
+            </div>
+          </div>
+
+          
+          
+
+          
+        </form>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:12px">Completion</h2>
+          
+            <div class="notice notice--ok">Everything the organizer asked for is here. Submitted.</div>
+          
+          <p class="tiny muted" style="margin-top:12px">
+            This list is produced by the same validation the server runs when you submit.
+            A disabled button would not protect anything; the server refuses an incomplete submission.
+          </p>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Preview</h2>
+          
+            <p class="small"><a href="/hackathons/sample-hack-2026/projects/glass-signal">See the public page →</a></p>
+          
+          <h3 class="card__title" style="margin:18px 0 8px;font-size:.86rem">Judging</h3>
+          <p class="tiny muted">
+            Each project is scored against the published rubric by the assigned judges.
+            Individual judge scores are never shown to you.
+          </p>
+        </div>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Team</h2>
+          <ul class="judge-list">
+            
+              <li class="person">
+                <span class="avatar avatar--sm" style="background:hsl(98 46% 42%)">P</span>
+                <span class="grow">
+                  <span class="person__name">Priya1</span>
+                  <span class="person__meta">@priya1</span>
+                </span>
+              </li>
+            
+              <li class="person">
+                <span class="avatar avatar--sm" style="background:hsl(166 46% 42%)">M2</span>
+                <span class="grow">
+                  <span class="person__name">Member1 2</span>
+                  <span class="person__meta">@member1-2</span>
+                </span>
+              </li>
+            
+              <li class="person">
+                <span class="avatar avatar--sm" style="background:hsl(17 46% 42%)">M1</span>
+                <span class="grow">
+                  <span class="person__name">Member1 1</span>
+                  <span class="person__meta">@member1-1</span>
+                </span>
+              </li>
+            
+              <li class="person">
+                <span class="avatar avatar--sm" style="background:hsl(45 46% 42%)">AP</span>
+                <span class="grow">
+                  <span class="person__name">Acceptance Participant</span>
+                  <span class="person__meta">@participant</span>
+                </span>
+              </li>
+            
+          </ul>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <div class="brand" style="margin-bottom:12px">
+          <span class="brand__mark" aria-hidden="true">H</span>
+          <span>Hackerly</span>
+        </div>
+        <p class="small" style="max-width:38ch">
+          Open source hackathon software. Run it yourself, keep your data, change anything.
+        </p>
+        <p class="tiny muted" style="margin-top:12px">
+          <a href="/about">About Hackerly</a> ·
+          <a href="/api/v1">REST API</a> ·
+          <a href="/healthz">Status</a>
+        </p>
+      </div>
+      <div>
+        <h5>For hackers</h5>
+        <ul>
+          <li><a href="/hackathons">Explore hackathons</a></li>
+          <li><a href="/projects">Project showcase</a></li>
+          <li><a href="/hackathons?status=open">Registration open</a></li>
+          <li><a href="/auth/signup">Create an account</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For organizers</h5>
+        <ul>
+          <li><a href="/host">Host a hackathon</a></li>
+          <li><a href="/host/events">Your events</a></li>
+          <li><a href="/host/start">Setup guide</a></li>
+          <li><a href="/about#self-host">Self-hosting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For judges</h5>
+        <ul>
+          <li><a href="/judge">Judge at Hackerly</a></li>
+          <li><a href="/judge/reviews">My reviews</a></li>
+          <li><a href="/about#judging">How judging works</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>Hackerly · MIT licensed · self-hostable</span>
+      <span class="mono">No account needed to browse</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/app.js?v=dev" defer></script>
+
+</body>
+</html>

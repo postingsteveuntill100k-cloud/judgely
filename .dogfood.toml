@@ -1,19 +1,27 @@
+# .dogfood.toml
 [portal]
+# Where the portal is listening after `docker compose up` (or ./scripts/dev.sh).
 base_url = "http://localhost:8080"
 
 [tiers]
+# Honest claims only. T2 is verified end to end by run.py against the running
+# backend: judge isolation is enforced in the API, not in a template.
 claimed = ["T1", "T2"]
-pitch = "Judgely: open-source judging infrastructure with transparent assignments, defensible scoring, explainable normalization, and self-hosted operation."
+pitch = "A self-hostable hackathon platform with server-enforced deadlines, weighted rubrics, judge-score isolation and organizer exports."
 
 [auth]
-organizer   = "Cookie: session=org_7f2a"
-judge_a     = "Cookie: session=jdg_a_91bc"
-judge_b     = "Cookie: session=jdg_b_44de"
-participant = "Cookie: session=prt_2e88"
+# The seed prints these headers when the portal boots. They are real sessions
+# belonging to real seeded users; only the token is fixed, so this file keeps
+# working across restarts and fresh clones.
+organizer   = "Cookie: hkl_session=dogfood_organizer_token_v1.N6xkZNUxYVfjf_PO8-I57gSgbXX3mHkaZZuFn8NQ1K8"
+judge_a     = "Cookie: hkl_session=dogfood_judge_a_token_v1.wCl0yQpBQ69YnRE3_C1WBbPaEdxvMrq3DE3dY_Ze13Y"
+judge_b     = "Cookie: hkl_session=dogfood_judge_b_token_v1.Hnxyk2ES9DcnC-KqFBhvibm_TQ0OpsT3KiGncuarAJs"
+participant = "Cookie: hkl_session=dogfood_participant_token_v1.Dd0vUBzRTUQXmPpHKieYjOJWjO3hW_q-GdiGH6GoJGc"
 
 [routes]
 gallery      = "/projects"
-submit       = "/projects/new"
+submit       = "/api/submissions"
 judge_scores = "/api/judge/scores"
-peer_scores  = "/api/judge/scores?judge=jdg_01"
+# The url that would return judge_a's scores. Visiting it as judge_b must 403.
+peer_scores  = "/api/judge/scores?judge=priya.nair"
 csv_export   = "/api/export.csv"

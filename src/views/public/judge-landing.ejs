@@ -1,0 +1,99 @@
+<section class="pitch">
+  <div class="wrap">
+    <div class="pitch__grid">
+      <div>
+        <p class="eyebrow eyebrow--accent">For judges</p>
+        <h1>Review submissions<br>without a spreadsheet.</h1>
+        <p class="lede" style="margin-top:20px">
+          You get a queue, not a folder. Each project opens with the submission, the repository
+          link, the demo, the write-up and the rubric in one screen. Score, explain, submit, move on.
+        </p>
+        <div class="row row-wrap" style="margin-top:28px;gap:10px">
+          <% if (actor) { %>
+            <a class="btn btn--accent btn--lg" href="/judge/reviews">Open my reviews</a>
+          <% } else { %>
+            <a class="btn btn--accent btn--lg" href="/auth/signin?next=/judge/reviews">Sign in to start</a>
+          <% } %>
+        </div>
+        <p class="small muted" style="margin-top:16px">
+          Invited by an organizer? Open the link they emailed you. It works once, and only for the address it was sent to.
+        </p>
+      </div>
+
+      <div class="pitch__card">
+        <h2 class="pitch__card-title">What the workspace gives you</h2>
+        <ul class="check-list">
+          <li>The submission, the answers, the links and the tech stack on one screen</li>
+          <li>The rubric you must use, with weights and maximums from the organizer</li>
+          <li>A completeness checklist: what is missing from the entry, flagged server-side</li>
+          <li>Score ranges validated in the backend, not just in the form</li>
+          <li>Fields for what worked, what did not, and your recommendation</li>
+          <li>Save as a draft, submit when you are done, jump straight to the next one</li>
+          <li>Side-by-side comparison of your own scores on up to three projects</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--line">
+  <div class="wrap">
+    <div class="grid grid-3">
+      <div class="how__step">
+        <span class="how__num">01</span>
+        <h3>Your scores stay yours</h3>
+        <p class="small muted">A judge cannot read another judge&rsquo;s scores — not through the interface, not through the API, not by changing a URL. The backend refuses it, and it refuses it for participants too.</p>
+      </div>
+      <div class="how__step">
+        <span class="how__num">02</span>
+        <h3>You see only your assignments</h3>
+        <p class="small muted">Opening an unassigned project is a 403, not a hidden button. The assignment is what authorises the read, and it is checked on every request.</p>
+      </div>
+      <div class="how__step">
+        <span class="how__num">03</span>
+        <h3>You are not alone</h3>
+        <p class="small muted">The organizer can see how far you have got without ever seeing what you wrote. If you finish early, nothing changes about your score weighting.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section section--line">
+  <div class="wrap">
+    <div class="grid grid-2" style="align-items:center;gap:48px">
+      <div>
+        <p class="eyebrow">The loop</p>
+        <h2>Open. Inspect. Score. Explain. Submit. Next.</h2>
+        <p class="lede" style="margin-top:14px">
+          Six steps, no navigation between pages. When you submit, the project is marked under
+          review and the queue moves you to whatever is still open.
+        </p>
+        <ol class="steps">
+          <li><span>1</span><div><strong>Open</strong><p>The submission, its track, its team and its links.</p></div></li>
+          <li><span>2</span><div><strong>Inspect</strong><p>Repository, live demo, video, documentation, tech stack.</p></div></li>
+          <li><span>3</span><div><strong>Score</strong><p>Every criterion, with the range the organizer set.</p></div></li>
+          <li><span>4</span><div><strong>Explain</strong><p>What worked, what did not, and your recommendation.</p></div></li>
+          <li><span>5</span><div><strong>Submit</strong><p>Locked in, timestamped, and visible to the organizer.</p></div></li>
+          <li><span>6</span><div><strong>Next</strong><p>Straight into the next unfinished project.</p></div></li>
+        </ol>
+      </div>
+      <div class="card">
+        <h2 class="card__title" style="margin-bottom:14px">A rubric looks like this</h2>
+        <table class="data" style="border:0">
+          <thead><tr><th>Criterion</th><th class="num">Weight</th><th class="num">Max</th></tr></thead>
+          <tbody>
+            <tr><td>Does it work</td><td class="num">35</td><td class="num">10</td></tr>
+            <tr><td>Technical quality</td><td class="num">25</td><td class="num">10</td></tr>
+            <tr><td>Originality</td><td class="num">15</td><td class="num">10</td></tr>
+            <tr><td>Impact</td><td class="num">15</td><td class="num">10</td></tr>
+            <tr><td>Clarity</td><td class="num">10</td><td class="num">10</td></tr>
+          </tbody>
+        </table>
+        <p class="tiny muted" style="margin-top:12px">
+          Weights are validated when the organizer saves them. A client cannot invent a criterion:
+          an unknown criterion id is rejected with a 400.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
