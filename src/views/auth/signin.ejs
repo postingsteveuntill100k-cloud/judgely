@@ -63,6 +63,6 @@
     </p>
   </div>
   <% if (firebase && firebase.enabled && firebase.apiKey) { %>
-    <script type="application/json" data-firebase-config><%- JSON.stringify({ apiKey: firebase.apiKey, authDomain: firebase.authDomain, projectId: firebase.projectId }) %></script>
+    <script type="application/json" data-firebase-config><%- JSON.stringify({ apiKey: firebase.apiKey, authDomain: firebase.authDomain, projectId: firebase.projectId, dbProjectId: firebase.dbProjectId, dbApiKey: firebase.dbApiKey }) %></script>
   <% } %>
 </section>

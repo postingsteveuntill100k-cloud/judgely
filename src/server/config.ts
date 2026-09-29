@@ -123,6 +123,8 @@ export const config = {
     privateKey: env('FIREBASE_PRIVATE_KEY', '').replace(/\\n/g, '\n'),
     webApiKey: env('FIREBASE_WEB_API_KEY', ''),
     authDomain: env('FIREBASE_AUTH_DOMAIN', ''),
+    authProjectId: env('FIREBASE_AUTH_PROJECT_ID', ''),
+    authApiKey: env('FIREBASE_AUTH_API_KEY', ''),
     serviceAccountFile: env('GOOGLE_APPLICATION_CREDENTIALS', ''),
     get configured(): boolean {
       return Boolean(this.projectId && this.clientEmail && this.privateKey);

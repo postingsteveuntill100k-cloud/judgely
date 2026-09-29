@@ -5,7 +5,10 @@ data/
 *.db-wal
 *.db-shm
 .env
-.env.local
+.env.*
+*.key
+*.pem
+*credentials*.json
 *.log
 .DS_Store
 .vscode/

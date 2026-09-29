@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Judging — HACKTRON 2026 · Hackerly</title>
+<meta name="description" content="Hackerly is a self-hostable platform for hackathons. Browse open events, join a team, submit a project, and let judges review it against a real rubric.">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="Judging — HACKTRON 2026">
+<meta property="og:description" content="Find a hackathon. Host your event. Invite your judges.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="/css/app.css?v=dev">
+<link rel="stylesheet" href="/css/pages.css?v=dev">
+<link rel="stylesheet" href="/css/workspace.css?v=dev">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+</head>
+<body class="">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">H</span>
+      <span>Hackerly</span>
+      <span class="brand__sub">Hackathon platform</span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="sr-only">Menu</span>
+    </button>
+
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="/hackathons">Explore hackathons</a>
+      <a href="/projects">Showcase</a>
+      <a href="/host" aria-current=&#34;page&#34;>Host a hackathon</a>
+      <a href="/judge">Judge at Hackerly</a>
+      <a href="/about">About</a>
+    </nav>
+
+    <div class="header-actions">
+      
+        <a class="btn btn--ghost btn--sm hide-sm" href="/dashboard">My dashboard</a>
+        <div class="menu" data-menu-root>
+          <button class="btn btn--quiet" type="button" data-menu-trigger aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+            <span class="avatar avatar--xs" data-seed="113" data-name="Meera Raghavan">M</span>
+            <span class="hide-xs">Meera</span>
+          </button>
+          <div class="menu__panel" role="menu">
+            <div class="menu__header">
+              <div style="font-weight:600;font-size:.9rem">Meera Raghavan</div>
+              <div class="tiny muted mono">@meera</div>
+            </div>
+            <a href="/dashboard" role="menuitem">Dashboard</a>
+            <a href="/u/meera" role="menuitem">My public profile</a>
+            <a href="/settings/profile" role="menuitem">Profile settings</a>
+            <hr>
+            <form method="post" action="/auth/logout">
+              <input type="hidden" name="_csrf" value="Ouc8tGZZGNBaViL7owvDxmQyA118H1NO">
+              <button type="submit" role="menuitem">Sign out</button>
+            </form>
+          </div>
+        </div>
+      
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<header class="host-head">
+  <div class="wrap">
+    <div class="host-head__top">
+      <div class="grow">
+        <div class="host-head__title">HACKTRON 2026</div>
+        <div class="host-head__meta">
+          <span class="tag tag--info">Published</span>
+          <span class="tag">global</span>
+          <span class="tag">Online</span>
+          
+            <a class="tiny" href="/hackathons/hacktron-2026" target="_blank" rel="noopener">View public page ↗</a>
+          
+        </div>
+      </div>
+      <div class="row row-wrap">
+        <a class="btn btn--ghost btn--sm" href="/host/events">All events</a>
+        
+          <a class="btn btn--ghost btn--sm" href="/hackathons/hacktron-2026/results" target="_blank" rel="noopener">Public results</a>
+        
+      </div>
+    </div>
+    <nav class="host-nav" aria-label="Hackathon sections">
+      
+        <a href="/host/events/hacktron-2026" aria-current=&#34;page&#34;>
+          Overview
+        </a>
+      
+        <a href="/host/events/hacktron-2026/setup/basics">
+          Setup
+        </a>
+      
+        <a href="/host/events/hacktron-2026/participants">
+          People
+        </a>
+      
+        <a href="/host/events/hacktron-2026/teams">
+          Teams
+        </a>
+      
+        <a href="/host/events/hacktron-2026/projects">
+          Projects
+        </a>
+      
+        <a href="/host/events/hacktron-2026/judges">
+          Judges
+        </a>
+      
+        <a href="/host/events/hacktron-2026/assignments">
+          Assignments
+        </a>
+      
+        <a href="/host/events/hacktron-2026/judging">
+          Judging
+        </a>
+      
+        <a href="/host/events/hacktron-2026/results">
+          Results
+        </a>
+      
+        <a href="/host/events/hacktron-2026/audit">
+          Audit
+        </a>
+      
+        <a href="/host/events/hacktron-2026/export">
+          Export
+        </a>
+      
+        <a href="/host/events/hacktron-2026/settings">
+          Settings
+        </a>
+      
+    </nav>
+  </div>
+</header>
+
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Judging</p>
+        <h1 style="font-size:1.6rem">Progress</h1>
+        <p class="small muted" style="margin:8px 0 0">
+          Every number here comes from the database. Nothing is estimated and nothing is typed in by hand.
+        </p>
+      </div>
+      
+    </div>
+
+    <div class="stat-row">
+      <div class="stat stat--accent">
+        <div class="stat__n">50%</div>
+        <div class="stat__l">2 of 4 reviews submitted</div>
+      </div>
+      <div class="stat stat--warn">
+        <div class="stat__n">40%</div>
+        <div class="stat__l">of 5 submitted projects have a judge</div>
+      </div>
+      <div class="stat">
+        <div class="stat__n">2</div>
+        <div class="stat__l">active judges of 3 invited</div>
+      </div>
+      <div class="stat">
+        <div class="stat__n">5</div>
+        <div class="stat__l">submitted projects of 11</div>
+      </div>
+    </div>
+
+    
+      <div class="attention">
+        <h3>Attention</h3>
+        <ul>
+          <li>3 submitted projects have no judge assigned.</li><li>2 judges have an unfinished batch.</li><li>1 invitation is still unaccepted.</li>
+        </ul>
+        <div class="row row-wrap" style="margin-top:12px">
+          <a class="btn btn--ghost btn--sm" href="/host/events/hacktron-2026/assignments">Fix assignments</a>
+          <a class="btn btn--ghost btn--sm" href="/host/events/hacktron-2026/judges">Chase invitations</a>
+        </div>
+      </div>
+    
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:14px">Per judge</h2>
+          
+            <div class="table-wrap" style="border:0">
+              <table class="data">
+                <thead><tr><th>Judge</th><th>Status</th><th class="num">Done</th><th style="width:200px">Progress</th></tr></thead>
+                <tbody>
+                  
+                    <tr>
+                      <td>
+                        <span style="font-weight:560">Tomás Reyes</span>
+                        <div class="tiny muted mono">tomas.reyes@hackerly.dev</div>
+                      </td>
+                      <td><span class="tag tag--ok">active</span></td>
+                      <td class="num">1 / 2</td>
+                      <td>
+                        <div class="meter" role="img" aria-label="50% complete">
+                          <div class="meter__fill meter__fill--accent" style="width:50%"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <span style="font-weight:560">Sana Rahman</span>
+                        <div class="tiny muted mono">sana.rahman@hackerly.dev</div>
+                      </td>
+                      <td><span class="tag tag--ok">active</span></td>
+                      <td class="num">1 / 2</td>
+                      <td>
+                        <div class="meter" role="img" aria-label="50% complete">
+                          <div class="meter__fill meter__fill--accent" style="width:50%"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <span style="font-weight:560">Noor Haddad</span>
+                        <div class="tiny muted mono">noor.haddad@hackerly.dev</div>
+                      </td>
+                      <td><span class="tag tag--warn">invited</span></td>
+                      <td class="num">0 / 0</td>
+                      <td>
+                        <div class="meter" role="img" aria-label="0% complete">
+                          <div class="meter__fill meter__fill--accent" style="width:0%"></div>
+                        </div>
+                      </td>
+                    </tr>
+                  
+                </tbody>
+              </table>
+            </div>
+          
+        </div>
+
+        <div class="card" style="margin-top:20px;padding:0;overflow:hidden">
+          <div class="card__head" style="padding:20px 22px 14px;margin:0">
+            <h2 class="card__title">Assignments</h2>
+            <span class="tag">4</span>
+          </div>
+          
+            <div class="table-wrap" style="border:0">
+              <table class="data">
+                <thead>
+                  <tr><th>Project</th><th>Track</th><th>Judge</th><th>Status</th><th>Submitted</th><th></th></tr>
+                </thead>
+                <tbody>
+                  
+                    <tr>
+                      <td class="small"><a href="/host/events/hacktron-2026/projects/prj_9gpa540id355">Greenhouse</a><div class="tiny muted">Patched</div></td>
+                      <td class="small">Civic and public good</td>
+                      <td class="tiny mono">sana.rahman@hackerly.dev</td>
+                      <td><span class="tag tag--ok">submitted</span></td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                      <td class="nowrap">
+                        
+                          <form method="post" action="/host/events/hacktron-2026/reviews/rev_x059w4daxc52/reopen" data-confirm="Reopen this review? The judge will have to submit it again.">
+                            <input type="hidden" name="_csrf" value="Ouc8tGZZGNBaViL7owvDxmQyA118H1NO">
+                            <button class="btn btn--quiet btn--sm" type="submit">Reopen</button>
+                          </form>
+                        
+                      </td>
+                    </tr>
+                  
+                    <tr>
+                      <td class="small"><a href="/host/events/hacktron-2026/projects/prj_9gpa540id355">Greenhouse</a><div class="tiny muted">Patched</div></td>
+                      <td class="small">Civic and public good</td>
+                      <td class="tiny mono">tomas.reyes@hackerly.dev</td>
+                      <td><span class="tag tag--warn">in_progress</span></td>
+                      <td class="small nowrap">—</td>
+                      <td class="nowrap">
+                        
+                      </td>
+                    </tr>
+                  
+                    <tr>
+                      <td class="small"><a href="/host/events/hacktron-2026/projects/prj_2ljj10mj8uvl">Render Ledger</a><div class="tiny muted">Cold Brew</div></td>
+                      <td class="small">Developer tools</td>
+                      <td class="tiny mono">sana.rahman@hackerly.dev</td>
+                      <td><span class="tag tag--warn">in_progress</span></td>
+                      <td class="small nowrap">—</td>
+                      <td class="nowrap">
+                        
+                      </td>
+                    </tr>
+                  
+                    <tr>
+                      <td class="small"><a href="/host/events/hacktron-2026/projects/prj_2ljj10mj8uvl">Render Ledger</a><div class="tiny muted">Cold Brew</div></td>
+                      <td class="small">Developer tools</td>
+                      <td class="tiny mono">tomas.reyes@hackerly.dev</td>
+                      <td><span class="tag tag--ok">submitted</span></td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                      <td class="nowrap">
+                        
+                          <form method="post" action="/host/events/hacktron-2026/reviews/rev_uzyot3brffbe/reopen" data-confirm="Reopen this review? The judge will have to submit it again.">
+                            <input type="hidden" name="_csrf" value="Ouc8tGZZGNBaViL7owvDxmQyA118H1NO">
+                            <button class="btn btn--quiet btn--sm" type="submit">Reopen</button>
+                          </form>
+                        
+                      </td>
+                    </tr>
+                  
+                </tbody>
+              </table>
+            </div>
+          
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Rubric in force</h2>
+          
+            <ul class="req-list">
+              
+                <li><span>Does it work</span><span class="tag">35</span></li>
+              
+                <li><span>Technical quality</span><span class="tag">25</span></li>
+              
+                <li><span>Originality</span><span class="tag">15</span></li>
+              
+                <li><span>Impact</span><span class="tag">15</span></li>
+              
+                <li><span>Clarity</span><span class="tag">10</span></li>
+              
+            </ul>
+          
+        </div>
+
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Coverage by project</h2>
+          
+          
+            <p class="small muted">
+              2 of 5 have at least one judge.
+              3 have only one.
+            </p>
+            <ul class="list-rows" style="margin-top:12px">
+              
+                <li class="list-rows__item">
+                  <div class="grow"><span class="list-rows__title">Journey Project</span><span class="list-rows__meta">0 judges · 0 reviews</span></div>
+                </li>
+              
+                <li class="list-rows__item">
+                  <div class="grow"><span class="list-rows__title">Journey Project</span><span class="list-rows__meta">0 judges · 0 reviews</span></div>
+                </li>
+              
+                <li class="list-rows__item">
+                  <div class="grow"><span class="list-rows__title">Journey Project</span><span class="list-rows__meta">0 judges · 0 reviews</span></div>
+                </li>
+              
+            </ul>
+          
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <div class="brand" style="margin-bottom:12px">
+          <span class="brand__mark" aria-hidden="true">H</span>
+          <span>Hackerly</span>
+        </div>
+        <p class="small" style="max-width:38ch">
+          Open source hackathon software. Run it yourself, keep your data, change anything.
+        </p>
+        <p class="tiny muted" style="margin-top:12px">
+          <a href="/about">About Hackerly</a> ·
+          <a href="/api/v1">REST API</a> ·
+          <a href="/healthz">Status</a>
+        </p>
+      </div>
+      <div>
+        <h5>For hackers</h5>
+        <ul>
+          <li><a href="/hackathons">Explore hackathons</a></li>
+          <li><a href="/projects">Project showcase</a></li>
+          <li><a href="/hackathons?status=open">Registration open</a></li>
+          <li><a href="/auth/signup">Create an account</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For organizers</h5>
+        <ul>
+          <li><a href="/host">Host a hackathon</a></li>
+          <li><a href="/host/events">Your events</a></li>
+          <li><a href="/host/start">Setup guide</a></li>
+          <li><a href="/about#self-host">Self-hosting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For judges</h5>
+        <ul>
+          <li><a href="/judge">Judge at Hackerly</a></li>
+          <li><a href="/judge/reviews">My reviews</a></li>
+          <li><a href="/about#judging">How judging works</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>Hackerly · MIT licensed · self-hostable</span>
+      <span class="mono">No account needed to browse</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/app.js?v=dev" defer></script>
+
+</body>
+</html>

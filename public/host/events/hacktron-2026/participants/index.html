@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Participants — HACKTRON 2026 · Hackerly</title>
+<meta name="description" content="Hackerly is a self-hostable platform for hackathons. Browse open events, join a team, submit a project, and let judges review it against a real rubric.">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="Participants — HACKTRON 2026">
+<meta property="og:description" content="Find a hackathon. Host your event. Invite your judges.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="/css/app.css?v=dev">
+<link rel="stylesheet" href="/css/pages.css?v=dev">
+<link rel="stylesheet" href="/css/workspace.css?v=dev">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+</head>
+<body class="">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">H</span>
+      <span>Hackerly</span>
+      <span class="brand__sub">Hackathon platform</span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="sr-only">Menu</span>
+    </button>
+
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="/hackathons">Explore hackathons</a>
+      <a href="/projects">Showcase</a>
+      <a href="/host" aria-current=&#34;page&#34;>Host a hackathon</a>
+      <a href="/judge">Judge at Hackerly</a>
+      <a href="/about">About</a>
+    </nav>
+
+    <div class="header-actions">
+      
+        <a class="btn btn--ghost btn--sm hide-sm" href="/dashboard">My dashboard</a>
+        <div class="menu" data-menu-root>
+          <button class="btn btn--quiet" type="button" data-menu-trigger aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+            <span class="avatar avatar--xs" data-seed="113" data-name="Meera Raghavan">M</span>
+            <span class="hide-xs">Meera</span>
+          </button>
+          <div class="menu__panel" role="menu">
+            <div class="menu__header">
+              <div style="font-weight:600;font-size:.9rem">Meera Raghavan</div>
+              <div class="tiny muted mono">@meera</div>
+            </div>
+            <a href="/dashboard" role="menuitem">Dashboard</a>
+            <a href="/u/meera" role="menuitem">My public profile</a>
+            <a href="/settings/profile" role="menuitem">Profile settings</a>
+            <hr>
+            <form method="post" action="/auth/logout">
+              <input type="hidden" name="_csrf" value="-L2tBCyc_LnjoKfGXOkeLR6EtJJ05D53">
+              <button type="submit" role="menuitem">Sign out</button>
+            </form>
+          </div>
+        </div>
+      
+    </div>
+  </div>
+</header>
+
+<main id="main">
+<header class="host-head">
+  <div class="wrap">
+    <div class="host-head__top">
+      <div class="grow">
+        <div class="host-head__title">HACKTRON 2026</div>
+        <div class="host-head__meta">
+          <span class="tag tag--info">Published</span>
+          <span class="tag">global</span>
+          <span class="tag">Online</span>
+          
+            <a class="tiny" href="/hackathons/hacktron-2026" target="_blank" rel="noopener">View public page ↗</a>
+          
+        </div>
+      </div>
+      <div class="row row-wrap">
+        <a class="btn btn--ghost btn--sm" href="/host/events">All events</a>
+        
+          <a class="btn btn--ghost btn--sm" href="/hackathons/hacktron-2026/results" target="_blank" rel="noopener">Public results</a>
+        
+      </div>
+    </div>
+    <nav class="host-nav" aria-label="Hackathon sections">
+      
+        <a href="/host/events/hacktron-2026" aria-current=&#34;page&#34;>
+          Overview
+        </a>
+      
+        <a href="/host/events/hacktron-2026/setup/basics">
+          Setup
+        </a>
+      
+        <a href="/host/events/hacktron-2026/participants">
+          People
+        </a>
+      
+        <a href="/host/events/hacktron-2026/teams">
+          Teams
+        </a>
+      
+        <a href="/host/events/hacktron-2026/projects">
+          Projects
+        </a>
+      
+        <a href="/host/events/hacktron-2026/judges">
+          Judges
+        </a>
+      
+        <a href="/host/events/hacktron-2026/assignments">
+          Assignments
+        </a>
+      
+        <a href="/host/events/hacktron-2026/judging">
+          Judging
+        </a>
+      
+        <a href="/host/events/hacktron-2026/results">
+          Results
+        </a>
+      
+        <a href="/host/events/hacktron-2026/audit">
+          Audit
+        </a>
+      
+        <a href="/host/events/hacktron-2026/export">
+          Export
+        </a>
+      
+        <a href="/host/events/hacktron-2026/settings">
+          Settings
+        </a>
+      
+    </nav>
+  </div>
+</header>
+
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">People</p>
+        <h1 style="font-size:1.6rem">19 persons</h1>
+        <p class="small muted" style="margin:8px 0 0">
+          Across 15 teams.
+          5 registered but not on a team yet.
+        </p>
+      </div>
+      <form class="row" method="get" action="/host/events/hacktron-2026/participants">
+        <input class="input" type="search" name="q" value="" placeholder="Search people" style="min-width:200px">
+        <button class="btn btn--ghost btn--sm" type="submit">Search</button>
+      </form>
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        
+          <div class="card" style="padding:0;overflow:hidden">
+            <div class="table-wrap" style="border:0">
+              <table class="data">
+                <thead><tr><th>Person</th><th>Team</th><th>Role</th><th>Joined</th></tr></thead>
+                <tbody>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(16 46% 42%)">A</span>
+                          <span>
+                            <a class="person__name" href="/u/abhi_123">abhi_123</a>
+                            <span class="person__meta mono">quality.prashanth@gmail.com</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">ds</td>
+                      <td class="small">owner</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(17 46% 42%)">AN</span>
+                          <span>
+                            <a class="person__name" href="/u/adanwosu">Ada Nwosu</a>
+                            <span class="person__meta mono">ada.nwosu@hackerly.dev</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">Patched</td>
+                      <td class="small">owner</td>
+                      <td class="small nowrap">24 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(148 46% 42%)">DU</span>
+                          <span>
+                            <a class="person__name" href="/u/dbg186397">Dbg User</a>
+                            <span class="person__meta mono">dbg1790693186397@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">—</td>
+                      <td class="small">registered</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(225 46% 42%)">JH</span>
+                          <span>
+                            <a class="person__name" href="/u/journey605701">Journey Hacker</a>
+                            <span class="person__meta mono">journey-1790640605701@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">Journey Squad</td>
+                      <td class="small">owner</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(102 46% 42%)">JH</span>
+                          <span>
+                            <a class="person__name" href="/u/journey620404">Journey Hacker</a>
+                            <span class="person__meta mono">journey-1790640620404@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">Journey Squad</td>
+                      <td class="small">owner</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(63 46% 42%)">JH</span>
+                          <span>
+                            <a class="person__name" href="/u/journey625987">Journey Hacker</a>
+                            <span class="person__meta mono">journey-1790640625987@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">Journey Squad</td>
+                      <td class="small">owner</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(262 46% 42%)">JH</span>
+                          <span>
+                            <a class="person__name" href="/u/journey668504">Journey Hacker</a>
+                            <span class="person__meta mono">journey-1790640668504@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">Journey Squad</td>
+                      <td class="small">owner</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(85 46% 42%)">JH</span>
+                          <span>
+                            <a class="person__name" href="/u/journey695066">Journey Hacker</a>
+                            <span class="person__meta mono">journey-1790640695066@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">Journey Squad</td>
+                      <td class="small">owner</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(10 46% 42%)">JH</span>
+                          <span>
+                            <a class="person__name" href="/u/journey707246">Journey Hacker</a>
+                            <span class="person__meta mono">journey-1790640707246@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">Journey Squad</td>
+                      <td class="small">owner</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(317 46% 42%)">JH</span>
+                          <span>
+                            <a class="person__name" href="/u/journey089917">Journey Hacker</a>
+                            <span class="person__meta mono">journey-1790697089917@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">Journey Squad</td>
+                      <td class="small">owner</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(56 46% 42%)">RO</span>
+                          <span>
+                            <a class="person__name" href="/u/rivka427624">Rivka Ostrowski</a>
+                            <span class="person__meta mono">rivka1790689427624@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">—</td>
+                      <td class="small">registered</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(235 46% 42%)">RO</span>
+                          <span>
+                            <a class="person__name" href="/u/rivka648404">Rivka Ostrowski</a>
+                            <span class="person__meta mono">rivka1790689648404@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">—</td>
+                      <td class="small">registered</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(120 46% 42%)">RO</span>
+                          <span>
+                            <a class="person__name" href="/u/rivka687731">Rivka Ostrowski</a>
+                            <span class="person__meta mono">rivka1790692687731@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">—</td>
+                      <td class="small">registered</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(264 46% 42%)">RO</span>
+                          <span>
+                            <a class="person__name" href="/u/rivka230226">Rivka Ostrowski</a>
+                            <span class="person__meta mono">rivka1790700230226@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">—</td>
+                      <td class="small">registered</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(157 46% 42%)">RO</span>
+                          <span>
+                            <a class="person__name" href="/u/rivka842187">Rivka Ostrowski</a>
+                            <span class="person__meta mono">rivka1790700842187@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">Northlight</td>
+                      <td class="small">owner</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(222 46% 42%)">RO</span>
+                          <span>
+                            <a class="person__name" href="/u/rivka146802">Rivka Ostrowski</a>
+                            <span class="person__meta mono">rivka1790701146802@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">Northlight</td>
+                      <td class="small">owner</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(311 46% 42%)">RO</span>
+                          <span>
+                            <a class="person__name" href="/u/rivka267883">Rivka Ostrowski</a>
+                            <span class="person__meta mono">rivka1790701267883@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">Northlight</td>
+                      <td class="small">owner</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(223 46% 42%)">RO</span>
+                          <span>
+                            <a class="person__name" href="/u/rivka413454">Rivka Ostrowski</a>
+                            <span class="person__meta mono">rivka1790701413454@hackerly.test</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">Northlight</td>
+                      <td class="small">owner</td>
+                      <td class="small nowrap">29 Sep 2026</td>
+                    </tr>
+                  
+                    <tr>
+                      <td>
+                        <div class="person">
+                          <span class="avatar avatar--sm" style="background:hsl(137 46% 42%)">RT</span>
+                          <span>
+                            <a class="person__name" href="/u/ruitanaka">Rui Tanaka</a>
+                            <span class="person__meta mono">rui.tanaka@hackerly.dev</span>
+                          </span>
+                        </div>
+                      </td>
+                      <td class="small">Patched</td>
+                      <td class="small">member</td>
+                      <td class="small nowrap">24 Sep 2026</td>
+                    </tr>
+                  
+                </tbody>
+              </table>
+            </div>
+          </div>
+        
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Add somebody by email</h2>
+          <p class="small muted">For a walk-in who has no account yet, or a co-organizer.</p>
+          <form method="post" action="/host/events/hacktron-2026/participants" style="margin-top:12px">
+            <input type="hidden" name="_csrf" value="-L2tBCyc_LnjoKfGXOkeLR6EtJJ05D53">
+            <div class="field">
+              <label class="field__label" for="pemail">Email</label>
+              <input class="input" id="pemail" type="email" name="email" required placeholder="person@example.org">
+              <p class="field__hint">They need a Hackerly account already. The server refuses an unknown address rather than creating a broken record.</p>
+            </div>
+            <button class="btn btn--ghost btn--sm" type="submit">Add as participant</button>
+          </form>
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Export</h2>
+          <a class="btn btn--ghost btn--block" href="/api/events/hacktron-2026/participants.csv">participants.csv</a>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <div class="brand" style="margin-bottom:12px">
+          <span class="brand__mark" aria-hidden="true">H</span>
+          <span>Hackerly</span>
+        </div>
+        <p class="small" style="max-width:38ch">
+          Open source hackathon software. Run it yourself, keep your data, change anything.
+        </p>
+        <p class="tiny muted" style="margin-top:12px">
+          <a href="/about">About Hackerly</a> ·
+          <a href="/api/v1">REST API</a> ·
+          <a href="/healthz">Status</a>
+        </p>
+      </div>
+      <div>
+        <h5>For hackers</h5>
+        <ul>
+          <li><a href="/hackathons">Explore hackathons</a></li>
+          <li><a href="/projects">Project showcase</a></li>
+          <li><a href="/hackathons?status=open">Registration open</a></li>
+          <li><a href="/auth/signup">Create an account</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For organizers</h5>
+        <ul>
+          <li><a href="/host">Host a hackathon</a></li>
+          <li><a href="/host/events">Your events</a></li>
+          <li><a href="/host/start">Setup guide</a></li>
+          <li><a href="/about#self-host">Self-hosting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For judges</h5>
+        <ul>
+          <li><a href="/judge">Judge at Hackerly</a></li>
+          <li><a href="/judge/reviews">My reviews</a></li>
+          <li><a href="/about#judging">How judging works</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>Hackerly · MIT licensed · self-hostable</span>
+      <span class="mono">No account needed to browse</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/app.js?v=dev" defer></script>
+
+</body>
+</html>

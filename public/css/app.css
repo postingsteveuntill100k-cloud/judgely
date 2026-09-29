@@ -187,7 +187,14 @@ pre code { background: none; padding: 0; color: inherit; }
   white-space: nowrap;
 }
 .nav a:hover { background: var(--paper-2); color: var(--ink); }
-.nav a[aria-current="page"] { color: var(--ink); font-weight: 600; }
+.nav a[aria-current="page"] {
+  color: var(--ink); font-weight: 600;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.nav a[aria-current="page"]::before {
+  content: ''; display: inline-block; width: 5.5px; height: 5.5px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.18); flex-shrink: 0;
+}
 
 .header-actions { display: flex; align-items: center; gap: 8px; flex: none; min-width: 0; }
 
@@ -421,7 +428,14 @@ table.data td.num { font-variant-numeric: tabular-nums; }
   border-bottom: 2px solid transparent; margin-bottom: -1px; white-space: nowrap;
 }
 .tabs a:hover { color: var(--ink); }
-.tabs a[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+.tabs a[aria-current="page"] {
+  color: var(--ink); border-bottom-color: var(--accent); font-weight: 600;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.tabs a[aria-current="page"]::before {
+  content: ''; display: inline-block; width: 5.5px; height: 5.5px; border-radius: 50%;
+  background: var(--accent); box-shadow: 0 0 0 2px rgba(220, 53, 69, 0.18); flex-shrink: 0;
+}
 .tabs a .count {
   font-size: 0.72rem; color: var(--ink-4); margin-left: 5px; font-variant-numeric: tabular-nums;
 }

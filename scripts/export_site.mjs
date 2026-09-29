@@ -70,10 +70,103 @@ const ROUTES = [
 ];
 
 async function run() {
-  console.log(`Exporting pages from ${BASE}...`);
+  console.log(`Connecting to database to discover all events and projects...`);
+  let cookieOrganizer = '';
+  let cookieJudge = '';
+  let cookieParticipant = '';
+
+  try {
+    const { getDb } = await import('../dist/server/db/index.js');
+    const { createSession } = await import('../dist/server/services/auth.js');
+    const db = await getDb();
+
+    // Create fresh sessions for export
+    try {
+      const meera = await db.getUserByEmail('meera@hackerly.dev');
+      if (meera) {
+        const s = await createSession(meera.id);
+        cookieOrganizer = `hkl_session=${s.token}`;
+      }
+      const alex = await db.getUserByEmail('alex@nexuslabs.dev');
+      if (alex) {
+        const s = await createSession(alex.id);
+        cookieJudge = `hkl_session=${s.token}`;
+      }
+      const elena = await db.getUserByEmail('elena@hacktron.dev');
+      if (elena) {
+        const s = await createSession(elena.id);
+        cookieParticipant = `hkl_session=${s.token}`;
+      }
+    } catch (e) {
+      console.warn('Could not generate dynamic sessions:', e.message);
+    }
+    
+    // Discover all events
+    const { rows: events } = await db.listEvents({ limit: 100 });
+    const eventMap = new Map();
+    for (const evt of events) {
+      eventMap.set(evt.id, evt.slug);
+      ROUTES.push({ url: `/hackathons/${evt.slug}`, out: `hackathons/${evt.slug}/index.html` });
+      ROUTES.push({ url: `/hackathons/${evt.slug}/projects`, out: `hackathons/${evt.slug}/projects/index.html` });
+      ROUTES.push({ url: `/hackathons/${evt.slug}/results`, out: `hackathons/${evt.slug}/results/index.html` });
+
+      // Event tracks
+      try {
+        const tracks = await db.listTracks(evt.id);
+        for (const t of tracks) {
+          ROUTES.push({ url: `/hackathons/${evt.slug}/tracks/${t.slug}`, out: `hackathons/${evt.slug}/tracks/${t.slug}/index.html` });
+        }
+      } catch (_) {}
+    }
+
+    // Discover all projects
+    const { rows: projects } = await db.listProjects({ limit: 500 });
+    console.log(`Found ${projects.length} projects to export...`);
+    for (const p of projects) {
+      let eventSlug = eventMap.get(p.event_id);
+      if (!eventSlug) {
+        try {
+          const evt = await db.getEventById(p.event_id);
+          if (evt) {
+            eventSlug = evt.slug;
+            eventMap.set(p.event_id, eventSlug);
+          }
+        } catch (_) {}
+      }
+
+      if (eventSlug && p.slug) {
+        ROUTES.push({
+          url: `/hackathons/${eventSlug}/projects/${p.slug}`,
+          out: `hackathons/${eventSlug}/projects/${p.slug}/index.html`
+        });
+        ROUTES.push({
+          url: `/hackathons/${eventSlug}/projects/${p.slug}`,
+          out: `projects/${p.slug}/index.html`
+        });
+      }
+    }
+  } catch (e) {
+    console.warn('Could not auto-discover projects from db:', e.message);
+  }
+
+  // Deduplicate routes by destination file
+  const seen = new Set();
+  const dedupedRoutes = [];
   for (const r of ROUTES) {
+    if (!seen.has(r.out)) {
+      seen.add(r.out);
+      dedupedRoutes.push(r);
+    }
+  }
+
+  console.log(`Exporting ${dedupedRoutes.length} pages from ${BASE}...`);
+  let successCount = 0;
+  for (const r of dedupedRoutes) {
     const headers = {};
-    if (r.cookie) headers['cookie'] = r.cookie;
+    if (r.cookie === COOKIE_ORGANIZER && cookieOrganizer) headers['cookie'] = cookieOrganizer;
+    else if (r.cookie === COOKIE_JUDGE && cookieJudge) headers['cookie'] = cookieJudge;
+    else if (r.cookie === COOKIE_PARTICIPANT && cookieParticipant) headers['cookie'] = cookieParticipant;
+    else if (r.cookie) headers['cookie'] = r.cookie;
     try {
       const res = await fetch(`${BASE}${r.url}`, { headers });
       if (!res.ok && res.status !== 304) {
@@ -84,12 +177,12 @@ async function run() {
       const dest = path.join(PUBLIC, r.out);
       fs.mkdirSync(path.dirname(dest), { recursive: true });
       fs.writeFileSync(dest, text, 'utf8');
-      console.log(`✔ Saved ${r.out}`);
+      successCount++;
     } catch (e) {
       console.error(`✖ Failed ${r.url}:`, e.message);
     }
   }
-  console.log('Site export complete!');
+  console.log(`Site export complete! Successfully wrote ${successCount} pages.`);
 }
 
 run();

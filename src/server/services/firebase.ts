@@ -62,11 +62,16 @@ export const firebaseAuth = {
   /** Config safe to hand to the browser. Never contains a secret. */
   publicConfig() {
     if (!config.firebase.projectId || !config.firebase.webApiKey) return { enabled: false };
+    const authProjectId = config.firebase.authProjectId || config.firebase.projectId;
+    const authApiKey = config.firebase.authApiKey || config.firebase.webApiKey;
+    const authDomain = config.firebase.authDomain || `${authProjectId}.firebaseapp.com`;
     return {
       enabled: true,
-      apiKey: config.firebase.webApiKey,
-      authDomain: config.firebase.authDomain || `${config.firebase.projectId}.firebaseapp.com`,
-      projectId: config.firebase.projectId,
+      apiKey: authApiKey,
+      authDomain,
+      projectId: authProjectId,
+      dbProjectId: config.firebase.projectId,
+      dbApiKey: config.firebase.webApiKey,
     };
   },
 

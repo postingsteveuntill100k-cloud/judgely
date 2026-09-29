@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Set up HACKTRON 2026 · Hackerly</title>
+<meta name="description" content="Hackerly is a self-hostable platform for hackathons. Browse open events, join a team, submit a project, and let judges review it against a real rubric.">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="Set up HACKTRON 2026">
+<meta property="og:description" content="Find a hackathon. Host your event. Invite your judges.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="/css/app.css?v=dev">
+<link rel="stylesheet" href="/css/pages.css?v=dev">
+<link rel="stylesheet" href="/css/workspace.css?v=dev">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+</head>
+<body class="">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">H</span>
+      <span>Hackerly</span>
+      <span class="brand__sub">Hackathon platform</span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="sr-only">Menu</span>
+    </button>
+
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="/hackathons">Explore hackathons</a>
+      <a href="/projects">Showcase</a>
+      <a href="/host" aria-current=&#34;page&#34;>Host a hackathon</a>
+      <a href="/judge">Judge at Hackerly</a>
+      <a href="/about">About</a>
+    </nav>
+
+    <div class="header-actions">
+      
+        <a class="btn btn--ghost btn--sm hide-sm" href="/dashboard">My dashboard</a>
+        <div class="menu" data-menu-root>
+          <button class="btn btn--quiet" type="button" data-menu-trigger aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+            <span class="avatar avatar--xs" data-seed="113" data-name="Meera Raghavan">M</span>
+            <span class="hide-xs">Meera</span>
+          </button>
+          <div class="menu__panel" role="menu">
+            <div class="menu__header">
+              <div style="font-weight:600;font-size:.9rem">Meera Raghavan</div>
+              <div class="tiny muted mono">@meera</div>
+            </div>
+            <a href="/dashboard" role="menuitem">Dashboard</a>
+            <a href="/u/meera" role="menuitem">My public profile</a>
+            <a href="/settings/profile" role="menuitem">Profile settings</a>
+            <hr>
+            <form method="post" action="/auth/logout">
+              <input type="hidden" name="_csrf" value="Dz_rqDuZc7iii6PTe421YUe4PQDv-GKd">
+              <button type="submit" role="menuitem">Sign out</button>
+            </form>
+          </div>
+        </div>
+      
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<header class="host-head">
+  <div class="wrap">
+    <div class="host-head__top">
+      <div class="grow">
+        <div class="host-head__title">HACKTRON 2026</div>
+        <div class="host-head__meta">
+          <span class="tag tag--info">Published</span>
+          <span class="tag">global</span>
+          <span class="tag">Online</span>
+          
+            <a class="tiny" href="/hackathons/hacktron-2026" target="_blank" rel="noopener">View public page ↗</a>
+          
+        </div>
+      </div>
+      <div class="row row-wrap">
+        <a class="btn btn--ghost btn--sm" href="/host/events">All events</a>
+        
+          <a class="btn btn--ghost btn--sm" href="/hackathons/hacktron-2026/results" target="_blank" rel="noopener">Public results</a>
+        
+      </div>
+    </div>
+    <nav class="host-nav" aria-label="Hackathon sections">
+      
+        <a href="/host/events/hacktron-2026" aria-current=&#34;page&#34;>
+          Overview
+        </a>
+      
+        <a href="/host/events/hacktron-2026/setup/basics">
+          Setup
+        </a>
+      
+        <a href="/host/events/hacktron-2026/participants">
+          People
+        </a>
+      
+        <a href="/host/events/hacktron-2026/teams">
+          Teams
+        </a>
+      
+        <a href="/host/events/hacktron-2026/projects">
+          Projects
+        </a>
+      
+        <a href="/host/events/hacktron-2026/judges">
+          Judges
+        </a>
+      
+        <a href="/host/events/hacktron-2026/assignments">
+          Assignments
+        </a>
+      
+        <a href="/host/events/hacktron-2026/judging">
+          Judging
+        </a>
+      
+        <a href="/host/events/hacktron-2026/results">
+          Results
+        </a>
+      
+        <a href="/host/events/hacktron-2026/audit">
+          Audit
+        </a>
+      
+        <a href="/host/events/hacktron-2026/export">
+          Export
+        </a>
+      
+        <a href="/host/events/hacktron-2026/settings">
+          Settings
+        </a>
+      
+    </nav>
+  </div>
+</header>
+
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Step 2 of 10</p>
+        <h1 style="font-size:1.6rem">Dates</h1>
+        <p class="small muted" style="margin:8px 0 0;max-width:60ch">
+          Everything is stored in UTC. Only the submission deadline is required, because the server
+          has to know when to refuse writes.
+        </p>
+      </div>
+      
+    </div>
+
+    <div class="ws">
+      <div class="ws__main">
+        <div class="card">
+          <form method="post" action="/host/events/hacktron-2026/setup/dates">
+            <input type="hidden" name="_csrf" value="Dz_rqDuZc7iii6PTe421YUe4PQDv-GKd">
+            <div class="grid grid-2" style="gap:0 24px">
+              
+    <div class="field">
+      <label class="field__label" for="registration_opens_at">Registration opens</label>
+      <input class="input" id="registration_opens_at" type="datetime-local" name="registration_opens_at" value="2026-08-30T00:09">
+      <p class="field__hint">Before this, participants can read the page but not register.</p>
+    </div>
+              
+    <div class="field">
+      <label class="field__label" for="registration_closes_at">Registration closes</label>
+      <input class="input" id="registration_closes_at" type="datetime-local" name="registration_closes_at" value="2026-10-26T00:09">
+      <p class="field__hint">After this, new registrations are refused by the server.</p>
+    </div>
+              
+    <div class="field">
+      <label class="field__label" for="starts_at">Build window opens</label>
+      <input class="input" id="starts_at" type="datetime-local" name="starts_at" value="2026-10-12T00:09">
+      <p class="field__hint">When hacking starts. Shown as the event start date.</p>
+    </div>
+              
+    <div class="field">
+      <label class="field__label" for="ends_at">Build window closes</label>
+      <input class="input" id="ends_at" type="datetime-local" name="ends_at" value="2026-10-26T00:09">
+      <p class="field__hint">The event end date.</p>
+    </div>
+              
+    <div class="field">
+      <label class="field__label" for="submission_deadline">Submissions close<span class="field__req">*</span></label>
+      <input class="input" id="submission_deadline" type="datetime-local" name="submission_deadline" value="2026-10-26T00:09" required>
+      <p class="field__hint">The server refuses any submission or edit after this moment. This is the rule participants care about most.</p>
+    </div>
+              
+    <div class="field">
+      <label class="field__label" for="judging_ends_at">Judging closes</label>
+      <input class="input" id="judging_ends_at" type="datetime-local" name="judging_ends_at" value="2026-10-30T00:09">
+      <p class="field__hint">When you expect the panel to be finished.</p>
+    </div>
+              
+    <div class="field">
+      <label class="field__label" for="results_release_at">Results published</label>
+      <input class="input" id="results_release_at" type="datetime-local" name="results_release_at" value="2026-11-01T00:09">
+      <p class="field__hint">Shown on the public page as the planned release date. Publishing earlier is always allowed.</p>
+    </div>
+            </div>
+            <div class="form-actions">
+              <button class="btn btn--ghost" type="submit" name="_action" value="save">Save and stay</button>
+              <button class="btn btn--primary" type="submit" name="_action" value="next">Save and continue</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <aside class="ws__side">
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">Current state</h2>
+          <dl class="kv">
+            <div><dt>Registration</dt><dd>open</dd></div>
+            <div><dt>Submissions</dt><dd>open</dd></div>
+            <div><dt>Judging</dt><dd>not_started</dd></div>
+          </dl>
+          
+            <p class="small" style="margin-top:12px"><strong>Event starts</strong><br>12 Oct 2026, 00:09 UTC</p>
+          
+        </div>
+        <div class="card">
+          <h2 class="card__title" style="margin-bottom:10px">How the deadline works</h2>
+          <p class="small muted">
+            The server compares the current time with the submission deadline on every write. A
+            participant with an open tab at the deadline gets the same refusal as somebody posting
+            a raw request an hour later.
+          </p>
+        </div>
+      </aside>
+    </div>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <div class="brand" style="margin-bottom:12px">
+          <span class="brand__mark" aria-hidden="true">H</span>
+          <span>Hackerly</span>
+        </div>
+        <p class="small" style="max-width:38ch">
+          Open source hackathon software. Run it yourself, keep your data, change anything.
+        </p>
+        <p class="tiny muted" style="margin-top:12px">
+          <a href="/about">About Hackerly</a> ·
+          <a href="/api/v1">REST API</a> ·
+          <a href="/healthz">Status</a>
+        </p>
+      </div>
+      <div>
+        <h5>For hackers</h5>
+        <ul>
+          <li><a href="/hackathons">Explore hackathons</a></li>
+          <li><a href="/projects">Project showcase</a></li>
+          <li><a href="/hackathons?status=open">Registration open</a></li>
+          <li><a href="/auth/signup">Create an account</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For organizers</h5>
+        <ul>
+          <li><a href="/host">Host a hackathon</a></li>
+          <li><a href="/host/events">Your events</a></li>
+          <li><a href="/host/start">Setup guide</a></li>
+          <li><a href="/about#self-host">Self-hosting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For judges</h5>
+        <ul>
+          <li><a href="/judge">Judge at Hackerly</a></li>
+          <li><a href="/judge/reviews">My reviews</a></li>
+          <li><a href="/about#judging">How judging works</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>Hackerly · MIT licensed · self-hostable</span>
+      <span class="mono">No account needed to browse</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/app.js?v=dev" defer></script>
+
+</body>
+</html>

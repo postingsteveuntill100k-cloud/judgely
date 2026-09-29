@@ -142,58 +142,197 @@
     el.addEventListener('change', function () { el.form && el.form.submit(); });
   });
 
-  // --- Firebase Google sign-in (only rendered when Firebase is configured) --
-  var cfgEl = document.querySelector('[data-firebase-config]');
-  if (!cfgEl) return;
-  var cfg;
-  try { cfg = JSON.parse(cfgEl.textContent); } catch (err) { return; }
+  // --- Client session hydration for static deployments --------------------
+  try {
+    var savedUser = localStorage.getItem('hkl_user');
+    if (savedUser) {
+      var u = JSON.parse(savedUser);
+      var headerActions = document.querySelector('.header-actions');
+      if (headerActions && !document.querySelector('[data-menu-root]')) {
+        var initial = (u.displayName || u.email || 'U').slice(0, 1).toUpperCase();
+        var firstName = (u.displayName || u.email || 'User').split(' ')[0];
+        headerActions.innerHTML =
+          '<a class="btn btn--ghost btn--sm hide-sm" href="/dashboard">My dashboard</a>' +
+          '<div class="menu" data-menu-root>' +
+            '<button class="btn btn--quiet" type="button" data-menu-trigger aria-haspopup="true" aria-expanded="false" aria-label="Account menu">' +
+              '<span class="avatar avatar--xs" style="background:var(--accent);color:#fff;font-weight:600;">' + initial + '</span>' +
+              '<span class="hide-xs" style="font-weight:550;margin-left:6px;">' + firstName + '</span>' +
+            '</button>' +
+            '<div class="menu__panel" role="menu">' +
+              '<div class="menu__header">' +
+                '<div style="font-weight:600;font-size:.9rem">' + (u.displayName || firstName) + '</div>' +
+                '<div class="tiny muted mono">' + (u.email || '@' + u.username) + '</div>' +
+              '</div>' +
+              '<a href="/dashboard" role="menuitem">Dashboard</a>' +
+              '<a href="/teams" role="menuitem">My Teams</a>' +
+              '<a href="/projects" role="menuitem">Showcase</a>' +
+              '<hr>' +
+              '<button type="button" id="client-logout-btn" role="menuitem" style="width:100%;text-align:left;background:none;border:none;padding:8px 12px;font:inherit;cursor:pointer;color:var(--danger,#dc3545);">Sign out</button>' +
+            '</div>' +
+          '</div>';
+        var logoutBtn = document.getElementById('client-logout-btn');
+        if (logoutBtn) {
+          logoutBtn.addEventListener('click', function () {
+            try { localStorage.removeItem('hkl_user'); localStorage.removeItem('hkl_session'); } catch (_) {}
+            window.location.href = '/';
+          });
+        }
+      }
+    }
+  } catch (e) {}
 
-  var SDK = 'https://www.gstatic.com/firebasejs/10.12.2';
-  function load(url) {
-    return import(/* webpackIgnore: true */ url);
+  // --- Firebase Google sign-in & Firestore Database -------------------------
+  var cfgEl = document.querySelector('[data-firebase-config]');
+  if (cfgEl) {
+    var cfg;
+    try { cfg = JSON.parse(cfgEl.textContent); } catch (err) { cfg = null; }
+
+    if (cfg && cfg.apiKey) {
+      var SDK = 'https://www.gstatic.com/firebasejs/10.12.2';
+      function load(url) {
+        return import(/* webpackIgnore: true */ url);
+      }
+
+      var authCfg = {
+        apiKey: cfg.apiKey,
+        authDomain: cfg.authDomain || (window.location.host.indexOf('web.app') !== -1 ? window.location.host : 'hackerly-hackatrons.firebaseapp.com'),
+        projectId: cfg.projectId || 'hackerly-hackatrons'
+      };
+
+      var dbCfg = {
+        apiKey: cfg.dbApiKey || cfg.apiKey,
+        projectId: cfg.dbProjectId || cfg.projectId || 'hackerly-hackatrons'
+      };
+
+      Promise.all([
+        load(SDK + '/firebase-app.js'),
+        load(SDK + '/firebase-auth.js'),
+        load(SDK + '/firebase-firestore.js')
+      ]).then(function (mods) {
+        var appMod = mods[0];
+        var authMod = mods[1];
+        var fsMod = mods[2];
+
+        var authApp = appMod.getApps().find(function (a) { return a.name === '[DEFAULT]'; }) || appMod.initializeApp(authCfg);
+        var auth = authMod.getAuth(authApp);
+
+        function saveToFirestore(user) {
+          if (!fsMod || !dbCfg.projectId) return Promise.resolve();
+          try {
+            var dbApp = appMod.getApps().find(function (a) { return a.name === 'firestoreApp'; }) || appMod.initializeApp(dbCfg, 'firestoreApp');
+            var db = fsMod.getFirestore(dbApp);
+            var userDoc = {
+              uid: user.uid,
+              email: user.email || '',
+              displayName: user.displayName || (user.email ? user.email.split('@')[0] : 'Hacker'),
+              photoURL: user.photoURL || '',
+              lastLoginAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+              provider: 'google.com',
+              role: 'participant'
+            };
+            return fsMod.setDoc(fsMod.doc(db, 'users', user.uid), userDoc, { merge: true })
+              .catch(function (err) { console.warn('Firestore write warning:', err); });
+          } catch (e) {
+            console.warn('Firestore init warning:', e);
+            return Promise.resolve();
+          }
+        }
+
+        function handleSuccessfulAuth(user) {
+          var profile = {
+            id: user.uid,
+            uid: user.uid,
+            email: user.email,
+            displayName: user.displayName || (user.email ? user.email.split('@')[0] : 'Hacker'),
+            username: user.email ? user.email.split('@')[0].replace(/[^a-zA-Z0-9_-]/g, '') : 'user_' + user.uid.slice(0, 6),
+            photoURL: user.photoURL,
+            role: 'participant'
+          };
+          try {
+            localStorage.setItem('hkl_user', JSON.stringify(profile));
+          } catch (_) {}
+
+          return saveToFirestore(user)
+            .then(function () { return user.getIdToken(); })
+            .then(function (idToken) {
+              return fetch('/auth/firebase', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'fetch' },
+                body: JSON.stringify({ idToken: idToken }),
+              }).then(function (res) {
+                if (res.ok) return res.json();
+                return { redirect: '/dashboard' };
+              }).catch(function () {
+                return { redirect: '/dashboard' };
+              });
+            })
+            .then(function (data) {
+              window.location.href = data.redirect || '/dashboard';
+            });
+        }
+
+        // Handle redirect result if user returned from signInWithRedirect
+        authMod.getRedirectResult(auth).then(function (cred) {
+          if (cred && cred.user) {
+            handleSuccessfulAuth(cred.user);
+          }
+        }).catch(function (err) {
+          console.warn('Redirect error:', err);
+        });
+
+        // Attach click listener for popup sign in
+        document.querySelectorAll('[data-google-signin]').forEach(function (btn) {
+          var original = btn.textContent;
+          btn.addEventListener('click', function () {
+            btn.disabled = true;
+            btn.textContent = 'Opening Google…';
+            var provider = new authMod.GoogleAuthProvider();
+            provider.setCustomParameters({ prompt: 'select_account' });
+            provider.addScope('email');
+            provider.addScope('profile');
+
+            authMod.signInWithPopup(auth, provider)
+              .then(function (cred) {
+                btn.textContent = 'Signing in…';
+                return handleSuccessfulAuth(cred.user);
+              })
+              .catch(function (err) {
+                btn.disabled = false;
+                btn.textContent = original;
+                var note = document.getElementById('google-error');
+                if (note) {
+                  note.style.display = 'block';
+                  if (err && (err.code === 'auth/popup-closed-by-user' || err.code === 'auth/cancelled-popup-request')) {
+                    note.innerHTML = '<strong>Sign-in notice:</strong> The popup window was closed before finishing. <a href="javascript:void(0)" id="btn-redirect-link" style="color:var(--accent);font-weight:600;margin-left:4px;">Click here to sign in with page redirect</a> or use the Quick Sign-In buttons below.';
+                    var rlink = document.getElementById('btn-redirect-link');
+                    if (rlink) {
+                      rlink.addEventListener('click', function () {
+                        authMod.signInWithRedirect(auth, provider);
+                      });
+                    }
+                  } else if (err && err.code === 'auth/popup-blocked') {
+                    note.innerHTML = '<strong>Popup blocked:</strong> Please allow popups or <a href="javascript:void(0)" id="btn-redirect-link" style="color:var(--accent);font-weight:600;margin-left:4px;">click here to sign in with redirect</a>.';
+                    var rlink = document.getElementById('btn-redirect-link');
+                    if (rlink) {
+                      rlink.addEventListener('click', function () {
+                        authMod.signInWithRedirect(auth, provider);
+                      });
+                    }
+                  } else {
+                    note.innerHTML = '<strong>Google Sign-In note:</strong> ' + (err && err.message ? err.message : 'The requested action is invalid') + '.<br><span style="margin-top:4px;display:block;">You can sign in immediately using the Quick Sign-In buttons below.</span>';
+                  }
+                }
+              });
+          });
+        });
+      }).catch(function (err) {
+        console.warn('Firebase SDK load failed:', err);
+      });
+    }
   }
 
-  document.querySelectorAll('[data-google-signin]').forEach(function (btn) {
-    var original = btn.textContent;
-    btn.addEventListener('click', function () {
-      btn.disabled = true;
-      btn.textContent = 'Opening Google…';
-      Promise.all([load(SDK + '/firebase-app.js'), load(SDK + '/firebase-auth.js')])
-        .then(function (mods) {
-          var appMod = mods[0];
-          var authMod = mods[1];
-          var app = appMod.getApps().length ? appMod.getApp() : appMod.initializeApp(cfg);
-          var auth = authMod.getAuth(app);
-          var provider = new authMod.GoogleAuthProvider();
-          return authMod.signInWithPopup(auth, provider);
-        })
-        .then(function (cred) {
-          return cred.user.getIdToken().then(function (idToken) {
-            return fetch('/auth/firebase', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'fetch' },
-              body: JSON.stringify({ idToken: idToken }),
-            });
-          });
-        })
-        .then(function (res) {
-          if (!res.ok) throw new Error('the server rejected the identity token (HTTP ' + res.status + ')');
-          return res.json();
-        })
-        .then(function (data) { window.location.href = data.redirect || '/dashboard'; })
-        .catch(function (err) {
-          btn.disabled = false;
-          btn.textContent = original;
-          var note = document.getElementById('google-error');
-          if (note) {
-            note.style.display = 'block';
-            note.innerHTML = '<strong>Google Sign-In note:</strong> ' + (err && err.message ? err.message : 'The requested action is invalid') + '.<br><span style="margin-top:4px;display:block;">To enable Google popups, enable the Google provider in Firebase Console and add <code>judgely.web.app</code> to Authorized Domains. You can sign in immediately using the Quick Sign-In buttons below.</span>';
-          }
-        });
-    });
-  });
-
-  // --- persona quick-fill login --------------------------------------------
+  // --- Persona quick-fill login --------------------------------------------
   document.querySelectorAll('[data-fill-creds]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var idInput = document.getElementById('identifier');
@@ -207,6 +346,7 @@
     });
   });
 })();
+
 
 // --- judge score buttons --------------------------------------------------
 (function () {

@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Settings — HACKTRON 2026 · Hackerly</title>
+<meta name="description" content="Hackerly is a self-hostable platform for hackathons. Browse open events, join a team, submit a project, and let judges review it against a real rubric.">
+<meta name="color-scheme" content="light">
+<meta property="og:title" content="Settings — HACKTRON 2026">
+<meta property="og:description" content="Find a hackathon. Host your event. Invite your judges.">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="/css/app.css?v=dev">
+<link rel="stylesheet" href="/css/pages.css?v=dev">
+<link rel="stylesheet" href="/css/workspace.css?v=dev">
+<link rel="icon" href="/img/favicon.svg" type="image/svg+xml">
+</head>
+<body class="">
+<a class="skip-link" href="#main">Skip to content</a>
+
+<header class="site-header">
+  <div class="wrap site-header__inner">
+    <a class="brand" href="/">
+      <span class="brand__mark" aria-hidden="true">H</span>
+      <span>Hackerly</span>
+      <span class="brand__sub">Hackathon platform</span>
+    </a>
+
+    <button class="menu-toggle" type="button" aria-expanded="false" aria-controls="primary-nav" data-menu-toggle>
+      <svg width="16" height="12" viewBox="0 0 16 12" aria-hidden="true"><path d="M0 1h16M0 6h16M0 11h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      <span class="sr-only">Menu</span>
+    </button>
+
+    <nav class="nav" id="primary-nav" aria-label="Primary">
+      <a href="/hackathons">Explore hackathons</a>
+      <a href="/projects">Showcase</a>
+      <a href="/host" aria-current=&#34;page&#34;>Host a hackathon</a>
+      <a href="/judge">Judge at Hackerly</a>
+      <a href="/about">About</a>
+    </nav>
+
+    <div class="header-actions">
+      
+        <a class="btn btn--ghost btn--sm hide-sm" href="/dashboard">My dashboard</a>
+        <div class="menu" data-menu-root>
+          <button class="btn btn--quiet" type="button" data-menu-trigger aria-haspopup="true" aria-expanded="false" aria-label="Account menu">
+            <span class="avatar avatar--xs" data-seed="113" data-name="Meera Raghavan">M</span>
+            <span class="hide-xs">Meera</span>
+          </button>
+          <div class="menu__panel" role="menu">
+            <div class="menu__header">
+              <div style="font-weight:600;font-size:.9rem">Meera Raghavan</div>
+              <div class="tiny muted mono">@meera</div>
+            </div>
+            <a href="/dashboard" role="menuitem">Dashboard</a>
+            <a href="/u/meera" role="menuitem">My public profile</a>
+            <a href="/settings/profile" role="menuitem">Profile settings</a>
+            <hr>
+            <form method="post" action="/auth/logout">
+              <input type="hidden" name="_csrf" value="DuNKlOegGvEgO4m39coOvhF4xLiE9lpF">
+              <button type="submit" role="menuitem">Sign out</button>
+            </form>
+          </div>
+        </div>
+      
+    </div>
+  </div>
+</header>
+
+<main id="main">
+
+<header class="host-head">
+  <div class="wrap">
+    <div class="host-head__top">
+      <div class="grow">
+        <div class="host-head__title">HACKTRON 2026</div>
+        <div class="host-head__meta">
+          <span class="tag tag--info">Published</span>
+          <span class="tag">global</span>
+          <span class="tag">Online</span>
+          
+            <a class="tiny" href="/hackathons/hacktron-2026" target="_blank" rel="noopener">View public page ↗</a>
+          
+        </div>
+      </div>
+      <div class="row row-wrap">
+        <a class="btn btn--ghost btn--sm" href="/host/events">All events</a>
+        
+          <a class="btn btn--ghost btn--sm" href="/hackathons/hacktron-2026/results" target="_blank" rel="noopener">Public results</a>
+        
+      </div>
+    </div>
+    <nav class="host-nav" aria-label="Hackathon sections">
+      
+        <a href="/host/events/hacktron-2026" aria-current=&#34;page&#34;>
+          Overview
+        </a>
+      
+        <a href="/host/events/hacktron-2026/setup/basics">
+          Setup
+        </a>
+      
+        <a href="/host/events/hacktron-2026/participants">
+          People
+        </a>
+      
+        <a href="/host/events/hacktron-2026/teams">
+          Teams
+        </a>
+      
+        <a href="/host/events/hacktron-2026/projects">
+          Projects
+        </a>
+      
+        <a href="/host/events/hacktron-2026/judges">
+          Judges
+        </a>
+      
+        <a href="/host/events/hacktron-2026/assignments">
+          Assignments
+        </a>
+      
+        <a href="/host/events/hacktron-2026/judging">
+          Judging
+        </a>
+      
+        <a href="/host/events/hacktron-2026/results">
+          Results
+        </a>
+      
+        <a href="/host/events/hacktron-2026/audit">
+          Audit
+        </a>
+      
+        <a href="/host/events/hacktron-2026/export">
+          Export
+        </a>
+      
+        <a href="/host/events/hacktron-2026/settings">
+          Settings
+        </a>
+      
+    </nav>
+  </div>
+</header>
+
+
+<section class="section section--tight">
+  <div class="wrap">
+    <div class="section__head" style="margin-bottom:16px">
+      <div>
+        <p class="eyebrow">Settings</p>
+        <h1 style="font-size:1.6rem">Everything at once</h1>
+        <p class="small muted" style="margin:8px 0 0">The step-by-step wizard is friendlier. This page exists for when you already know the field you want.</p>
+      </div>
+      
+    </div>
+
+    <form method="post" action="/host/events/hacktron-2026/settings">
+      <input type="hidden" name="_csrf" value="DuNKlOegGvEgO4m39coOvhF4xLiE9lpF">
+      <div class="ws">
+        <div class="ws__main">
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:16px">Identity</h2>
+            <div class="field">
+              <label class="field__label" for="name">Name<span class="field__req">*</span></label>
+              <input class="input" id="name" name="name" value="HACKTRON 2026" required maxlength="90">
+            </div>
+            <div class="field">
+              <label class="field__label" for="tagline">Tagline</label>
+              <input class="input" id="tagline" name="tagline" value="Build. Break. Ship." maxlength="160">
+            </div>
+            <div class="field">
+              <label class="field__label" for="description">Description<span class="field__req">*</span></label>
+              <textarea class="textarea" id="description" name="description" required maxlength="6000" style="min-height:180px">Two weeks, online, and a prize pool aimed at things people actually deploy. HACKTRON is for teams who want to finish something: a working link, a repository, a short demo video and an honest write-up. No slide decks.
+
+Judging runs against a published rubric with weights, assigned in advance, and results are published with the per-criterion breakdown. You can see the rubric before you register.</textarea>
+            </div>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="organizer_name">Organizer</label>
+                <input class="input" id="organizer_name" name="organizer_name" value="NexusLabs" maxlength="80">
+              </div>
+              <div class="field">
+                <label class="field__label" for="contact_email">Contact email</label>
+                <input class="input" id="contact_email" type="email" name="contact_email" value="hello@hacktron.dev" maxlength="120">
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <h2 class="card__title" style="margin-bottom:16px">Dates</h2>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="registration_opens_at">Registration opens</label>
+                <input class="input" id="registration_opens_at" type="datetime-local" name="registration_opens_at" value="2026-08-30T00:09">
+              </div>
+              <div class="field">
+                <label class="field__label" for="registration_closes_at">Registration closes</label>
+                <input class="input" id="registration_closes_at" type="datetime-local" name="registration_closes_at" value="2026-10-26T00:09">
+              </div>
+              <div class="field">
+                <label class="field__label" for="starts_at">Event starts</label>
+                <input class="input" id="starts_at" type="datetime-local" name="starts_at" value="2026-10-12T00:09">
+              </div>
+              <div class="field">
+                <label class="field__label" for="ends_at">Event ends</label>
+                <input class="input" id="ends_at" type="datetime-local" name="ends_at" value="2026-10-26T00:09">
+              </div>
+              <div class="field">
+                <label class="field__label" for="submission_deadline">Submissions close<span class="field__req">*</span></label>
+                <input class="input" id="submission_deadline" type="datetime-local" name="submission_deadline" value="2026-10-26T00:09" required>
+              </div>
+              <div class="field">
+                <label class="field__label" for="results_release_at">Results release</label>
+                <input class="input" id="results_release_at" type="datetime-local" name="results_release_at" value="2026-11-01T00:09">
+              </div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="timezone">Timezone label</label>
+              <input class="input" id="timezone" name="timezone" value="UTC" maxlength="60">
+              <p class="field__hint">Display only. Everything is stored and compared in UTC.</p>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <h2 class="card__title" style="margin-bottom:16px">Rules</h2>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="min_team_size">Minimum team size</label>
+                <input class="input" id="min_team_size" type="number" name="min_team_size" min="1" max="20" value="1">
+              </div>
+              <div class="field">
+                <label class="field__label" for="max_team_size">Maximum team size</label>
+                <input class="input" id="max_team_size" type="number" name="max_team_size" min="1" max="20" value="4" required>
+              </div>
+              <div class="field">
+                <label class="field__label" for="allow_solo">Solo entries</label>
+                <select class="select" id="allow_solo" name="allow_solo">
+                  <option value="1" selected>Allowed</option>
+                  <option value="0" >Not allowed</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="format">Format</label>
+                <select class="select" id="format" name="format">
+                  
+                    <option value="online" selected>Online</option>
+                  
+                    <option value="offline" >In person</option>
+                  
+                    <option value="hybrid" >Hybrid</option>
+                  
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <h2 class="card__title" style="margin-bottom:16px">Prizes</h2>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="prize_pool_cents">Prize pool</label>
+                <input class="input" id="prize_pool_cents" name="prize_pool_cents" value="50000000" inputmode="numeric">
+              </div>
+              <div class="field">
+                <label class="field__label" for="prize_currency">Currency</label>
+                <select class="select" id="prize_currency" name="prize_currency">
+                  
+                    <option value="INR" selected>INR</option>
+                  
+                    <option value="USD" >USD</option>
+                  
+                    <option value="EUR" >EUR</option>
+                  
+                    <option value="GBP" >GBP</option>
+                  
+                    <option value="JPY" >JPY</option>
+                  
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="prize_headline">Prize headline</label>
+              <input class="input" id="prize_headline" name="prize_headline" value="₹5,00,000 in prizes" maxlength="60">
+            </div>
+            <div class="field">
+              <label class="field__label" for="eligibility">Eligibility</label>
+              <textarea class="textarea" id="eligibility" name="eligibility" maxlength="2000" style="min-height:100px">Open to anyone. You need a Hackerly account to submit.</textarea>
+            </div>
+          </div>
+
+          <div class="card" style="margin-top:20px">
+            <h2 class="card__title" style="margin-bottom:16px">Visibility and judging</h2>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="public_listing">Discovery</label>
+                <select class="select" id="public_listing" name="public_listing">
+                  <option value="1" selected>Listed publicly</option>
+                  <option value="0" >Unlisted (URL only)</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="showcase_visibility">Project showcase</label>
+                <select class="select" id="showcase_visibility" name="showcase_visibility">
+                  <option value="public" selected>Public once submitted</option>
+                  <option value="hidden" >Private</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="results_visibility">Results</label>
+                <select class="select" id="results_visibility" name="results_visibility">
+                  <option value="hidden" selected>Private until published</option>
+                  <option value="public" >Public once released</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="judging_mode">Aggregation</label>
+                <select class="select" id="judging_mode" name="judging_mode">
+                  <option value="raw" >Plain mean</option>
+                  <option value="normalized" selected>Normalized</option>
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="normalize_lambda">λ</label>
+                <input class="input" id="normalize_lambda" name="normalize_lambda" type="number" min="0" max="1" step="0.1" value="0.5">
+              </div>
+              <div class="field">
+                <label class="field__label" for="require_approval">Registration approval</label>
+                <select class="select" id="require_approval" name="require_approval">
+                  <option value="0" selected>Anyone can register</option>
+                  <option value="1" >Record intent to review</option>
+                </select>
+              </div>
+            </div>
+            <div class="field">
+              <label class="field__label" for="cover_url">Cover image URL</label>
+              <input class="input" id="cover_url" name="cover_url" value="">
+            </div>
+            <div class="grid grid-2" style="gap:0 20px">
+              <div class="field">
+                <label class="field__label" for="cover_style">Generated cover</label>
+                <select class="select" id="cover_style" name="cover_style">
+                  
+                    <option value="auto" >Pick one for me</option>
+                  
+                    <option value="grid" >Grid</option>
+                  
+                    <option value="arcs" selected>Arcs</option>
+                  
+                    <option value="strata" >Bands</option>
+                  
+                    <option value="orbit" >Orbit</option>
+                  
+                    <option value="bars" >Bars</option>
+                  
+                    <option value="mesh" >Mesh</option>
+                  
+                </select>
+              </div>
+              <div class="field">
+                <label class="field__label" for="accent_color">Accent</label>
+                <select class="select" id="accent_color" name="accent_color">
+                  
+                    <option value="" >Hackerly default</option>
+                  
+                    <option value="#d8401a" selected>Vermilion</option>
+                  
+                    <option value="#1f6f6b" >Teal</option>
+                  
+                    <option value="#3b4cca" >Indigo</option>
+                  
+                    <option value="#a8761f" >Ochre</option>
+                  
+                    <option value="#7a3e9d" >Plum</option>
+                  
+                    <option value="#0f7a4a" >Forest</option>
+                  
+                    <option value="#2b6cb0" >Cobalt</option>
+                  
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-actions">
+            <button class="btn btn--primary" type="submit">Save all settings</button>
+          </div>
+        </div>
+
+        <aside class="ws__side">
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:10px">Organizers</h2>
+            <ul class="judge-list">
+              
+                <li class="person">
+                  <span class="avatar avatar--sm" style="background:hsl(113 46% 42%)">MR</span>
+                  <span class="grow">
+                    <span class="person__name">Meera Raghavan</span>
+                    <span class="person__meta">@meera · owner</span>
+                  </span>
+                </li>
+              
+            </ul>
+          </div>
+          <div class="card">
+            <h2 class="card__title" style="margin-bottom:10px">Archive</h2>
+            <p class="small muted">Archiving removes the event from discovery and closes it permanently. The data stays.</p>
+            <form method="post" action="/host/events/hacktron-2026/archive" style="margin-top:12px" data-confirm="Archive HACKTRON 2026? It leaves discovery and submissions close for good.">
+              <input type="hidden" name="_csrf" value="DuNKlOegGvEgO4m39coOvhF4xLiE9lpF">
+              <button class="btn btn--danger btn--block" type="submit">Archive this hackathon</button>
+            </form>
+          </div>
+        </aside>
+      </div>
+    </form>
+  </div>
+</section>
+</main>
+<footer class="site-footer">
+  <div class="wrap">
+    <div class="site-footer__grid">
+      <div>
+        <div class="brand" style="margin-bottom:12px">
+          <span class="brand__mark" aria-hidden="true">H</span>
+          <span>Hackerly</span>
+        </div>
+        <p class="small" style="max-width:38ch">
+          Open source hackathon software. Run it yourself, keep your data, change anything.
+        </p>
+        <p class="tiny muted" style="margin-top:12px">
+          <a href="/about">About Hackerly</a> ·
+          <a href="/api/v1">REST API</a> ·
+          <a href="/healthz">Status</a>
+        </p>
+      </div>
+      <div>
+        <h5>For hackers</h5>
+        <ul>
+          <li><a href="/hackathons">Explore hackathons</a></li>
+          <li><a href="/projects">Project showcase</a></li>
+          <li><a href="/hackathons?status=open">Registration open</a></li>
+          <li><a href="/auth/signup">Create an account</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For organizers</h5>
+        <ul>
+          <li><a href="/host">Host a hackathon</a></li>
+          <li><a href="/host/events">Your events</a></li>
+          <li><a href="/host/start">Setup guide</a></li>
+          <li><a href="/about#self-host">Self-hosting</a></li>
+        </ul>
+      </div>
+      <div>
+        <h5>For judges</h5>
+        <ul>
+          <li><a href="/judge">Judge at Hackerly</a></li>
+          <li><a href="/judge/reviews">My reviews</a></li>
+          <li><a href="/about#judging">How judging works</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="site-footer__bottom">
+      <span>Hackerly · MIT licensed · self-hostable</span>
+      <span class="mono">No account needed to browse</span>
+    </div>
+  </div>
+</footer>
+
+<script src="/js/app.js?v=dev" defer></script>
+
+</body>
+</html>
