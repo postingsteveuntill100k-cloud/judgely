@@ -49,6 +49,25 @@
       </div>
     <% } %>
 
+    <div class="steps-progress" style="margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;background:var(--paper-2);border:1px solid var(--line);border-radius:var(--r);padding:14px 20px;flex-wrap:wrap;gap:12px">
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="tag tag--ok">1. Team: <%= team.name %></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="tag tag--ok">2. Project: <%= project.title %></span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="tag <%= issues.length ? 'tag--warn' : 'tag--ok' %>">
+          3. Requirements: <%= issues.length ? issues.length + ' remaining' : 'Complete' %>
+        </span>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span class="tag <%= project.status === 'submitted' ? 'tag--ok' : 'tag--outline' %>">
+          4. <%= project.status === 'submitted' ? 'Submitted' : 'Ready to submit' %>
+        </span>
+      </div>
+    </div>
+
     <div class="ws">
       <div class="ws__main">
         <form method="post" action="/teams/<%= team.id %>/project/<%= project.slug %>" id="project-form">
@@ -141,7 +160,7 @@
               <% if (project.status === 'submitted') { %>
                 <button class="btn btn--ghost" type="submit" name="action" value="withdraw" data-confirm="Withdraw the submission? It will go back to draft and the judges will stop seeing it.">Withdraw</button>
               <% } %>
-              <button class="btn btn--accent" type="submit" name="action" value="submit">
+              <button class="btn btn--accent" type="submit" name="action" value="submit" data-confirm="Are you sure you want to submit this project to the hackathon? You can keep editing until the deadline.">
                 <%= project.status === 'submitted' ? 'Save and keep submitted' : 'Submit project' %>
               </button>
             </div>

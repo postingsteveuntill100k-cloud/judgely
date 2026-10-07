@@ -18,11 +18,16 @@
     <a class="btn btn--ghost btn--sm" href="/judge/events/<%= event.slug %>">← Queue</a>
     <span class="tiny muted" style="margin-left:10px">Project <%= position %> of <%= of %></span>
   </div>
-  <div class="row row-wrap">
+  <div class="row row-wrap" style="gap:8px">
     <% if (queue > 1) { %>
       <a class="btn btn--ghost btn--sm" href="/judge/events/<%= event.slug %>/compare?a=<%= assignment.id %>">Compare</a>
     <% } %>
-    <% if (nextUp) { %>
+    <% if (typeof prevProject !== 'undefined' && prevProject) { %>
+      <a class="btn btn--ghost btn--sm" href="/judge/review/<%= prevProject.id %>">← Prev</a>
+    <% } %>
+    <% if (typeof nextProject !== 'undefined' && nextProject) { %>
+      <a class="btn btn--ghost btn--sm" href="/judge/review/<%= nextProject.id %>">Next →</a>
+    <% } else if (nextUp) { %>
       <a class="btn btn--ghost btn--sm" href="/judge/review/<%= nextUp.id %>">Next project →</a>
     <% } %>
   </div>
@@ -143,6 +148,22 @@
           <form method="post" action="/judge/review/<%= assignment.id %>" id="review-form">
             <input type="hidden" name="_csrf" value="<%= csrfToken %>">
 
+            <%
+              const completedCount = criteria.filter(c => scoreOf(c.id) !== null).length;
+              const requiredCriteria = criteria.filter(c => c.required);
+              const completedRequired = requiredCriteria.filter(c => scoreOf(c.id) !== null).length;
+            %>
+            <div class="card" style="margin-bottom:18px;background:var(--paper-2);padding:14px 18px">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+                <span id="criteria-progress-text" style="font-weight:600">Progress: <%= completedCount %> / <%= criteria.length %> criteria completed</span>
+                <% if (requiredCriteria.length) { %>
+                  <span class="small <%= completedRequired === requiredCriteria.length ? 'tag tag--ok' : 'tag tag--warn' %>">
+                    <%= completedRequired %> / <%= requiredCriteria.length %> required
+                  </span>
+                <% } %>
+              </div>
+            </div>
+
             <div class="criteria">
               <% criteria.forEach(c => { %>
                 <% const value = scoreOf(c.id); %>
@@ -154,17 +175,37 @@
                   <% if (c.description) { %><div class="criterion__desc"><%= c.description %></div><% } %>
 
                   <div class="score-row" role="group" aria-label="<%= c.name %> score, 0 to <%= c.max_score %>">
-                    <% for (let n = 0; n <= c.max_score; n += 1) { %>
-                      <button class="score-btn <%= c.required ? 'score-btn--req' : '' %>"
-                              type="button"
-                              data-score-input="criterion_<%= c.id %>"
-                              data-value="<%= n %>"
-                              aria-pressed="<%= value === n ? 'true' : 'false' %>"
-                              <%= isSubmitted ? 'disabled' : '' %>><%= n %></button>
-                    <% } %>
-                    <input type="hidden" name="criterion_<%= c.id %>" value="<%= value === null ? '' : value %>" data-score-value="<%= c.id %>">
-                    <% if (value !== null) { %>
-                      <span class="tag" data-score-readout="<%= c.id %>"><%= value %> / <%= c.max_score %></span>
+                    <% if (c.max_score <= 20) { %>
+                      <% for (let n = 0; n <= c.max_score; n += 1) { %>
+                        <button class="score-btn <%= c.required ? 'score-btn--req' : '' %>"
+                                type="button"
+                                data-score-input="criterion_<%= c.id %>"
+                                data-value="<%= n %>"
+                                aria-pressed="<%= value === n ? 'true' : 'false' %>"
+                                <%= isSubmitted ? 'disabled' : '' %>><%= n %></button>
+                      <% } %>
+                      <input type="hidden" name="criterion_<%= c.id %>" value="<%= value === null ? '' : value %>" data-score-value="<%= c.id %>">
+                      <% if (value !== null) { %>
+                        <span class="tag" data-score-readout="<%= c.id %>"><%= value %> / <%= c.max_score %></span>
+                      <% } %>
+                    <% } else { %>
+                      <div style="display:flex;align-items:center;gap:12px;width:100%;max-width:320px">
+                        <input class="input score-number-input"
+                               type="number"
+                               min="0"
+                               max="<%= c.max_score %>"
+                               name="criterion_<%= c.id %>"
+                               id="criterion_<%= c.id %>"
+                               value="<%= value === null ? '' : value %>"
+                               data-score-value="<%= c.id %>"
+                               placeholder="0 – <%= c.max_score %>"
+                               style="font-size:1.1rem;font-weight:600;width:110px;text-align:center"
+                               <%= isSubmitted ? 'disabled' : '' %>>
+                        <span class="muted" style="font-weight:500">/ <%= c.max_score %></span>
+                        <% if (value !== null) { %>
+                          <span class="tag tag--ok" data-score-readout="<%= c.id %>"><%= value %> / <%= c.max_score %></span>
+                        <% } %>
+                      </div>
                     <% } %>
                   </div>
 

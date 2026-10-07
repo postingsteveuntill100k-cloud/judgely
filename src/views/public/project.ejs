@@ -152,10 +152,16 @@
             <ul class="comment-list">
               <% comments.forEach(c => { %>
                 <li>
-                  <div class="row" style="gap:8px">
+                  <div class="row" style="gap:8px; align-items:center">
                     <span class="avatar avatar--xs" style="background:<%= h.avatarColor(c.avatar_seed) %>"><%= h.initials(c.display_name) %></span>
                     <a class="person__name small" href="/u/<%= c.username %>"><%= c.display_name %></a>
                     <span class="tiny muted"><%= h.fmt.ago(c.created_at) %></span>
+                    <% if (isOrganizer) { %>
+                      <form method="post" action="/host/events/<%= event.slug %>/comments/<%= c.id %>/hide" style="display:inline;margin-left:auto">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button class="btn btn--ghost btn--xs" type="submit" style="color:#ef4444;padding:2px 6px;font-size:11px" title="Hide comment">Hide</button>
+                      </form>
+                    <% } %>
                   </div>
                   <p class="small" style="margin:6px 0 0 0"><%= c.body %></p>
                 </li>

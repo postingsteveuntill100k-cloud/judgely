@@ -21,12 +21,14 @@
           </button>
         </form>
         <% if (computed) { %>
-          <form method="post" action="/host/events/<%= event.slug %>/results/<%= event.results_visibility === 'public' ? 'withdraw' : 'publish' %>" data-confirm="<%= event.results_visibility === 'public' ? 'Withdraw the published results? Participants will not see the ranking again.' : 'Publish the results publicly?' %>">
-            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
-            <button class="btn <%= event.results_visibility === 'public' ? 'btn--danger' : 'btn--accent' %> btn--sm" type="submit">
-              <%= event.results_visibility === 'public' ? 'Withdraw publication' : 'Publish results' %>
-            </button>
-          </form>
+          <% if (event.results_visibility === 'public') { %>
+            <form method="post" action="/host/events/<%= event.slug %>/results/withdraw" data-confirm="Withdraw the published results? Participants will no longer see the ranking.">
+              <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+              <button class="btn btn--danger btn--sm" type="submit">Withdraw publication</button>
+            </form>
+          <% } else { %>
+            <a class="btn btn--accent btn--sm" href="#publish-confirmation">Review &amp; Publish</a>
+          <% } %>
         <% } %>
       </div>
     </div>
@@ -52,11 +54,37 @@
       </div>
     <% } else { %>
       <div class="notice notice--<%= event.results_visibility === 'public' ? 'ok' : 'warn' %>" style="margin-bottom:20px">
-        <strong class="notice__title"><%= event.results_visibility === 'public' ? 'Published' : 'Private' %></strong>
+        <strong class="notice__title"><%= event.results_visibility === 'public' ? 'Published' : 'Private Draft' %></strong>
         <%= event.results_visibility === 'public'
-          ? 'The ranking is on the public event page. Individual judge scores remain private to the panel.'
-          : 'Only organizers can see this ranking. Publish it when you are ready.' %>
+          ? 'The ranking is currently published on the public event page. Individual judge identities and comments remain private.'
+          : 'Only organizers can see this ranking right now. Confirm the summary below to publish it.' %>
       </div>
+
+      <% if (event.results_visibility !== 'public') { %>
+        <div class="card" id="publish-confirmation" style="margin-bottom:20px;border-left:4px solid var(--accent);background:var(--paper-2)">
+          <h2 class="card__title" style="margin-bottom:8px">Publish Results Confirmation</h2>
+          <p class="small muted" style="margin-bottom:14px">
+            Publishing results is a high-visibility event action. Please verify the calculation details before releasing them to participants:
+          </p>
+          <dl class="kv" style="margin-bottom:16px">
+            <div><dt>Ranked projects</dt><dd><strong><%= results.length %></strong> projects</dd></div>
+            <div><dt>Judging coverage</dt><dd><strong><%= progress.submittedReviews %></strong> submitted reviews from <strong><%= progress.activeJudges %></strong> active judges</dd></div>
+            <div><dt>Scoring &amp; ranking</dt><dd><%= method %></dd></div>
+            <div><dt>What becomes public</dt><dd>Rankings, project names, tracks, and aggregated final scores on the public showcase</dd></div>
+            <div><dt>What stays private</dt><dd>Individual judge names, private judge notes, and raw review scores</dd></div>
+          </dl>
+          <form method="post" action="/host/events/<%= event.slug %>/results/publish">
+            <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px">
+              <input type="checkbox" id="confirm-publish-check" required style="width:18px;height:18px;cursor:pointer">
+              <label for="confirm-publish-check" class="small" style="cursor:pointer;font-weight:550">
+                I have reviewed the rankings and confirm publishing results publicly.
+              </label>
+            </div>
+            <button class="btn btn--accent" type="submit">Confirm &amp; Publish Results</button>
+          </form>
+        </div>
+      <% } %>
 
       <div class="card" style="margin-bottom:20px">
         <h2 class="card__title" style="margin-bottom:8px">Method</h2>

@@ -24,6 +24,31 @@
       </div>
     <% } %>
 
+    <% if (blockers.length && event.status === 'draft') { %>
+      <div class="attention" style="margin-bottom:20px">
+        <h3>Before you can publish</h3>
+        <ul>
+          <% blockers.forEach(b => { %>
+            <li><a href="/host/events/<%= event.slug %>/setup/publish"><%= b %></a></li>
+          <% }) %>
+        </ul>
+      </div>
+    <% } %>
+
+    <% if (progress.attention.length) { %>
+      <div class="attention" style="margin-bottom:20px">
+        <h3>What needs your attention</h3>
+        <ul>
+          <% progress.attention.forEach(a => { %><li><%= a.message %></li><% }) %>
+        </ul>
+        <div class="row row-wrap" style="margin-top:12px;gap:8px">
+          <a class="btn btn--ghost btn--sm" href="/host/events/<%= event.slug %>/judging">Open judging</a>
+          <a class="btn btn--ghost btn--sm" href="/host/events/<%= event.slug %>/assignments">Assignments</a>
+          <a class="btn btn--ghost btn--sm" href="/host/events/<%= event.slug %>/results">Results</a>
+        </div>
+      </div>
+    <% } %>
+
     <div class="stat-row">
       <div class="stat">
         <div class="stat__n"><%= progress.submittedProjects %></div>
@@ -46,30 +71,6 @@
         <div class="stat__l">submissions close <%= h.fmt.date(event.submission_deadline) %></div>
       </div>
     </div>
-
-    <% if (blockers.length && event.status === 'draft') { %>
-      <div class="attention">
-        <h3>Before you can publish</h3>
-        <ul>
-          <% blockers.forEach(b => { %>
-            <li><a href="/host/events/<%= event.slug %>/setup/publish"><%= b %></a></li>
-          <% }) %>
-        </ul>
-      </div>
-    <% } %>
-
-    <% if (progress.attention.length) { %>
-      <div class="attention">
-        <h3>Needs attention</h3>
-        <ul>
-          <% progress.attention.forEach(a => { %><li><%= a.message %></li><% }) %>
-        </ul>
-        <div class="row row-wrap" style="margin-top:12px">
-          <a class="btn btn--ghost btn--sm" href="/host/events/<%= event.slug %>/judging">Open judging</a>
-          <a class="btn btn--ghost btn--sm" href="/host/events/<%= event.slug %>/assignments">Assignments</a>
-        </div>
-      </div>
-    <% } %>
 
     <div class="ws">
       <div class="ws__main">
