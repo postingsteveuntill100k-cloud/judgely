@@ -1,9 +1,15 @@
 /** RFC 4180 CSV writer. Formula-injection safe: cells starting with = + - @ are prefixed. */
 export function csvCell(value: unknown): string {
   if (value === null || value === undefined) return '';
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
   let s = String(value);
-  if (/^[=+\-@\t\r]/.test(s)) s = `'${s}`;
-  if (/[",\n\r]/.test(s)) s = '"' + s.replace(/"/g, '""') + '"';
+  const trimmed = s.trimStart();
+  if (/^[=+\-@\t\r|%]/.test(trimmed)) {
+    s = `'${s}`;
+  }
+  if (/[",\n\r]/.test(s)) {
+    s = '"' + s.replace(/"/g, '""') + '"';
+  }
   return s;
 }
 
