@@ -79,8 +79,10 @@ function reviewScore(scores: { criterion_id: string; score: number }[], criteria
   return round((acc / denom) * 100, 4);
 }
 
-export async function computeResults(event: any, opts: { publish?: boolean } = {}): Promise<ResultsBundle> {
+export async function computeResults(eventOrId: any, opts: { publish?: boolean } = {}): Promise<ResultsBundle> {
   const d = db();
+  const event = typeof eventOrId === 'string' ? await d.getEventById(eventOrId) : eventOrId;
+  if (!event) throw conflict('Hackathon not found', 'not_found');
   const rubric = await d.getActiveRubric(event.id);
   const criteria = rubric ? await d.listCriteria(rubric.id) : [];
   const assignments = (await d.listAssignments({ eventId: event.id, limit: 5000 })).rows;
@@ -98,11 +100,20 @@ export async function computeResults(event: any, opts: { publish?: boolean } = {
   const perJudgeScores = new Map<string, number[]>();
   const projectMeans = new Map<string, { sum: number; n: number }>();
 
+  const allReviews = await d.listReviews({ eventId: event.id, status: 'submitted' });
+  const reviewByAssignment = new Map(allReviews.map((r: any) => [r.assignment_id, r]));
+  const rawScores = await d.listAllScoresForEvent(event.id);
+  const scoresByReview = new Map<string, any[]>();
+  for (const s of rawScores) {
+    if (!scoresByReview.has(s.review_id)) scoresByReview.set(s.review_id, []);
+    scoresByReview.get(s.review_id)!.push(s);
+  }
+
   for (const a of assignments) {
     if (a.status !== 'submitted') continue;
-    const review = await d.getReviewByAssignment(a.id);
+    const review = reviewByAssignment.get(a.id);
     if (!review || review.status !== 'submitted') continue;
-    const scores = await d.listScores(review.id);
+    const scores = scoresByReview.get(review.id) ?? [];
     const value = reviewScore(scores, criteria) ?? (review.weighted_score ?? null);
     if (value === null) {
       diagnostics.push(`${a.project_title}: a review had no usable scores and was skipped.`);
@@ -228,15 +239,7 @@ export async function computeResults(event: any, opts: { publish?: boolean } = {
   }
 
   // --- Step 5: ranking ------------------------------------------------------
-  const rankBy = (a: ProjectResult, b: ProjectResult) => {
-    const av = a.final_score ?? -Infinity;
-    const bv = b.final_score ?? -Infinity;
-    if (av !== bv) return bv - av;
-    // Deterministic tie-break: fewer reviews ranks lower (less evidence), then title.
-    if (a.review_count !== b.review_count) return b.review_count - a.review_count;
-    return a.project_title.localeCompare(b.project_title);
-  };
-  const sorted = [...projects].sort(rankBy);
+  const sorted = rankBy(projects, (p) => p.final_score);
   let lastScore: number | null = null;
   let lastRank = 0;
   sorted.forEach((p, i) => {
@@ -327,6 +330,20 @@ function colorFor(seed: string): string {
   let h = 0;
   for (let i = 0; i < seed.length; i += 1) h = (h * 31 + seed.charCodeAt(i)) | 0;
   return TRACK_COLORS[Math.abs(h) % TRACK_COLORS.length];
+}
+
+export function rankBy<T extends { project_id: string; project_title: string }>(
+  items: T[],
+  scoreFn: (item: T) => number | null | undefined,
+): T[] {
+  return [...items].sort((a, b) => {
+    const av = scoreFn(a) ?? -Infinity;
+    const bv = scoreFn(b) ?? -Infinity;
+    if (av !== bv) return bv - av;
+    const titleCmp = a.project_title.localeCompare(b.project_title);
+    if (titleCmp !== 0) return titleCmp;
+    return a.project_id.localeCompare(b.project_id);
+  });
 }
 
 export async function publishResults(event: any, actorId: string): Promise<{ published: number }> {

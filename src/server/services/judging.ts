@@ -74,6 +74,13 @@ export async function createRubric(event: any, criteria: CriterionInput[], actor
 
 export async function addCriterion(event: any, rubric: any, input: CriterionInput, actorId: string): Promise<any> {
   const d = db();
+  const used = await d.listReviews({ eventId: event.id });
+  if (used.length) {
+    throw conflict(
+      'Reviews already exist against this rubric, so criteria cannot be added. Create a new rubric version instead.',
+      'rubric_in_use',
+    );
+  }
   const criteria = await d.listCriteria(rubric.id);
   const key = slugify(input.key || input.name, '').replace(/-/g, '_').slice(0, 40);
   if (!/^[a-z][a-z0-9_]{0,39}$/.test(key)) {
@@ -106,6 +113,13 @@ export async function updateCriterion(event: any, criterionId: string, patch: Pa
   if (!criterion) throw notFound('That criterion no longer exists.');
   const rubric = await d.getRubric(criterion.rubric_id);
   if (!rubric || rubric.event_id !== event.id) throw forbidden('That criterion belongs to a different hackathon.');
+  const used = await d.listReviews({ eventId: event.id });
+  if (used.length) {
+    throw conflict(
+      'Reviews already exist against this rubric, so criteria cannot be modified directly. Create a new rubric version instead.',
+      'rubric_in_use',
+    );
+  }
   const row: Record<string, unknown> = {};
   if (patch.name !== undefined) {
     const name = String(patch.name).trim();
@@ -237,9 +251,10 @@ export async function assignJudge(event: any, judge: any, projectIds: string[], 
 
 export async function removeAssignment(event: any, assignmentId: string, actorId: string): Promise<void> {
   const d = db();
-  const rows = (await d.listAssignments({ eventId: event.id, limit: 5000 })).rows;
-  const assignment = rows.find((a) => a.id === assignmentId);
-  if (!assignment) throw notFound('That assignment no longer exists.');
+  const assignment = await d.getAssignment(assignmentId);
+  if (!assignment || assignment.event_id !== event.id) throw notFound('That assignment no longer exists.');
+  const project = await d.getProject(assignment.project_id);
+  const judge = await d.getEventJudge(assignment.event_judge_id);
   await d.deleteAssignment(assignmentId);
   await audit({
     eventId: event.id,
@@ -247,7 +262,7 @@ export async function removeAssignment(event: any, assignmentId: string, actorId
     action: 'assignment.deleted',
     entityType: 'assignment',
     entityId: assignmentId,
-    summary: `Removed ${assignment.judge_email} from ${assignment.project_title}`,
+    summary: `Removed ${judge?.email ?? 'judge'} from ${project?.title ?? assignment.project_id}`,
   });
 }
 
@@ -287,17 +302,14 @@ export async function saveReview(
   if (!rubric) throw conflict('The organizer has not set a judging rubric yet.', 'no_rubric');
   if (rubric.event_id !== event.id) throw forbidden('That rubric belongs to a different hackathon.');
 
-  const assignments = (await d.listAssignments({ eventId: event.id, limit: 5000 })).rows;
-  const assignment = assignments.find((a) => a.id === assignmentId);
-  if (!assignment) throw notFound('That assignment no longer exists.');
+  const assignment = await d.getAssignment(assignmentId);
+  if (!assignment || assignment.event_id !== event.id) throw notFound('That assignment no longer exists.');
 
-  const judges = await d.listEventJudges(event.id);
-  const myJudge = judges.find((j) => j.user_id === actor.id && j.status === 'active');
-  if (!myJudge) throw forbidden('You are not an invited judge for this hackathon.');
+  const myJudge = await d.getEventJudgeForUser(event.id, actor.id);
+  if (!myJudge || myJudge.status !== 'active') throw forbidden('You are not an invited judge for this hackathon.');
   if (assignment.event_judge_id !== myJudge.id) {
     throw forbidden('That review belongs to another judge.');
   }
-  if (assignment.event_id !== event.id) throw forbidden('Cross-event access is not allowed.');
 
   const project = await d.getProject(assignment.project_id);
   if (!project || project.event_id !== event.id) throw notFound('That project no longer exists.');
@@ -386,6 +398,7 @@ export async function saveReview(
       project_id: project.id,
       event_judge_id: myJudge.id,
       user_id: actor.id,
+      rubric_id: rubric.id,
       status: 'draft',
       comment: '',
       strengths: '',
@@ -396,18 +409,19 @@ export async function saveReview(
       created_at: at,
       updated_at: at,
     });
+  } else if (!review.rubric_id) {
+    row.rubric_id = rubric.id;
   }
   const updated = await d.updateReview(review.id, row);
 
-  for (const s of clean) {
-    await d.upsertScore({
-      id: id('sc'),
-      review_id: review.id,
+  await d.replaceReviewScores(
+    review.id,
+    clean.map((s) => ({
       criterion_id: s.criterionId,
       score: s.score,
       note: s.note,
-    });
-  }
+    })),
+  );
 
   if (input.submit) {
     await d.updateAssignment(assignmentId, { status: 'submitted', submitted_at: at });
@@ -431,9 +445,9 @@ export async function saveReview(
 
 export async function reopenReview(event: any, reviewId: string, actorId: string): Promise<void> {
   const d = db();
-  const reviews = await d.listReviews({ eventId: event.id });
-  const review = reviews.find((r) => r.id === reviewId);
-  if (!review) throw notFound('That review no longer exists.');
+  const review = await d.getReview(reviewId);
+  if (!review || review.event_id !== event.id) throw notFound('That review no longer exists.');
+  const project = await d.getProject(review.project_id);
   await d.updateReview(reviewId, { status: 'draft', updated_at: nowIso() });
   await d.updateAssignment(review.assignment_id, { status: 'reopened', submitted_at: null });
   await audit({
@@ -442,7 +456,7 @@ export async function reopenReview(event: any, reviewId: string, actorId: string
     action: 'review.reopened',
     entityType: 'project',
     entityId: review.project_id,
-    summary: `Reopened the review for ${review.project_title}`,
+    summary: `Reopened the review for ${project?.title ?? review.project_id}`,
   });
 }
 
@@ -452,13 +466,14 @@ export async function reopenReview(event: any, reviewId: string, actorId: string
  */
 export async function myScores(eventId: string, userId: string): Promise<any[]> {
   const d = db();
-  const judges = await d.listEventJudges(eventId);
-  const myJudge = judges.find((j) => j.user_id === userId);
+  const myJudge = await d.getEventJudgeForUser(eventId, userId);
   if (!myJudge) return [];
   const assignments = (await d.listAssignments({ eventId, judgeId: myJudge.id, limit: 5000 })).rows;
+  const reviews = await d.listReviews({ eventId, judgeId: myJudge.id });
+  const reviewByAssignment = new Map(reviews.map((r: any) => [r.assignment_id, r]));
   const out: any[] = [];
   for (const a of assignments) {
-    const review = await d.getReviewByAssignment(a.id);
+    const review = reviewByAssignment.get(a.id);
     if (!review) continue;
     out.push({
       assignment_id: a.id,
@@ -494,20 +509,39 @@ export interface ProgressSnapshot {
 
 export async function progressFor(event: any): Promise<ProgressSnapshot> {
   const d = db();
+  const eventId = typeof event === 'string' ? event : event.id;
   const [projectPage, assignmentPage, judges] = await Promise.all([
-    d.listProjects({ eventId: event.id, limit: 5000 }),
-    d.listAssignments({ eventId: event.id, limit: 5000 }),
-    d.listEventJudges(event.id),
+    d.listProjects({ eventId, limit: 5000 }),
+    d.listAssignments({ eventId, limit: 5000 }),
+    d.listEventJudges(eventId),
   ]);
   const projects = projectPage.rows;
   const assignments = assignmentPage.rows;
   const submitted = projects.filter((p) => p.status !== 'draft');
   const activeJudges = judges.filter((j) => j.status === 'active');
-  const reviews = await d.countReviews(event.id);
   const done = assignments.filter((a) => a.status === 'submitted').length;
 
+  // Single-pass O(M) indexing of assignments by judge and project
+  const byJudge = new Map<string, any[]>();
+  const byProject = new Map<string, any[]>();
+  for (const a of assignments) {
+    let jList = byJudge.get(a.event_judge_id);
+    if (!jList) {
+      jList = [];
+      byJudge.set(a.event_judge_id, jList);
+    }
+    jList.push(a);
+
+    let pList = byProject.get(a.project_id);
+    if (!pList) {
+      pList = [];
+      byProject.set(a.project_id, pList);
+    }
+    pList.push(a);
+  }
+
   const perJudge = judges.map((j) => {
-    const mine = assignments.filter((a) => a.event_judge_id === j.id);
+    const mine = byJudge.get(j.id) ?? [];
     return {
       id: j.id,
       email: j.email,
@@ -519,7 +553,7 @@ export async function progressFor(event: any): Promise<ProgressSnapshot> {
   });
 
   const perProject = submitted.map((p) => {
-    const mine = assignments.filter((a) => a.project_id === p.id);
+    const mine = byProject.get(p.id) ?? [];
     return {
       projectId: p.id,
       title: p.title,
@@ -537,6 +571,9 @@ export async function progressFor(event: any): Promise<ProgressSnapshot> {
   if (thin.length) attention.push({ kind: 'thin', message: `${thin.length} ${thin.length === 1 ? 'project is' : 'projects are'} covered by a single judge.` });
   if (behind.length) attention.push({ kind: 'behind', message: `${behind.length} ${behind.length === 1 ? 'judge has' : 'judges have'} an unfinished batch.` });
   if (idle.length) attention.push({ kind: 'unaccepted', message: `${idle.length} ${idle.length === 1 ? 'invitation is' : 'invitations are'} still unaccepted.` });
+  if (submitted.length > 0 && assignmentPage.total > 0 && done === assignmentPage.total) {
+    attention.push({ kind: 'ready_for_results', message: `All ${done} assigned reviews are submitted! Results are ready to review and publish.` });
+  }
 
   return {
     projects: projectPage.total,
@@ -546,7 +583,7 @@ export async function progressFor(event: any): Promise<ProgressSnapshot> {
     judges: judges.length,
     activeJudges: activeJudges.length,
     coverage: submitted.length ? Math.round((perProject.filter((p) => p.judges > 0).length / submitted.length) * 100) : 0,
-    expectedReviews: submitted.length * activeJudges.length,
+    expectedReviews: assignmentPage.total,
     attention,
     perJudge,
     perProject,
