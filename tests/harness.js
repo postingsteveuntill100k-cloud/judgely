@@ -13,8 +13,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-export const PORT = Number(process.env.TEST_PORT || 8137);
-export const BASE = `http://127.0.0.1:${PORT}`;
+export let PORT = Number(process.env.TEST_PORT || 0);
+export let BASE = `http://127.0.0.1:${PORT}`;
 
 let state = null;
 
@@ -35,6 +35,8 @@ export async function boot() {
   process.env.SEED_FIXTURES = 'true';
   process.env.MAIL_MODE = 'log';
   process.env.LOG_LEVEL = 'warn';
+  process.env.FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'hackerly-hackatrons';
+  process.env.FIREBASE_WEB_API_KEY = process.env.FIREBASE_WEB_API_KEY || 'test-web-api-key-12345';
 
   const { getDb, closeDb } = await import(path.join(ROOT, 'dist/server/db/index.js'));
   const { runSeed, acceptanceHeaders } = await import(path.join(ROOT, 'dist/server/seed/index.js'));
@@ -45,13 +47,17 @@ export async function boot() {
 
   const app = createApp();
   const server = await new Promise((resolve) => {
-    const s = app.listen(PORT, '127.0.0.1', () => resolve(s));
+    const s = app.listen(PORT || 0, '127.0.0.1', () => resolve(s));
   });
+
+  const address = server.address();
+  PORT = typeof address === 'object' && address ? address.port : PORT;
+  BASE = `http://127.0.0.1:${PORT}`;
 
   const headers = {};
   for (const h of acceptanceHeaders()) headers[h.role] = h.header;
 
-  state = { dir, server, closeDb, headers };
+  state = { dir, server, closeDb, headers, base: BASE };
   return state;
 }
 
@@ -78,10 +84,13 @@ function cookieFor(role) {
   return header.replace(/^Cookie:\s*/i, '');
 }
 
-export async function req(pathname, { method = 'GET', as, cookie, body, form, redirect = 'manual' } = {}) {
-  as = as ?? cookie;
+export async function req(pathname, { method = 'GET', as, cookie, body, form, redirect = 'manual', headers: extraHeaders = {} } = {}) {
   const headers = {};
-  if (as) headers.Cookie = cookieFor(as);
+  if (as) {
+    headers.Cookie = cookieFor(as);
+  } else if (cookie) {
+    headers.Cookie = cookie.includes('=') ? cookie : cookieFor(cookie);
+  }
   let payload = body;
   if (form) {
     headers['Content-Type'] = 'application/x-www-form-urlencoded';
@@ -90,6 +99,11 @@ export async function req(pathname, { method = 'GET', as, cookie, body, form, re
     headers['Content-Type'] = 'application/json';
     payload = typeof body === 'string' ? body : JSON.stringify(body);
   }
+  const csrfToken = form?._csrf || extraHeaders['x-csrf-token'];
+  if (csrfToken && !headers.Cookie?.includes('hkl_csrf=')) {
+    headers.Cookie = (headers.Cookie ? headers.Cookie + '; ' : '') + `hkl_csrf=${csrfToken}`;
+  }
+  Object.assign(headers, extraHeaders);
   const res = await fetch(BASE + pathname, { method, headers, body: payload, redirect });
   const text = await res.text();
   let parsed = null;

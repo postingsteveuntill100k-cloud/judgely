@@ -1,11 +1,16 @@
 import { test, before, after, describe } from 'node:test';
 import assert from 'node:assert/strict';
 import { boot, shutdown, req } from './harness.js';
-import { firebaseAuth } from '../dist/server/services/firebase.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
-before(async () => { await boot(); });
+let firebaseAuth;
+
+before(async () => {
+  await boot();
+  const mod = await import('../dist/server/services/firebase.js');
+  firebaseAuth = mod.firebaseAuth;
+});
 after(async () => { await shutdown(); });
 
 describe('judgely firebase & static deployment verification', () => {
