@@ -232,14 +232,12 @@ export function apiRoutes(): Router {
     if (!req.actor) return next(unauthorized('Sign in as a judge to submit a review.'));
     try {
       const d = db();
-      const { rows } = await d.listAssignments({ limit: 5000, offset: 0 });
-      const assignment = rows.find((a) => a.id === req.params.assignmentId);
+      const assignment = await d.getAssignment(req.params.assignmentId);
       if (!assignment) throw notFound('That assignment no longer exists.');
       const event = await d.getEventById(assignment.event_id);
       if (!event) throw notFound('That hackathon no longer exists.');
-      const judges = await d.listEventJudges(event.id);
-      const me = judges.find((j) => j.user_id === req.actor!.id && j.status === 'active');
-      if (!me || assignment.event_judge_id !== me.id) {
+      const me = await d.getEventJudgeForUser(event.id, req.actor!.id);
+      if (!me || me.status !== 'active' || assignment.event_judge_id !== me.id) {
         throw forbidden('That review belongs to another judge.', 'not_your_review');
       }
       const { criteria } = await activeRubric(event.id);

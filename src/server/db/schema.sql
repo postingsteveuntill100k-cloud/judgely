@@ -284,6 +284,7 @@ CREATE TABLE IF NOT EXISTS reviews (
   project_id    TEXT NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
   event_judge_id TEXT NOT NULL REFERENCES event_judges(id) ON DELETE CASCADE,
   user_id       TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  rubric_id     TEXT REFERENCES rubrics(id) ON DELETE SET NULL,
   status        TEXT NOT NULL DEFAULT 'draft', -- draft | submitted
   comment       TEXT NOT NULL DEFAULT '',
   strengths     TEXT NOT NULL DEFAULT '',

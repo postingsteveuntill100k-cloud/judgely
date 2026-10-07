@@ -58,6 +58,7 @@ export interface Driver {
   removeOrganizer(eventId: string, userId: string): Promise<void>;
   listOrganizers(eventId: string): Promise<any[]>;
   isOrganizer(eventId: string, userId: string): Promise<boolean>;
+  getEventOrganizer(eventId: string, userId: string): Promise<any | null>;
   listEventsForOrganizer(userId: string, limit?: number, offset?: number): Promise<{ rows: any[]; total: number }>;
 
   // membership
@@ -119,6 +120,7 @@ export interface Driver {
   createEventJudge(j: Record<string, unknown>): Promise<any>;
   getEventJudge(id: string): Promise<any | null>;
   getEventJudgeByEmail(eventId: string, email: string): Promise<any | null>;
+  getEventJudgeForUser(eventId: string, userId: string): Promise<any | null>;
   updateEventJudge(id: string, patch: Record<string, unknown>): Promise<any | null>;
   listEventJudges(eventId: string, opts?: { status?: string }): Promise<any[]>;
   listJudgeEvents(userId: string): Promise<any[]>;
@@ -140,6 +142,7 @@ export interface Driver {
   listReviews(opts: { eventId?: string; judgeId?: string; userId?: string; projectId?: string; status?: string; limit?: number; offset?: number }): Promise<any[]>;
   countReviews(eventId: string): Promise<{ total: number; submitted: number }>;
   upsertScore(s: Record<string, unknown>): Promise<void>;
+  replaceReviewScores(reviewId: string, scores: Record<string, unknown>[]): Promise<void>;
   listScores(reviewId: string): Promise<any[]>;
   listScoresForProject(projectId: string): Promise<any[]>;
   listAllScoresForEvent(eventId: string): Promise<any[]>;
@@ -155,6 +158,7 @@ export interface Driver {
 
   // notifications
   createNotification(n: Record<string, unknown>): Promise<void>;
+  createNotifications(notifications: Record<string, unknown>[]): Promise<void>;
   listNotifications(userId: string, limit: number): Promise<any[]>;
   countUnread(userId: string): Promise<number>;
   markAllRead(userId: string, at: string): Promise<void>;

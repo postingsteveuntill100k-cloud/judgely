@@ -66,6 +66,11 @@ export class SqliteDriver implements Driver {
     this.db.pragma('busy_timeout = 5000');
     this.db.pragma('synchronous = NORMAL');
     this.db.exec(readFileSync(schemaPath(), 'utf8'));
+    try {
+      this.db.exec('ALTER TABLE reviews ADD COLUMN rubric_id TEXT REFERENCES rubrics(id) ON DELETE SET NULL');
+    } catch {
+      /* column already exists */
+    }
     this.db
       .prepare(`INSERT INTO schema_meta(key, value) VALUES('version', '1')
                 ON CONFLICT(key) DO UPDATE SET value = excluded.value`)
@@ -83,10 +88,11 @@ export class SqliteDriver implements Driver {
 
   async health() {
     try {
-      const row = this.db.prepare('SELECT COUNT(*) AS n FROM users').get() as { n: number };
-      return { ok: true, driver: 'sqlite', detail: `${row.n} users` };
+      this.db.prepare('SELECT 1').get();
+      return { ok: true, driver: 'sqlite', detail: 'connected' };
     } catch (e) {
-      return { ok: false, driver: 'sqlite', detail: (e as Error).message };
+      console.error('[Health] SQLite check failed:', e);
+      return { ok: false, driver: 'sqlite', detail: 'unreachable' };
     }
   }
 
@@ -203,6 +209,9 @@ export class SqliteDriver implements Driver {
   }
   async isOrganizer(eventId: string, userId: string): Promise<boolean> {
     return Boolean(this.db.prepare('SELECT 1 FROM event_organizers WHERE event_id = ? AND user_id = ?').get(eventId, userId));
+  }
+  async getEventOrganizer(eventId: string, userId: string) {
+    return hydrate(this.db.prepare('SELECT * FROM event_organizers WHERE event_id = ? AND user_id = ?').get(eventId, userId));
   }
   async listEventsForOrganizer(userId: string, limit = 50, offset = 0) {
     const total = (this.db.prepare(`SELECT COUNT(*) AS n FROM events e JOIN event_organizers eo ON eo.event_id = e.id WHERE eo.user_id = ?`).get(userId) as any).n;
@@ -440,6 +449,12 @@ export class SqliteDriver implements Driver {
   async getEventJudgeByEmail(eventId: string, email: string) {
     return hydrate(this.db.prepare('SELECT * FROM event_judges WHERE event_id = ? AND email_lower = ?').get(eventId, String(email).toLowerCase()));
   }
+  async getEventJudgeForUser(eventId: string, userId: string) {
+    return hydrate(this.db.prepare(`
+      SELECT ej.*, u.display_name, u.username, u.avatar_url, u.avatar_seed
+      FROM event_judges ej LEFT JOIN users u ON u.id = ej.user_id
+      WHERE ej.event_id = ? AND ej.user_id = ?`).get(eventId, userId));
+  }
   async updateEventJudge(id: string, patch: Row) { return this.update('event_judges', id, patch); }
   async listEventJudges(eventId: string, opts: { status?: string } = {}) {
     const params: any[] = [eventId];
@@ -558,6 +573,15 @@ export class SqliteDriver implements Driver {
                      ON CONFLICT(review_id, criterion_id) DO UPDATE SET score = excluded.score, note = excluded.note`)
       .run(s.id, s.review_id, s.criterion_id, s.score, s.note ?? '');
   }
+  async replaceReviewScores(reviewId: string, scores: Row[]) {
+    this.tx(() => {
+      this.db.prepare('DELETE FROM review_scores WHERE review_id = ?').run(reviewId);
+      const stmt = this.db.prepare(`INSERT INTO review_scores(id, review_id, criterion_id, score, note) VALUES(?,?,?,?,?)`);
+      for (const s of scores) {
+        stmt.run(s.id, reviewId, s.criterion_id, s.score, s.note ?? '');
+      }
+    });
+  }
   async listScores(reviewId: string) {
     return hydrateAll(this.db.prepare(`SELECT rs.*, c.key, c.name, c.weight, c.max_score, c.sort_order
       FROM review_scores rs JOIN rubric_criteria c ON c.id = rs.criterion_id
@@ -621,6 +645,14 @@ export class SqliteDriver implements Driver {
   // ----------------------------------------------------------- notifications
 
   async createNotification(n: Row) { this.insert('notifications', n); }
+  async createNotifications(notifications: Row[]) {
+    if (!notifications.length) return;
+    this.tx(() => {
+      for (const n of notifications) {
+        this.insert('notifications', n);
+      }
+    });
+  }
   async listNotifications(userId: string, limit: number) {
     return hydrateAll(this.db.prepare(`SELECT * FROM notifications WHERE user_id = ? ORDER BY created_at DESC LIMIT ?`).all(userId, limit));
   }

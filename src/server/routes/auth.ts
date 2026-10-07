@@ -187,7 +187,7 @@ function safeNext(value: unknown, fallback: string): string {
   const v = String(value ?? '').trim();
   if (!v) return fallback;
   if (!v.startsWith('/') || v.startsWith('//')) return fallback;
-  if (v.includes('\\') || v.includes('\n')) return fallback;
+  if (v.includes('\\') || /[\x00-\x1f\x7f]/.test(v)) return fallback;
   return v;
 }
 

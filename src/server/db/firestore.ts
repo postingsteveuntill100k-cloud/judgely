@@ -17,7 +17,10 @@ import type { Driver, Page } from './driver.js';
 type Doc = Record<string, any>;
 
 interface FirestoreClient {
-  db: { collection(name: string): Collection };
+  db: {
+    collection(name: string): Collection;
+    batch(): any;
+  };
 }
 
 interface Snapshot {
@@ -94,16 +97,18 @@ export class FirestoreDriver implements Driver {
   async health() {
     try {
       await this.admin();
-      const r = await this.fs.db.collection('users').limit(1).get();
-      return { ok: true, driver: 'firestore', detail: `reachable, ${r.size} sampled` };
+      await this.fs.db.collection('users').limit(1).get();
+      return { ok: true, driver: 'firestore', detail: 'connected' };
     } catch (e) {
-      return { ok: false, driver: 'firestore', detail: (e as Error).message };
+      console.error('[Health] Firestore check failed:', e);
+      return { ok: false, driver: 'firestore', detail: 'unreachable' };
     }
   }
 
   // ------------------------------------------------------------------ utils
 
   private col(name: string): Collection { return this.fs.db.collection(name); }
+  private batch(): any { return (this.fs.db as any).batch(); }
 
   private async one(name: string, id: string): Promise<any> {
     if (!id) return null;
@@ -168,12 +173,42 @@ export class FirestoreDriver implements Driver {
 
   // ------------------------------------------------------------------ users
 
-  async createUser(u: Doc) { return this.put('users', u); }
+  async createUser(u: Doc) {
+    await this.admin();
+    const batch = this.batch();
+    batch.set(this.col('users').doc(u.id), u);
+    if (u.email_lower) {
+      batch.set(this.col('idx_users_email_lower').doc(hashKey(u.email_lower)), { id: u.id }, { merge: true });
+    }
+    if (u.username_lower) {
+      batch.set(this.col('idx_users_username_lower').doc(hashKey(u.username_lower)), { id: u.id }, { merge: true });
+    }
+    if (u.firebase_uid) {
+      batch.set(this.col('idx_users_firebase_uid').doc(hashKey(u.firebase_uid)), { id: u.id }, { merge: true });
+    }
+    await batch.commit();
+    return this.getUserById(u.id);
+  }
   async getUserById(id: string) { return this.one('users', id); }
   async getUserByEmail(email: string) { return this.one('users', await this.idFor('users', 'email_lower', String(email).toLowerCase())); }
   async getUserByUsername(username: string) { return this.one('users', await this.idFor('users', 'username_lower', String(username).toLowerCase())); }
   async getUserByFirebaseUid(uid: string) { return this.one('users', await this.idFor('users', 'firebase_uid', uid)); }
-  async updateUser(id: string, patch: Doc) { return this.patch('users', id, patch); }
+  async updateUser(id: string, patch: Doc) {
+    const prev = await this.getUserById(id);
+    await this.admin();
+    const batch = this.batch();
+    batch.set(this.col('users').doc(id), patch, { merge: true });
+    if (patch.email_lower && prev?.email_lower && patch.email_lower !== prev.email_lower) {
+      batch.delete(this.col('idx_users_email_lower').doc(hashKey(prev.email_lower)));
+      batch.set(this.col('idx_users_email_lower').doc(hashKey(patch.email_lower)), { id }, { merge: true });
+    }
+    if (patch.username_lower && prev?.username_lower && patch.username_lower !== prev.username_lower) {
+      batch.delete(this.col('idx_users_username_lower').doc(hashKey(prev.username_lower)));
+      batch.set(this.col('idx_users_username_lower').doc(hashKey(patch.username_lower)), { id }, { merge: true });
+    }
+    await batch.commit();
+    return this.getUserById(id);
+  }
   async countUsers() { return this.count('users'); }
   async listUsers(limit = 50, offset = 0) {
     const p = await this.pageOf<any>('users', [], { limit, offset, orderBy: ['created_at', 'desc'] });
@@ -193,37 +228,77 @@ export class FirestoreDriver implements Driver {
 
   // --------------------------------------------------------------- sessions
 
-  async createSession(s: Doc) { await this.put('sessions', s); await this.index('sessions', 'token_hash', s.token_hash, s.id); }
+  async createSession(s: Doc) {
+    await this.admin();
+    const batch = this.batch();
+    batch.set(this.col('sessions').doc(s.id), s);
+    batch.set(this.col('idx_sessions_token_hash').doc(hashKey(s.token_hash)), { id: s.id }, { merge: true });
+    await batch.commit();
+  }
   async getSessionByTokenHash(h: string) { return this.one('sessions', await this.idFor('sessions', 'token_hash', h)); }
   async touchSession(id: string, seenAt: string) { await this.patch('sessions', id, { last_seen_at: seenAt }); }
   async deleteSession(id: string) {
     const s = await this.one('sessions', id);
-    if (s) await this.unindex('sessions', 'token_hash', s.token_hash);
-    await this.col('sessions').doc(id).delete();
+    await this.admin();
+    const batch = this.batch();
+    if (s && s.token_hash) {
+      batch.delete(this.col('idx_sessions_token_hash').doc(hashKey(s.token_hash)));
+    }
+    batch.delete(this.col('sessions').doc(id));
+    await batch.commit();
   }
   async deleteSessionsForUser(userId: string) {
     const rows = await this.whereEq('sessions', 'user_id', userId);
     await Promise.all(rows.map((r) => this.deleteSession(r.id)));
   }
   async purgeExpiredSessions(beforeIso: string) {
-    const rows = await this.listAll('sessions', [], 2000);
-    const stale = rows.filter((r) => r.expires_at < beforeIso);
-    await Promise.all(stale.map((r) => this.deleteSession(r.id)));
-    return stale.length;
+    const snap = await (this.col('sessions') as any).where('expires_at', '<', beforeIso).get();
+    if (snap.empty) return 0;
+    await this.admin();
+    const batch = this.batch();
+    for (const doc of snap.docs) {
+      const data = doc.data();
+      if (data?.token_hash) {
+        batch.delete(this.col('idx_sessions_token_hash').doc(hashKey(data.token_hash)));
+      }
+      batch.delete(doc.ref);
+    }
+    await batch.commit();
+    return snap.size;
   }
   async listSessions(userId: string) { return this.whereEq('sessions', 'user_id', userId); }
 
   async recordLoginAttempt(a: Doc) { await this.put('login_attempts', a); }
   async countRecentLoginFailures(identifier: string, sinceIso: string) {
-    const rows = await this.listAll('login_attempts', [], 1000);
-    return rows.filter((r) => r.identifier === identifier && !r.ok && r.created_at >= sinceIso).length;
+    try {
+      const r = await (this.col('login_attempts') as any)
+        .where('identifier', '==', identifier)
+        .where('ok', '==', 0)
+        .where('created_at', '>=', sinceIso)
+        .count();
+      return r.data().count;
+    } catch {
+      const snap = await (this.col('login_attempts') as any)
+        .where('identifier', '==', identifier)
+        .where('ok', '==', 0)
+        .where('created_at', '>=', sinceIso)
+        .get();
+      return snap.size;
+    }
   }
 
   // ----------------------------------------------------------------- events
 
   async createEvent(e: Doc) {
-    await this.put('events', e);
-    await this.addOrganizer(e.id, e.created_by, 'owner', e.created_at);
+    await this.admin();
+    const batch = this.batch();
+    batch.set(this.col('events').doc(e.id), e);
+    batch.set(this.col('idx_events_slug').doc(hashKey(e.slug)), { id: e.id }, { merge: true });
+    const oid = `${e.id}__${e.created_by}`;
+    batch.set(this.col('event_organizers').doc(oid), { id: oid, event_id: e.id, user_id: e.created_by, role: 'owner', created_at: e.created_at });
+    const mid = `${e.id}__${e.created_by}__organizer`;
+    batch.set(this.col('event_members').doc(mid), { id: mid, event_id: e.id, user_id: e.created_by, role: 'organizer', status: 'active', registered_at: e.created_at });
+    await batch.commit();
     return this.one('events', e.id);
   }
   async updateEvent(id: string, patch: Doc) { return this.patch('events', id, patch); }
@@ -270,6 +345,9 @@ export class FirestoreDriver implements Driver {
   async isOrganizer(eventId: string, userId: string): Promise<boolean> {
     const snap = await this.col('event_organizers').doc(`${eventId}__${userId}`).get();
     return snap.exists;
+  }
+  async getEventOrganizer(eventId: string, userId: string) {
+    return this.one('event_organizers', `${eventId}__${userId}`);
   }
   async listEventsForOrganizer(userId: string, limit = 50, offset = 0) {
     const links = await this.whereEq('event_organizers', 'user_id', userId);
@@ -344,9 +422,37 @@ export class FirestoreDriver implements Driver {
   async deleteTeam(id: string) {
     const members = await this.whereEq('team_members', 'team_id', id);
     const projects = await this.whereEq('projects', 'team_id', id);
-    await Promise.all(members.map((m: Doc) => this.col('team_members').doc(m.id).delete()));
-    await Promise.all(projects.map((p: Doc) => this.col('projects').doc(p.id).delete()));
-    await this.col('teams').doc(id).delete();
+    const projectIds = projects.map((p: Doc) => p.id);
+
+    let assignments: Doc[] = [];
+    let reviews: Doc[] = [];
+    let votes: Doc[] = [];
+    let comments: Doc[] = [];
+
+    if (projectIds.length > 0) {
+      assignments = await this.whereIn('judge_assignments', 'project_id', projectIds);
+      reviews = await this.whereIn('reviews', 'project_id', projectIds);
+      votes = await this.whereIn('project_votes', 'project_id', projectIds);
+      comments = await this.whereIn('project_comments', 'project_id', projectIds);
+    }
+
+    const reviewIds = reviews.map((r: Doc) => r.id);
+    let scores: Doc[] = [];
+    if (reviewIds.length > 0) {
+      scores = await this.whereIn('review_scores', 'review_id', reviewIds);
+    }
+
+    await this.admin();
+    const batch = this.batch();
+    for (const m of members) batch.delete(this.col('team_members').doc(m.id));
+    for (const p of projects) batch.delete(this.col('projects').doc(p.id));
+    for (const a of assignments) batch.delete(this.col('judge_assignments').doc(a.id));
+    for (const r of reviews) batch.delete(this.col('reviews').doc(r.id));
+    for (const s of scores) batch.delete(this.col('review_scores').doc(s.id));
+    for (const v of votes) batch.delete(this.col('project_votes').doc(v.id));
+    for (const c of comments) batch.delete(this.col('project_comments').doc(c.id));
+    batch.delete(this.col('teams').doc(id));
+    await batch.commit();
   }
   async listTeams(eventId: string, opts: { q?: string; limit?: number; offset?: number }) {
     let rows = await this.whereEq('teams', 'event_id', eventId);
@@ -458,6 +564,10 @@ export class FirestoreDriver implements Driver {
     const id = await this.idFor('event_judges', 'event_email', `${eventId}:${String(email).toLowerCase()}`);
     return id ? this.one('event_judges', id) : null;
   }
+  async getEventJudgeForUser(eventId: string, userId: string) {
+    const rows = await this.whereEq('event_judges', 'event_id', eventId);
+    return rows.find((r: Doc) => r.user_id === userId) ?? null;
+  }
   async updateEventJudge(id: string, patch: Doc) { return this.patch('event_judges', id, patch); }
   async listEventJudges(eventId: string, opts: { status?: string } = {}) {
     let rows = await this.whereEq('event_judges', 'event_id', eventId);
@@ -536,6 +646,25 @@ export class FirestoreDriver implements Driver {
     const id = `${s.review_id}__${s.criterion_id}`;
     await this.col('review_scores').doc(id).set({ id, review_id: s.review_id, criterion_id: s.criterion_id, score: s.score, note: s.note ?? '' }, { merge: true });
   }
+  async replaceReviewScores(reviewId: string, scores: Array<{ criterion_id: string; score: number; note?: string }>) {
+    const existing = await this.whereEq('review_scores', 'review_id', reviewId);
+    await this.admin();
+    const batch = this.batch();
+    for (const s of existing) {
+      batch.delete(this.col('review_scores').doc(s.id));
+    }
+    for (const s of scores) {
+      const id = `${reviewId}__${s.criterion_id}`;
+      batch.set(this.col('review_scores').doc(id), {
+        id,
+        review_id: reviewId,
+        criterion_id: s.criterion_id,
+        score: s.score,
+        note: s.note ?? '',
+      });
+    }
+    await batch.commit();
+  }
   async listScores(reviewId: string) {
     const rows = await this.whereEq('review_scores', 'review_id', reviewId);
     return rows.sort((a, b) => String(a.criterion_id).localeCompare(String(b.criterion_id)));
@@ -554,10 +683,16 @@ export class FirestoreDriver implements Driver {
 
   async replaceResults(eventId: string, rows: Doc[], computedAt: string) {
     const old = await this.whereEq('results', 'event_id', eventId);
-    await Promise.all(old.map((r) => this.col('results').doc(r.id).delete()));
-    for (const r of rows) {
-      await this.put('results', { ...r, id: r.id ?? `${eventId}__${r.project_id}`, event_id: eventId, computed_at: computedAt });
+    await this.admin();
+    const batch = this.batch();
+    for (const r of old) {
+      batch.delete(this.col('results').doc(r.id));
     }
+    for (const r of rows) {
+      const id = r.id ?? `${eventId}__${r.project_id}`;
+      batch.set(this.col('results').doc(id), strip({ ...r, id, event_id: eventId, computed_at: computedAt }));
+    }
+    await batch.commit();
   }
   async listResults(eventId: string, publishedOnly: boolean) {
     let rows = await this.whereEq('results', 'event_id', eventId);
@@ -567,22 +702,55 @@ export class FirestoreDriver implements Driver {
   async getResultForProject(eventId: string, projectId: string) { return this.one('results', `${eventId}__${projectId}`); }
   async publishResults(eventId: string, at: string) {
     const rows = await this.whereEq('results', 'event_id', eventId);
-    await Promise.all(rows.map((r) => this.col('results').doc(r.id).update({ published_at: at })));
+    if (!rows.length) return;
+    await this.admin();
+    const batch = this.batch();
+    for (const r of rows) {
+      batch.update(this.col('results').doc(r.id), { published_at: at });
+    }
+    await batch.commit();
   }
   async unpublishResults(eventId: string) {
     const rows = await this.whereEq('results', 'event_id', eventId);
-    await Promise.all(rows.map((r) => this.col('results').doc(r.id).update({ published_at: null })));
+    if (!rows.length) return;
+    await this.admin();
+    const batch = this.batch();
+    for (const r of rows) {
+      batch.update(this.col('results').doc(r.id), { published_at: null });
+    }
+    await batch.commit();
   }
   async addResultPrizes(eventId: string, rows: Doc[]) {
     const old = await this.whereEq('result_prizes', 'event_id', eventId);
-    await Promise.all(old.map((r) => this.col('result_prizes').doc(r.id).delete()));
-    for (const r of rows) await this.put('result_prizes', { ...r, event_id: eventId });
+    await this.admin();
+    const batch = this.batch();
+    for (const r of old) {
+      batch.delete(this.col('result_prizes').doc(r.id));
+    }
+    for (const r of rows) {
+      const id = r.id ?? this.col('result_prizes').doc().id;
+      batch.set(this.col('result_prizes').doc(id), strip({ ...r, id, event_id: eventId }));
+    }
+    await batch.commit();
   }
   async listResultPrizes(eventId: string) { return this.whereEq('result_prizes', 'event_id', eventId); }
 
   // ----------------------------------------------------------- notifications
 
   async createNotification(n: Doc) { await this.put('notifications', n); }
+  async createNotifications(notifications: Doc[]) {
+    if (!notifications.length) return;
+    const chunkSize = 400;
+    for (let i = 0; i < notifications.length; i += chunkSize) {
+      const chunk = notifications.slice(i, i + chunkSize);
+      await this.admin();
+      const batch = this.batch();
+      for (const n of chunk) {
+        batch.set(this.col('notifications').doc(n.id), strip(n));
+      }
+      await batch.commit();
+    }
+  }
   async listNotifications(userId: string, limit: number) {
     return (await this.whereEq('notifications', 'user_id', userId)).sort((a, b) => String(b.created_at).localeCompare(String(a.created_at))).slice(0, limit);
   }

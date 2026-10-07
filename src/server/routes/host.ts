@@ -15,7 +15,7 @@ import { inviteJudge, removeJudge, resendInvitation, parseBulkEmails } from '../
 import { computeResults, publishResults, withdrawResults, explainMethod } from '../services/results.js';
 import { audit, AUDIT_LABELS } from '../services/audit.js';
 import { suggestNext } from '../services/nextAction.js';
-import { notifyTeam } from '../services/notify.js';
+import { notifyTeam, fanoutAnnouncement } from '../services/notify.js';
 import { isoDate, optionalIsoDate, parse, text, intIn, boolish } from '../lib/validate.js';
 import { badRequest, conflict, forbidden, notFound } from '../lib/errors.js';
 import { id, nowIso, slugify } from '../lib/ids.js';
@@ -592,12 +592,13 @@ export function hostRoutes(): Router {
 
   r.post('/events/:slug/assignments/:assignmentId/delete', limitWrite, withEvent(async ({ req, res, event }) => {
     const d = db();
-    const { rows } = await d.listAssignments({ eventId: event.id, limit: 5000, offset: 0 });
-    const a = rows.find((x) => x.id === req.params.assignmentId);
-    if (!a) throw notFound('That assignment no longer exists.');
+    const a = await d.getAssignment(req.params.assignmentId);
+    if (!a || a.event_id !== event.id) throw notFound('That assignment no longer exists.');
     if (a.status === 'submitted') throw conflict('That review is already submitted. Reopen it from the judging page first.', 'review_submitted');
+    const project = await d.getProject(a.project_id);
+    const judge = await d.getEventJudge(a.event_judge_id);
     await d.deleteAssignment(a.id);
-    await audit({ eventId: event.id, actorId: req.actor!.id, action: 'assignment.deleted', entityType: 'assignment', entityId: a.id, summary: `Removed ${a.judge_email} from ${a.project_title}` });
+    await audit({ eventId: event.id, actorId: req.actor!.id, action: 'assignment.deleted', entityType: 'assignment', entityId: a.id, summary: `Removed ${judge?.email ?? 'judge'} from ${project?.title ?? a.project_id}` });
     res.redirect(303, req.get('referer')?.includes('/host/') ? req.get('referer')! : `/host/events/${event.slug}/assignments`);
   }));
 
@@ -699,8 +700,13 @@ export function hostRoutes(): Router {
     });
     await audit({ eventId: event.id, actorId: req.actor!.id, action: 'announcement.created', entityType: 'event', entityId: event.id, summary: `Posted "${title}"` });
     if (body.audience !== 'organizers') {
-      const teams = await d.listTeams(event.id, { limit: 1000, offset: 0 });
-      for (const t of teams.rows) await notifyTeam(event, t, { kind: 'announcement', title, body: String(body.body ?? '').slice(0, 300), link: `/hackathons/${event.slug}` });
+      setImmediate(() => {
+        fanoutAnnouncement(event, body.audience, {
+          title,
+          body: String(body.body ?? '').slice(0, 300),
+          link: `/hackathons/${event.slug}`,
+        }).catch((err) => console.error('Async announcement fanout failed:', err));
+      });
     }
     res.redirect(303, `/host/events/${event.slug}?posted=1`);
   }));
@@ -712,6 +718,35 @@ export function hostRoutes(): Router {
     await d.deleteAnnouncement(req.params.announcementId);
     await audit({ eventId: event.id, actorId: req.actor!.id, action: 'announcement.deleted', entityType: 'event', entityId: event.id, summary: 'Removed an announcement' });
     res.redirect(303, `/host/events/${event.slug}`);
+  }));
+
+  // ---------------------------------------------------- comment moderation --
+  r.post('/events/:slug/comments/:commentId/hide', limitWrite, withEvent(async ({ req, res, event }) => {
+    const d = db();
+    await d.setCommentHidden(req.params.commentId, true);
+    await audit({
+      eventId: event.id,
+      actorId: req.actor!.id,
+      action: 'comment.hidden',
+      entityType: 'project',
+      entityId: req.params.commentId,
+      summary: 'Organizer hid comment',
+    });
+    res.redirect(303, req.get('referer')?.includes('/hackathons/') || req.get('referer')?.includes('/host/') ? req.get('referer')! : `/host/events/${event.slug}`);
+  }));
+
+  r.post('/events/:slug/comments/:commentId/unhide', limitWrite, withEvent(async ({ req, res, event }) => {
+    const d = db();
+    await d.setCommentHidden(req.params.commentId, false);
+    await audit({
+      eventId: event.id,
+      actorId: req.actor!.id,
+      action: 'comment.unhidden',
+      entityType: 'project',
+      entityId: req.params.commentId,
+      summary: 'Organizer unhid comment',
+    });
+    res.redirect(303, req.get('referer')?.includes('/hackathons/') || req.get('referer')?.includes('/host/') ? req.get('referer')! : `/host/events/${event.slug}`);
   }));
 
   // ---------------------------------------------------------------- audit --
@@ -769,12 +804,13 @@ export function hostRoutes(): Router {
     if (!project || project.event_id !== event.id) throw notFound('That project no longer exists.');
     const { rows: assignments } = await d.listAssignments({ eventId: event.id, projectId: project.id, limit: 100 });
     const reviews = (await d.listReviews({ eventId: event.id, projectId: project.id })).filter((r) => r.status === 'submitted');
+    const judges = await d.listEventJudges(event.id);
     const { rubric, criteria } = await activeRubric(event.id);
     const perJudge: any[] = [];
     for (const r of reviews) {
       const scores = await d.listScores(r.id);
       perJudge.push({
-        judge: (await d.listEventJudges(event.id)).find((j) => j.id === r.event_judge_id),
+        judge: judges.find((j: any) => j.id === r.event_judge_id),
         review: r,
         scores,
         total: criteria.length ? round2(scores.reduce((a, s) => a + s.score, 0)) : null,
@@ -971,9 +1007,8 @@ function toArray(v: unknown): string[] {
 }
 
 async function assignOne(d: any, event: any, judgeId: string, projectId: string, actorId: string): Promise<number> {
-  const judges = await d.listEventJudges(event.id);
-  const judge = judges.find((j: any) => j.id === judgeId);
-  if (!judge) return 0;
+  const judge = await d.getEventJudge(judgeId);
+  if (!judge || judge.event_id !== event.id) return 0;
   const existing = await d.listAssignments({ eventId: event.id, projectId, limit: 500 });
   if (existing.some((a: any) => a.event_judge_id === judgeId)) return 0;
   await d.createAssignment({
@@ -1105,11 +1140,18 @@ export async function buildCsv(d: any, event: any, kind: string): Promise<string
   if (kind === 'reviews') {
     const reviews = await d.listReviews({ eventId: event.id, status: 'submitted' });
     const judges = await d.listEventJudges(event.id);
+    const judgeMap = new Map<string, any>(judges.map((j: any) => [j.id, j]));
     const { criteria } = await activeRubric(event.id);
+    const allScores = await d.listAllScoresForEvent(event.id);
+    const scoresByReview = new Map<string, any[]>();
+    for (const s of allScores) {
+      if (!scoresByReview.has(s.review_id)) scoresByReview.set(s.review_id, []);
+      scoresByReview.get(s.review_id)!.push(s);
+    }
     const out: unknown[][] = [];
     for (const r of reviews) {
-      const judge = judges.find((j: any) => j.id === r.event_judge_id);
-      const scores = await d.listScores(r.id);
+      const judge = judgeMap.get(r.event_judge_id);
+      const scores = scoresByReview.get(r.id) ?? [];
       const byCriterion = new Map(scores.map((s: any) => [s.criterion_id, s.score]));
       out.push([
         r.project_id,

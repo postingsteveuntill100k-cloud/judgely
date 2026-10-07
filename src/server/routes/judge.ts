@@ -22,9 +22,8 @@ export function judgeRoutes(): Router {
       const d = db();
       const event = await d.getEventBySlug(slug);
       if (!event) throw notFound('We could not find that hackathon.');
-      const judges = await d.listEventJudges(event.id);
-      const me = judges.find((j) => j.user_id === req.actor!.id && j.status === 'active');
-      if (!me) {
+      const me = await d.getEventJudgeForUser(event.id, req.actor!.id);
+      if (!me || me.status !== 'active') {
         throw forbidden('You are not an active judge for this hackathon. Open the invitation the organizer sent you.');
       }
       (req as any).judgeEvent = event;
@@ -95,14 +94,12 @@ export function judgeRoutes(): Router {
    */
   r.get('/review/:assignmentId', async (req, res, next) => {
     const d = db();
-    const { rows } = await d.listAssignments({ limit: 5000, offset: 0 });
-    const assignment = rows.find((a) => a.id === req.params.assignmentId);
+    const assignment = await d.getAssignment(req.params.assignmentId);
     if (!assignment) return next(notFound('That assignment no longer exists.'));
     const event = await d.getEventById(assignment.event_id);
     if (!event) return next(notFound('That hackathon no longer exists.'));
-    const judges = await d.listEventJudges(event.id);
-    const me = judges.find((j) => j.user_id === req.actor!.id && j.status === 'active');
-    if (!me) return next(forbidden('You are not an active judge for this hackathon.'));
+    const me = await d.getEventJudgeForUser(event.id, req.actor!.id);
+    if (!me || me.status !== 'active') return next(forbidden('You are not an active judge for this hackathon.'));
     // The backend, not the template, is what stops one judge opening another's work.
     if (assignment.event_judge_id !== me.id) {
       return next(forbidden('That review belongs to another judge. You can only open your own assignments.'));
@@ -123,11 +120,14 @@ export function judgeRoutes(): Router {
     const queue = siblings.filter((a) => a.status !== 'submitted');
     const state = eventState(event);
     const resultsPublic = await resultsArePublic(event);
+    const prevProject = idx > 0 ? siblings[idx - 1] : null;
+    const nextProject = idx >= 0 && idx < siblings.length - 1 ? siblings[idx + 1] : null;
 
     await page(res, 'judge/review', req, {
       pageTitle: `Review ${project.title}`,
       event, state, assignment, project, team, members, criteria, rubric, review, scores,
       issues, queue: queue.length, nextUp: queue.find((a) => a.id !== assignment.id) ?? null,
+      prevProject, nextProject,
       position: idx + 1, of: siblings.length, resultsPublic,
       formError: null, formIssues: [],
       comment: review ? review.comment : '',
@@ -141,14 +141,12 @@ export function judgeRoutes(): Router {
   r.post('/review/:assignmentId', limitReview, async (req, res, next) => {
     const d = db();
     const body = req.body as Record<string, any>;
-    const { rows } = await d.listAssignments({ limit: 5000, offset: 0 });
-    const assignment = rows.find((a) => a.id === req.params.assignmentId);
+    const assignment = await d.getAssignment(req.params.assignmentId);
     if (!assignment) return next(notFound('That assignment no longer exists.'));
     const event = await d.getEventById(assignment.event_id);
     if (!event) return next(notFound('That hackathon no longer exists.'));
-    const judges = await d.listEventJudges(event.id);
-    const me = judges.find((j) => j.user_id === req.actor!.id && j.status === 'active');
-    if (!me || assignment.event_judge_id !== me.id) {
+    const me = await d.getEventJudgeForUser(event.id, req.actor!.id);
+    if (!me || me.status !== 'active' || assignment.event_judge_id !== me.id) {
       return next(forbidden('That review belongs to another judge.'));
     }
     // The judge id is taken from the session, never from the request body.

@@ -106,8 +106,7 @@ export async function viewerContext(event: any, req: Request) {
     base.project = projects[0] ?? null;
   }
 
-  const judges = await d.listEventJudges(event.id).catch(() => []);
-  const myJudge = judges.find((j) => j.user_id === actor.id) ?? null;
+  const myJudge = await d.getEventJudgeForUser(event.id, actor.id).catch(() => null);
   base.isJudge = Boolean(myJudge && myJudge.status === 'active');
   base.judgeStatus = myJudge?.status ?? null;
   return base;
