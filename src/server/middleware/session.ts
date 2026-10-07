@@ -11,6 +11,7 @@ declare global {
     interface Request {
       actor: Actor | null;
       sessionId?: string;
+      sessionError?: Error | null;
       startedAt: number;
       wantsJson?: boolean;
     }
@@ -28,23 +29,31 @@ function clientIp(req: Request): string {
 /** Reads the signed session cookie or a bearer token. Never trusts the browser alone. */
 export async function sessionMiddleware(req: Request, _res: Response, next: NextFunction): Promise<void> {
   req.actor = null;
+  req.sessionError = null;
   req.startedAt = Date.now();
   const header = req.get('authorization');
   const bearer = header?.startsWith('Bearer ') ? header.slice(7) : null;
   const token = bearer ?? (req.cookies?.[config.session.cookieName] as string | undefined);
-  try {
-    const found = await resolveSession(token);
-    if (found) {
-      req.actor = toActor(found.user, found.sessionId);
-      req.sessionId = found.sessionId;
+  if (token) {
+    try {
+      const found = await resolveSession(token);
+      if (found) {
+        req.actor = toActor(found.user, found.sessionId);
+        req.sessionId = found.sessionId;
+      }
+    } catch (e) {
+      log.warn('session lookup failed', { error: (e as Error).message });
+      req.sessionError = e as Error;
     }
-  } catch (e) {
-    log.warn('session lookup failed', { error: (e as Error).message });
   }
   next();
 }
 
 export function requireAuth(req: Request, _res: Response, next: NextFunction): void {
+  if (req.sessionError) {
+    next(new AppError(503, 'session_store_unavailable', 'Authentication service is temporarily unavailable. Please retry.'));
+    return;
+  }
   if (!req.actor) {
     next(new AppError(401, 'unauthenticated', 'Sign in to continue.'));
     return;

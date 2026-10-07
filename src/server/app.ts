@@ -6,6 +6,7 @@ import { config } from './config.js';
 import { csrfMiddleware, issueCsrfToken, requestLogger, securityHeaders } from './middleware/security.js';
 import { sessionMiddleware } from './middleware/session.js';
 import { errorHandler, notFoundHandler } from './middleware/errors.js';
+import { AppError } from './lib/errors.js';
 import { db } from './db/index.js';
 import { log } from './lib/logger.js';
 
@@ -49,8 +50,10 @@ export function createApp(): Express {
     if (req.method === 'GET' && !req.path.startsWith('/api/')) {
       try {
         (req as any).csrfToken = issueCsrfToken(res);
-      } catch {
-        (req as any).csrfToken = '';
+      } catch (err) {
+        log.error('Failed to issue CSRF token', { error: (err as Error).message });
+        next(new AppError(500, 'csrf_issue_failed', 'Security token initialization failed. Please reload.'));
+        return;
       }
     }
     next();
@@ -60,13 +63,16 @@ export function createApp(): Express {
   app.get('/healthz', async (_req, res) => {
     const health = await db()
       .health()
-      .catch((e) => ({ ok: false, driver: config.db.driver, detail: (e as Error).message }));
+      .catch((e) => {
+        console.error('[Health] /healthz error:', e);
+        return { ok: false, driver: config.db.driver, detail: 'unreachable' };
+      });
     res.status(health.ok ? 200 : 503).json({
       status: health.ok ? 'ok' : 'degraded',
-      app: 'hackerly',
+      app: 'judgely',
       version: '1.0.0',
       mode: config.db.driver === 'firestore' ? 'global' : 'self-hosted',
-      database: health,
+      database: { ok: health.ok, driver: health.driver, status: health.detail },
       uptimeSeconds: Math.round(process.uptime()),
     });
   });
@@ -80,8 +86,11 @@ export function createApp(): Express {
   app.get('/readyz', async (_req, res) => {
     const health = await db()
       .health()
-      .catch((e) => ({ ok: false, driver: config.db.driver, detail: (e as Error).message }));
-    res.status(health.ok ? 200 : 503).json({ status: health.ok ? 'ready' : 'not-ready', database: health });
+      .catch((e) => {
+        console.error('[Health] /readyz error:', e);
+        return { ok: false, driver: config.db.driver, detail: 'unreachable' };
+      });
+    res.status(health.ok ? 200 : 503).json({ status: health.ok ? 'ready' : 'not-ready', database: { ok: health.ok, driver: health.driver, status: health.detail } });
   });
 
   app.use('/', publicRoutes());

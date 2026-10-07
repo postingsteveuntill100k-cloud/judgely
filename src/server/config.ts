@@ -50,19 +50,43 @@ loadDotEnv();
 const nodeEnv = env('NODE_ENV', 'development');
 const isProd = nodeEnv === 'production';
 
+const INSECURE_SECRETS = new Set([
+  'change-me-this-is-not-a-secret',
+  'secret',
+  'keyboard cat',
+  'session-secret',
+  'default',
+  'password',
+  '1234567890',
+  'test',
+]);
+
 /**
  * Session signing secret. Persisted to data/.secret so that a restart does not
  * invalidate every session in a self-hosted install. In production the
- * SESSION_SECRET env var is required.
+ * SESSION_SECRET env var is required and must not be a weak placeholder.
  */
 function resolveSecret(): string {
   const fromEnv = env('SESSION_SECRET');
-  if (fromEnv) return fromEnv;
   if (isProd) {
-    throw new Error(
-      'SESSION_SECRET is required in production. Generate one with: openssl rand -hex 32',
-    );
+    if (!fromEnv) {
+      throw new Error(
+        'SESSION_SECRET is required in production. Generate one with: openssl rand -hex 32',
+      );
+    }
+    if (fromEnv.length < 32) {
+      throw new Error(
+        'SESSION_SECRET must be at least 32 characters in production.',
+      );
+    }
+    if (INSECURE_SECRETS.has(fromEnv.toLowerCase()) || fromEnv.includes('change-me')) {
+      throw new Error(
+        'SESSION_SECRET cannot be a known default or placeholder in production. Generate a secure secret with: openssl rand -hex 32',
+      );
+    }
+    return fromEnv;
   }
+  if (fromEnv) return fromEnv;
   const dir = env('DATA_DIR', path.join(ROOT, 'data'));
   const file = path.join(dir, '.secret');
   try {
@@ -76,9 +100,42 @@ function resolveSecret(): string {
   }
 }
 
+function resolveAcceptance(): boolean {
+  const enabled = envBool('ACCEPTANCE_ACCOUNTS', !isProd);
+  if (isProd && enabled) {
+    throw new Error(
+      'ACCEPTANCE_ACCOUNTS cannot be enabled in production. This setting is strictly for local/testing environments.',
+    );
+  }
+  return enabled;
+}
+
+function resolveSeed(): { onBoot: boolean; demo: boolean; fixtures: boolean; fixturesFile: string } {
+  const onBoot = envBool('SEED_ON_BOOT', !isProd);
+  const demo = envBool('SEED_DEMO', !isProd);
+  const fixtures = envBool('SEED_FIXTURES', !isProd);
+  if (isProd && (onBoot || demo) && !envBool('ALLOW_PRODUCTION_SEED', false)) {
+    throw new Error(
+      'Database auto-seeding is disabled in production to protect real data. Set ALLOW_PRODUCTION_SEED=true only if you explicitly intend to seed a fresh production database.',
+    );
+  }
+  return {
+    onBoot,
+    demo,
+    fixtures,
+    fixturesFile: path.resolve(env('FIXTURES_FILE', path.join(ROOT, 'fixtures.json'))),
+  };
+}
+
 const dataDir = path.resolve(env('DATA_DIR', path.join(ROOT, 'data')));
 const dbDriver = env('DB_DRIVER', 'sqlite');
 const port = envInt('PORT', 8080);
+
+if (isProd && dbDriver === 'firestore' && (!env('FIREBASE_PROJECT_ID') || !env('FIREBASE_CLIENT_EMAIL') || !env('FIREBASE_PRIVATE_KEY'))) {
+  throw new Error(
+    'DB_DRIVER=firestore in production requires FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL, and FIREBASE_PRIVATE_KEY to be set.',
+  );
+}
 
 export const config = {
   root: ROOT,
@@ -142,22 +199,11 @@ export const config = {
     smtpPass: env('SMTP_PASS', ''),
   },
 
-  /**
-   * Deterministic acceptance accounts for the DOGFOOD checker. These are real
-   * users with real sessions; only their tokens are fixed so that
-   * .dogfood.toml keeps working across restarts. Disabled in production unless
-   * explicitly switched on.
-   */
   acceptance: {
-    enabled: envBool('ACCEPTANCE_ACCOUNTS', !isProd),
+    enabled: resolveAcceptance(),
   },
 
-  seed: {
-    onBoot: envBool('SEED_ON_BOOT', true),
-    demo: envBool('SEED_DEMO', true),
-    fixtures: envBool('SEED_FIXTURES', true),
-    fixturesFile: path.resolve(env('FIXTURES_FILE', path.join(ROOT, 'fixtures.json'))),
-  },
+  seed: resolveSeed(),
 
   log: {
     level: env('LOG_LEVEL', isProd ? 'info' : 'info'),
@@ -171,3 +217,35 @@ export const config = {
 } as const;
 
 export type Config = typeof config;
+
+export function validateProductionConfig(opts: {
+  env?: string;
+  security?: { sessionSecret?: string };
+  auth?: { acceptanceAccounts?: boolean };
+  seed?: { onBoot?: boolean; demo?: boolean; allowProductionSeed?: boolean };
+  dbDriver?: string;
+  firebase?: { projectId?: string; clientEmail?: string; privateKey?: string };
+}): void {
+  const isP = opts.env === 'production';
+  if (!isP) return;
+
+  const secret = opts.security?.sessionSecret;
+  if (!secret) {
+    throw new Error('SESSION_SECRET is required in production.');
+  }
+  if (secret.length < 32) {
+    throw new Error('SESSION_SECRET must be at least 32 characters in production.');
+  }
+  if (INSECURE_SECRETS.has(secret.toLowerCase()) || secret.includes('change-me')) {
+    throw new Error('SESSION_SECRET cannot be a known default or placeholder in production. Generate a secure secret with: openssl rand -hex 32');
+  }
+
+  if (opts.auth?.acceptanceAccounts) {
+    throw new Error('ACCEPTANCE_ACCOUNTS must be false in production. This setting is strictly for local/testing environments.');
+  }
+
+  if (opts.seed?.onBoot && !opts.seed?.allowProductionSeed) {
+    throw new Error('SEED_ON_BOOT must be false in production to protect real data.');
+  }
+}
+

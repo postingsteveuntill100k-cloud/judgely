@@ -34,12 +34,24 @@ export function csrfMiddleware(req: Request, res: Response, next: NextFunction):
   const expected = req.cookies?.[CSRF_COOKIE] as string | undefined;
   const provided = tokenFrom(req);
   if (!expected || !provided) {
+    log.warn('CSRF token missing', {
+      ip: req.socket.remoteAddress,
+      path: req.path,
+      method: req.method,
+      hasCookie: Boolean(expected),
+      hasToken: Boolean(provided),
+    });
     next(new AppError(403, 'csrf_missing', 'Your session expired while the page was open. Reload the page and try again.'));
     return;
   }
   const a = Buffer.from(expected);
   const b = Buffer.from(provided);
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) {
+    log.warn('CSRF token mismatch', {
+      ip: req.socket.remoteAddress,
+      path: req.path,
+      method: req.method,
+    });
     next(new AppError(403, 'csrf_invalid', 'That form was submitted from a stale page. Reload and try again.'));
     return;
   }
@@ -73,7 +85,14 @@ export function securityHeaders(_req: Request, res: Response, next: NextFunction
   const firebase = config.firebase.configured && Boolean(config.firebase.webApiKey);
   const scriptSrc = ["'self'", ...(firebase ? ['https://www.gstatic.com'] : [])];
   const connectSrc = ["'self'", ...(firebase ? ['https://identitytoolkit.googleapis.com', 'https://securetoken.googleapis.com'] : [])];
-  const frameSrc = ['https://www.youtube.com', 'https://player.vimeo.com', 'https://www.loom.com', 'https://accounts.google.com', ...(firebase ? ['https://hackerly-hackatrons.firebaseapp.com'] : [])];
+  const authDomain = config.firebase.authDomain || (config.firebase.projectId ? `https://${config.firebase.projectId}.firebaseapp.com` : '');
+  const frameSrc = [
+    'https://www.youtube.com',
+    'https://player.vimeo.com',
+    'https://www.loom.com',
+    'https://accounts.google.com',
+    ...(authDomain ? [authDomain.startsWith('http') ? authDomain : `https://${authDomain}`] : []),
+  ];
 
   res.setHeader(
     'Content-Security-Policy',
