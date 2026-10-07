@@ -195,13 +195,13 @@
 
       var authCfg = {
         apiKey: cfg.apiKey,
-        authDomain: cfg.authDomain || (window.location.host.indexOf('web.app') !== -1 ? window.location.host : 'hackerly-hackatrons.firebaseapp.com'),
-        projectId: cfg.projectId || 'hackerly-hackatrons'
+        authDomain: cfg.authDomain || (window.location.host.indexOf('web.app') !== -1 ? window.location.host : (cfg.projectId ? cfg.projectId + '.firebaseapp.com' : 'iiuh-1bcee.firebaseapp.com')),
+        projectId: cfg.projectId || 'iiuh-1bcee'
       };
 
       var dbCfg = {
         apiKey: cfg.dbApiKey || cfg.apiKey,
-        projectId: cfg.dbProjectId || cfg.projectId || 'hackerly-hackatrons'
+        projectId: cfg.dbProjectId || cfg.projectId || 'iiuh-1bcee'
       };
 
       Promise.all([

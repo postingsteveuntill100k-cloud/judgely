@@ -35,7 +35,7 @@ export async function boot() {
   process.env.SEED_FIXTURES = 'true';
   process.env.MAIL_MODE = 'log';
   process.env.LOG_LEVEL = 'warn';
-  process.env.FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'hackerly-hackatrons';
+  process.env.FIREBASE_PROJECT_ID = process.env.FIREBASE_PROJECT_ID || 'iiuh-1bcee';
   process.env.FIREBASE_WEB_API_KEY = process.env.FIREBASE_WEB_API_KEY || 'test-web-api-key-12345';
 
   const { getDb, closeDb } = await import(path.join(ROOT, 'dist/server/db/index.js'));

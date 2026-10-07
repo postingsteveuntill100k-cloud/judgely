@@ -82,7 +82,7 @@ export function securityHeaders(_req: Request, res: Response, next: NextFunction
 
   // The Firebase web SDK is only reachable when Firebase Authentication is
   // actually configured. A self-hosted install gets a strict 'self' policy.
-  const firebase = config.firebase.configured && Boolean(config.firebase.webApiKey);
+  const firebase = Boolean(config.firebase.webApiKey && (config.firebase.projectId || config.firebase.authProjectId));
   const scriptSrc = ["'self'", ...(firebase ? ['https://www.gstatic.com'] : [])];
   const connectSrc = ["'self'", ...(firebase ? ['https://identitytoolkit.googleapis.com', 'https://securetoken.googleapis.com'] : [])];
   const authDomain = config.firebase.authDomain || (config.firebase.projectId ? `https://${config.firebase.projectId}.firebaseapp.com` : '');

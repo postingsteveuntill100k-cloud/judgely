@@ -56,7 +56,7 @@
             <a href="/settings/profile" role="menuitem">Profile settings</a>
             <hr>
             <form method="post" action="/auth/logout">
-              <input type="hidden" name="_csrf" value="nx-adE6EolQ9NVTGyEPsvsKI26Bf6bjk">
+              <input type="hidden" name="_csrf" value="8H8j5IN2oPAhh02Xttse4wrze4qsBdsJ">
               <button type="submit" role="menuitem">Sign out</button>
             </form>
           </div>
@@ -148,7 +148,7 @@
     <div class="section__head" style="margin-bottom:16px">
       <div>
         <p class="eyebrow">Teams</p>
-        <h1 style="font-size:1.6rem">4 teams</h1>
+        <h1 style="font-size:1.6rem">5 teams</h1>
       </div>
       <form class="row" method="get" action="/host/events/hacktron-2026/teams">
         <input class="input" type="search" name="q" value="" placeholder="Search teams" style="min-width:200px">
@@ -168,6 +168,26 @@
                   <tr><th>Team</th><th>Members</th><th>Project</th><th>Status</th><th></th></tr>
                 </thead>
                 <tbody>
+                  
+                    <tr>
+                      <td>
+                        <span style="font-weight:560">Journey Squad</span>
+                        <div class="tiny muted">Created by the end-to-end journey.</div>
+                      </td>
+                      <td>
+                        <div class="row row-wrap" style="gap:4px">
+                          
+                            <span class="avatar avatar--xs" title="Journey Hacker" style="background:hsl(173 46% 42%)">JH</span>
+                          
+                        </div>
+                        <div class="tiny muted" style="margin-top:2px">1/4</div>
+                      </td>
+                      <td class="small">Journey Project</td>
+                      <td><span class="tag tag--info">Submitted</span></td>
+                      <td class="nowrap">
+                        <a class="btn btn--ghost btn--sm" href="/hackathons/hacktron-2026/teams/journey-squad-2" target="_blank" rel="noopener">Public</a>
+                      </td>
+                    </tr>
                   
                     <tr>
                       <td>
@@ -267,7 +287,7 @@
           <h2 class="card__title" style="margin-bottom:10px">Create a team for somebody</h2>
           <p class="small muted">For a walk-in who cannot sign in, or a team that needs to exist before they arrive.</p>
           <form method="post" action="/host/events/hacktron-2026/teams" style="margin-top:12px">
-            <input type="hidden" name="_csrf" value="nx-adE6EolQ9NVTGyEPsvsKI26Bf6bjk">
+            <input type="hidden" name="_csrf" value="8H8j5IN2oPAhh02Xttse4wrze4qsBdsJ">
             <div class="field">
               <label class="field__label" for="nte">Team name</label>
               <input class="input" id="nte" name="name" required maxlength="60" placeholder="Late Entrants">

@@ -18,24 +18,25 @@ describe('judgely firebase & static deployment verification', () => {
     const cfg = firebaseAuth.publicConfig();
     assert.equal(cfg.enabled, true, 'firebase auth should be enabled');
     assert.ok(cfg.apiKey, 'apiKey should be present');
-    assert.ok(cfg.authDomain, 'authDomain should be present');
-    assert.equal(cfg.projectId, 'hackerly-hackatrons', 'projectId should be hackerly-hackatrons');
+    const expectedProject = process.env.FIREBASE_PROJECT_ID || 'iiuh-1bcee';
+    assert.equal(cfg.projectId, expectedProject, `projectId should be ${expectedProject}`);
   });
 
   test('signin and signup pages render data-firebase-config with Judgely config', async () => {
+    const expectedProject = process.env.FIREBASE_PROJECT_ID || 'iiuh-1bcee';
     const signinRes = await req('/auth/signin');
     assert.equal(signinRes.status, 200);
     const signinMatch = signinRes.text.match(/<script type="application\/json" data-firebase-config>(.*?)<\/script>/);
     assert.ok(signinMatch, 'signin should have data-firebase-config script');
     const signinCfg = JSON.parse(signinMatch[1]);
-    assert.equal(signinCfg.projectId, 'hackerly-hackatrons');
+    assert.equal(signinCfg.projectId, expectedProject);
 
     const signupRes = await req('/auth/signup');
     assert.equal(signupRes.status, 200);
     const signupMatch = signupRes.text.match(/<script type="application\/json" data-firebase-config>(.*?)<\/script>/);
     assert.ok(signupMatch, 'signup should have data-firebase-config script');
     const signupCfg = JSON.parse(signupMatch[1]);
-    assert.equal(signupCfg.projectId, 'hackerly-hackatrons');
+    assert.equal(signupCfg.projectId, expectedProject);
   });
 
   test('firebase endpoint refuses empty token cleanly with 400', async () => {

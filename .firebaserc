@@ -1,8 +1,16 @@
 {
   "projects": {
-    "default": "hackerly-hackatrons"
+    "default": "iiuh-1bcee",
+    "hackerly": "hackerly-hackatrons"
   },
   "targets": {
+    "iiuh-1bcee": {
+      "hosting": {
+        "judgely": [
+          "iiuh-1bcee"
+        ]
+      }
+    },
     "hackerly-hackatrons": {
       "hosting": {
         "judgely": [
