@@ -1,34 +1,157 @@
 rules_version = '2';
 
+/**
+ * JUDGELY / HACKERLY FIRESTORE SECURITY RULES
+ *
+ * ARCHITECTURAL SECURITY MODEL:
+ * All reads and mutations MUST flow through the Express server application
+ * using the Firebase Admin SDK (which bypasses security rules safely on the backend).
+ *
+ * Direct browser / client access via the Firebase Web SDK is DENIED BY DEFAULT.
+ * Clients cannot directly mutate or inspect any application collections, ensuring
+ * that:
+ * 1. An ordinary authenticated Firebase client cannot modify another user's profile.
+ * 2. An ordinary authenticated Firebase client cannot create organizer relationships or alter event ownership.
+ * 3. An ordinary authenticated Firebase client cannot create judge assignments.
+ * 4. An ordinary authenticated Firebase client cannot modify projects belonging to another user.
+ * 5. An ordinary authenticated Firebase client cannot modify reviews, scores, or results.
+ * 6. An ordinary authenticated Firebase client cannot read private judging information, assignments, or audit logs.
+ */
 service cloud.firestore {
   match /databases/{database}/documents {
-    // User profile documents - public read, owner write
+
+    // Zero-trust server-mediated model: clients can NEVER mutate or read data directly.
+    // All mutations and reads are mediated by Express + Firebase Admin SDK.
+
+    // 1. Users
     match /users/{userId} {
-      allow read: if true;
-      allow write: if request.auth != null && (request.auth.uid == userId || request.auth.token.email != null);
+      allow read: if false;
+      allow write: if false;
     }
-    
-    // Hackathons and events
+
+    // 2. Sessions & Token Hashes
+    match /sessions/{sessionId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // 3. Events & Hackathons
+    match /events/{eventId} {
+      allow read: if false;
+      allow write: if false;
+    }
     match /hackathons/{eventId}/{document=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read: if false;
+      allow write: if false;
     }
 
-    match /events/{eventId}/{document=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
-    }
-    
-    // Projects and showcase
-    match /projects/{projectId}/{document=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
+    // 4. Organizers & Permissions
+    match /event_organizers/{organizerId} {
+      allow read: if false;
+      allow write: if false;
     }
 
-    // Default for other collections: allow read for public, write for authenticated users
+    // 5. Memberships
+    match /event_members/{memberId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // 6. Judges
+    match /event_judges/{judgeId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // 7. Teams & Team Members
+    match /teams/{teamId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    match /team_members/{memberId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // 8. Projects & Submissions
+    match /projects/{projectId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // 9. Rubrics & Criteria
+    match /rubrics/{rubricId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    match /rubric_criteria/{criterionId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // 10. Judge Assignments
+    match /judge_assignments/{assignmentId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // 11. Reviews & Review Scores
+    match /reviews/{reviewId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    match /review_scores/{scoreId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // 12. Results & Prizes
+    match /results/{resultId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    match /result_prizes/{prizeId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // 13. Invitations
+    match /invitations/{invitationId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // 14. Notifications
+    match /notifications/{notificationId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // 15. Audit Events & Logs
+    match /audit_events/{auditId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // 16. Comments & Votes
+    match /project_comments/{commentId} {
+      allow read: if false;
+      allow write: if false;
+    }
+    match /project_votes/{voteId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // 17. Internal Secondary Indexes
+    match /{idxCollection}/{indexId} {
+      allow read: if false;
+      allow write: if false;
+    }
+
+    // CATCH-ALL: Deny everything by default.
     match /{document=**} {
-      allow read: if true;
-      allow write: if request.auth != null;
+      allow read, write: if false;
     }
   }
 }

@@ -206,38 +206,13 @@
 
       Promise.all([
         load(SDK + '/firebase-app.js'),
-        load(SDK + '/firebase-auth.js'),
-        load(SDK + '/firebase-firestore.js')
+        load(SDK + '/firebase-auth.js')
       ]).then(function (mods) {
         var appMod = mods[0];
         var authMod = mods[1];
-        var fsMod = mods[2];
 
         var authApp = appMod.getApps().find(function (a) { return a.name === '[DEFAULT]'; }) || appMod.initializeApp(authCfg);
         var auth = authMod.getAuth(authApp);
-
-        function saveToFirestore(user) {
-          if (!fsMod || !dbCfg.projectId) return Promise.resolve();
-          try {
-            var dbApp = appMod.getApps().find(function (a) { return a.name === 'firestoreApp'; }) || appMod.initializeApp(dbCfg, 'firestoreApp');
-            var db = fsMod.getFirestore(dbApp);
-            var userDoc = {
-              uid: user.uid,
-              email: user.email || '',
-              displayName: user.displayName || (user.email ? user.email.split('@')[0] : 'Hacker'),
-              photoURL: user.photoURL || '',
-              lastLoginAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-              provider: 'google.com',
-              role: 'participant'
-            };
-            return fsMod.setDoc(fsMod.doc(db, 'users', user.uid), userDoc, { merge: true })
-              .catch(function (err) { console.warn('Firestore write warning:', err); });
-          } catch (e) {
-            console.warn('Firestore init warning:', e);
-            return Promise.resolve();
-          }
-        }
 
         function handleSuccessfulAuth(user) {
           var profile = {
@@ -253,8 +228,7 @@
             localStorage.setItem('hkl_user', JSON.stringify(profile));
           } catch (_) {}
 
-          return saveToFirestore(user)
-            .then(function () { return user.getIdToken(); })
+          return user.getIdToken()
             .then(function (idToken) {
               return fetch('/auth/firebase', {
                 method: 'POST',
@@ -348,8 +322,23 @@
 })();
 
 
-// --- judge score buttons --------------------------------------------------
+// --- judge score buttons & progress ---------------------------------------
 (function () {
+  function updateScoreProgress() {
+    var total = document.querySelectorAll('[data-criterion]').length;
+    var filled = 0;
+    document.querySelectorAll('[data-criterion]').forEach(function (c) {
+      var val = '';
+      var hidden = c.querySelector('input[data-score-value]');
+      if (hidden) val = hidden.value.trim();
+      if (val !== '' && !isNaN(Number(val))) filled++;
+    });
+    var progEl = document.getElementById('criteria-progress-text');
+    if (progEl) {
+      progEl.textContent = 'Progress: ' + filled + ' / ' + total + ' criteria completed';
+    }
+  }
+
   document.querySelectorAll('[data-score-input]').forEach(function (btn) {
     btn.addEventListener('click', function () {
       var name = btn.getAttribute('data-score-input');
@@ -376,6 +365,18 @@
           group.appendChild(tag);
         }
       }
+      updateScoreProgress();
+    });
+  });
+
+  document.querySelectorAll('.score-number-input').forEach(function (input) {
+    input.addEventListener('input', function () {
+      var criterion = input.closest('[data-criterion]');
+      if (criterion && input.value.trim() !== '') {
+        criterion.classList.remove('criterion--missing');
+      }
+      updateScoreProgress();
     });
   });
 })();
+
